@@ -24,14 +24,24 @@ npm run build           # production build the Python server picks up
 node screenshot.mjs     # signs in headlessly and screenshots every page
 ```
 
-React app pages: Overview · Grants (sorted by **date awarded** — often earlier
-than the period of performance; federal/state filter; click through to a
-grant's full history and its **amendments**) · Expenditures (searchable ledger,
-CSV export, **OpenGov ERP journal export** keyed by GL account) · Operating
-funds (basic general-fund tracker: budgets, revenues, expenses) · Agencies
-(federal and state) · Audit trail (change log + sign-in log) · SEFA report ·
-SESFA report (both per-fiscal-year tabs, CSV export, print). Ctrl+K opens a
-command palette; the theme toggle and fiscal-year filter live in the top bar.
+React app pages, grouped in the sidebar as **Grant awards** (Overview, Grants
+— sorted by **date awarded**, often earlier than the period of performance;
+click through to a grant's full history, **amendments**, and award facts;
+Expenditures with CSV + **OpenGov ERP journal export**; Agencies), **Audit &
+reports** (SEFA, SESFA, Audit trail), **City finance** (Operating funds, **CRA
+districts** — Ch. 163 F.S. tax-increment trust funds and project budgets), and
+**Reference** (Directory). Global **All sources / Federal / State** tabs in
+the top bar scope the grant pages to either book; every award row carries a
+Federal or State chip. Ctrl+K opens a command palette; the first-run guided
+tour replays from the ? button in the top bar.
+
+### CRA tracker (Ch. 163 Part III, F.S.)
+
+Each Community Redevelopment Agency district has a tax-increment (TIF)
+redevelopment trust fund: increment deposits and other revenue flow in;
+project and administrative expenses draw it down. Projects carry an approved
+budget that a database trigger enforces — an expense that would overspend a
+project is rejected, and expenses must book to the project's own district.
 
 ### Amendments (dates and money change all the time)
 
