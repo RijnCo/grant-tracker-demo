@@ -1,4 +1,4 @@
-"""Grant tracker demo server — City of Panama City, Florida.
+"""Grant tracker demo server — City of Pelican Shores, Florida.
 
 Run:  python app.py     then open http://localhost:8765
 
@@ -693,7 +693,7 @@ class Handler(BaseHTTPRequestHandler):
 def main():
     init_sessions()
     server = ThreadingHTTPServer(("127.0.0.1", PORT), Handler)
-    print("City of Panama City grant tracker: http://localhost:%d" % PORT)
+    print("City of Pelican Shores grant tracker: http://localhost:%d" % PORT)
     print("demo logins: alopez / Sunshine!2026 (grant manager), "
           "jrivera / SandDollar!26 (finance), viewer / Welcome!2026 (read-only)")
     server.serve_forever()

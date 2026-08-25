@@ -32,9 +32,9 @@ export default function LoginGate() {
       >
         <div className="login-brand">
           <div className="logo-sun" />
-          <div className="lb-city">Panama City Grant Operations</div>
+          <div className="lb-city">Pelican Shores Grant Operations</div>
           <div className="lb-sub">
-            Federal award expenditure tracking · City of Panama City, Florida
+            Federal award expenditure tracking · City of Pelican Shores, Florida
           </div>
         </div>
         <label htmlFor="login-user">Username</label>

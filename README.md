@@ -1,11 +1,11 @@
-# Grant Application — City of Panama City Award Expenditure Tracking
+# Grant Application — City of Pelican Shores Award Expenditure Tracking
 
 SQLite database + login-protected web app for tracking **federal and Florida
 state** award expenditures, producing both the Schedule of Expenditures of
 Federal Awards (**SEFA**, 2 CFR 200.510) and the Schedule of Expenditures of
 State Financial Assistance (**SESFA**, Florida Single Audit Act — s. 215.97,
 F.S.), plus a basic tracker for general operating funds.
-Themed for the City of Panama City, Florida (Oct 1–Sep 30 fiscal year).
+Themed for the City of Pelican Shores, Florida (Oct 1–Sep 30 fiscal year).
 
 ## Quick start
 

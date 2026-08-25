@@ -34,7 +34,7 @@ DEMO_USERS = {
 
 # award_id -> (fy availability, departments that charge to it, typical txn size)
 AWARD_PROFILE = {
-    1:  ([1, 2, 3], [1],    (60000, 420000)),   # Harrison Ave - Public Works
+    1:  ([1, 2, 3], [1],    (60000, 420000)),   # Seagrass Ave - Public Works
     2:  ([2, 3],    [1],    (15000, 90000)),    # Bridge inspection
     3:  ([1, 2, 3], [5],    (80000, 380000)),   # Trolley fleet - Transit
     4:  ([1, 2, 3], [2],    (15000, 60000)),    # JAG - Police
@@ -170,8 +170,8 @@ def seed_documents(con):
     samples = [
         (1, "Award_Letter_FDOT-AR-2024-117.pdf", "award_letter",
          "Notice of Federal Award", [
-             "Recipient: City of Panama City, Florida",
-             "Award: Harrison Avenue Corridor Reconstruction",
+             "Recipient: City of Pelican Shores, Florida",
+             "Award: Seagrass Avenue Corridor Reconstruction",
              "Pass-through: Florida Department of Transportation",
              "ALN 20.205 - Highway Planning and Construction",
              "Original award amount: $8,500,000.00",
@@ -179,15 +179,15 @@ def seed_documents(con):
              "", "This is a generated demo document."]),
         (9, "FEMA_Obligation_Letter_4734-DR-FL.pdf", "award_letter",
          "FEMA Obligation Letter", [
-             "Recipient: City of Panama City, Florida",
+             "Recipient: City of Pelican Shores, Florida",
              "Disaster: FEMA-4734-DR-FL",
              "Program: Public Assistance (ALN 97.036)",
              "Obligated amount: $5,200,000.00",
              "", "This is a generated demo document."]),
         (6, "CDBG_Grant_Agreement_B-24-MC-12-0021.pdf", "award_letter",
          "CDBG Grant Agreement", [
-             "Recipient: City of Panama City, Florida",
-             "Award: Millville Neighborhood Revitalization",
+             "Recipient: City of Pelican Shores, Florida",
+             "Award: Osprey Point Neighborhood Revitalization",
              "ALN 14.218 - CDBG Entitlement Grants",
              "Original award amount: $3,100,000.00",
              "", "This is a generated demo document."]),

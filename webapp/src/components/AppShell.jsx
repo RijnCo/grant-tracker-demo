@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Search, SunMedium, Moon, LogOut, Plus, ReceiptText } from 'lucide-react'
+import { Search, SunMedium, Moon, LogOut, Plus, ReceiptText, CircleHelp } from 'lucide-react'
 import { useApp } from '../state/AppContext'
 import { DEMO } from '../lib/demo'
 import CommandPalette, { PAGES } from './CommandPalette'
+import Tour, { TOUR_DONE_KEY } from './Tour'
 import ExpenditureModal from './forms/ExpenditureModal'
 import AwardModal from './forms/AwardModal'
 
@@ -32,6 +33,14 @@ export default function AppShell() {
   const [paletteOpen, setPaletteOpen] = useState(false)
   const [expOpen, setExpOpen] = useState(false)
   const [awardOpen, setAwardOpen] = useState(false)
+  const [tourOpen, setTourOpen] = useState(false)
+
+  // first sign-in on this browser: walk through how the software works
+  useEffect(() => {
+    if (localStorage.getItem(TOUR_DONE_KEY)) return
+    const t = setTimeout(() => setTourOpen(true), 700)
+    return () => clearTimeout(t)
+  }, [])
 
   useEffect(() => {
     const onKey = (e) => {
@@ -56,7 +65,7 @@ export default function AppShell() {
         <div className="brand">
           <div className="logo-sun" aria-hidden="true" />
           <div className="b-text">
-            <div className="b-name">Panama City</div>
+            <div className="b-name">Pelican Shores</div>
             <div className="b-sub">Grant Operations</div>
           </div>
         </div>
@@ -66,6 +75,7 @@ export default function AppShell() {
             const Icon = p.icon
             return (
               <NavLink key={p.to} to={p.to} end={p.to === '/'}
+                data-tour={'nav' + (p.to === '/' ? '-overview' : p.to.replace('/', '-'))}
                 className={({ isActive }) => 'navitem' + (isActive ? ' active' : '')}>
                 <Icon />
                 <span>{p.label}</span>
@@ -90,32 +100,36 @@ export default function AppShell() {
       <div className="content">
         {DEMO && (
           <div className="demo-ribbon" role="note">
-            Static demo — fictional data for the City of Panama City grant tracker, read-only.
+            Static demo — fictional data for the City of Pelican Shores grant tracker, read-only.
             {' '}The full app adds sign-in, data entry, amendments, and uploads.
           </div>
         )}
         <div className="topbar">
           <div className="page-title">{title}</div>
           <div className="spacer" />
-          <span className="seg" role="group" aria-label="Fiscal year">
+          <span className="seg" role="group" aria-label="Fiscal year" data-tour="fy-filter">
             {fyOptions.map((v) => (
               <button key={v} aria-pressed={fy === v} onClick={() => setFy(v)}>
                 {v === 'ALL' ? 'All years' : v}
               </button>
             ))}
           </span>
-          <button className="btn ghost" onClick={() => setPaletteOpen(true)}>
+          <button className="btn ghost" onClick={() => setPaletteOpen(true)} data-tour="search">
             <Search /> Search <span className="kbd">Ctrl K</span>
+          </button>
+          <button className="btn ghost icon" title="Take the tour" aria-label="Take the tour"
+                  onClick={() => setTourOpen(true)}>
+            <CircleHelp />
           </button>
           <button className="btn ghost icon" title="Toggle theme" onClick={toggleTheme}>
             {theme === 'light' ? <Moon /> : <SunMedium />}
           </button>
           {canWrite && (
             <>
-              <button className="btn" onClick={() => setAwardOpen(true)}>
+              <button className="btn" onClick={() => setAwardOpen(true)} data-tour="new-award">
                 <Plus /> New award
               </button>
-              <button className="btn primary" onClick={() => setExpOpen(true)}>
+              <button className="btn primary" onClick={() => setExpOpen(true)} data-tour="record-exp">
                 <ReceiptText /> Record expenditure
               </button>
             </>
@@ -141,6 +155,7 @@ export default function AppShell() {
       <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
       <ExpenditureModal open={expOpen} onClose={() => setExpOpen(false)} />
       <AwardModal open={awardOpen} onClose={() => setAwardOpen(false)} />
+      <Tour open={tourOpen} onClose={() => setTourOpen(false)} />
     </div>
   )
 }
