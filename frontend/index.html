@@ -1,0 +1,1423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Panama City Grants — Federal Award Expenditures</title>
+<style>
+  .viz-root {
+    --page: #f7f4ec;
+    --surface-1: #fffef9;
+    --wash: rgba(19,27,26,0.045);
+    --text-primary: #131b1a;
+    --text-secondary: #4f5a56;
+    --text-muted: #8a908a;
+    --grid: #eae5d8;
+    --baseline: #cbc4b0;
+    --border: rgba(19,27,26,0.09);
+    --border-strong: rgba(19,27,26,0.18);
+    --series-1: #00879e;
+    --series-2: #e2603f;
+    --accent: #00879e;
+    --accent-ink: #ffffff;
+    --accent-tint: rgba(0,135,158,0.06);
+    --meter-track: #dcebee;
+    --area-wash: rgba(0,135,158,0.10);
+    --status-good: #0ca30c;
+    --status-warning: #b97a00;
+    --status-critical: #d03b3b;
+    --sun-a: #f2ae4e; --sun-b: #e8892f;
+    --shadow-1: 0 1px 2px rgba(19,27,26,0.05);
+    --shadow-2: 0 10px 32px rgba(19,27,26,0.10);
+  }
+  @media (prefers-color-scheme: dark) {
+    .viz-root:not(.theme-light) {
+      --page: #101617; --surface-1: #171f20; --wash: rgba(255,255,255,0.05);
+      --text-primary: #f2f5f3; --text-secondary: #b5c0bc; --text-muted: #79847f;
+      --grid: #232e2f; --baseline: #354345;
+      --border: rgba(255,255,255,0.08); --border-strong: rgba(255,255,255,0.18);
+      --series-1: #1a94a5; --series-2: #e56a47; --accent: #1a94a5;
+      --accent-tint: rgba(26,148,165,0.10);
+      --meter-track: #123c44; --area-wash: rgba(26,148,165,0.12);
+      --status-warning: #fab219;
+      --shadow-1: 0 1px 2px rgba(0,0,0,0.4); --shadow-2: 0 10px 32px rgba(0,0,0,0.5);
+    }
+  }
+  .viz-root.theme-dark {
+    --page: #101617; --surface-1: #171f20; --wash: rgba(255,255,255,0.05);
+    --text-primary: #f2f5f3; --text-secondary: #b5c0bc; --text-muted: #79847f;
+    --grid: #232e2f; --baseline: #354345;
+    --border: rgba(255,255,255,0.08); --border-strong: rgba(255,255,255,0.18);
+    --series-1: #1a94a5; --series-2: #e56a47; --accent: #1a94a5;
+    --accent-tint: rgba(26,148,165,0.10);
+    --meter-track: #123c44; --area-wash: rgba(26,148,165,0.12);
+    --status-warning: #fab219;
+    --shadow-1: 0 1px 2px rgba(0,0,0,0.4); --shadow-2: 0 10px 32px rgba(0,0,0,0.5);
+  }
+
+  * { box-sizing: border-box; margin: 0; }
+  [hidden] { display: none !important; }
+  body.viz-root {
+    background: var(--page); color: var(--text-primary);
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 14px; letter-spacing: -0.008em; padding-bottom: 72px;
+    -webkit-font-smoothing: antialiased;
+  }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+
+  nav {
+    height: 54px; display: flex; align-items: center; gap: 10px;
+    padding: 0 clamp(16px, 4vw, 40px);
+    background: var(--surface-1); border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 20;
+  }
+  .logo-sun { width: 20px; height: 20px; border-radius: 50%; flex: none;
+    background: radial-gradient(circle at 35% 30%, var(--sun-a), var(--sun-b));
+    box-shadow: inset 0 0 0 1px rgba(19,27,26,0.08); }
+  .wordmark { font-size: 14px; font-weight: 650; letter-spacing: -0.01em; }
+  .wordmark span { color: var(--text-muted); font-weight: 450; }
+  nav .nav-spacer { flex: 1; }
+  .userchip { color: var(--text-muted); font-size: 12.5px; }
+  .userchip b { color: var(--text-secondary); font-weight: 550; }
+
+  .hero {
+    padding: 30px clamp(16px, 4vw, 40px) 24px;
+    display: flex; align-items: flex-end; gap: 24px; flex-wrap: wrap;
+    background:
+      radial-gradient(640px 220px at 85% -40%, var(--accent-tint), transparent),
+      var(--page);
+    border-bottom: 1px solid var(--border);
+  }
+  .hero .eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--text-muted); }
+  .hero .hero-value { font-size: 42px; font-weight: 650; letter-spacing: -0.03em;
+    line-height: 1.05; margin-top: 6px; }
+  .hero .hero-sub { color: var(--text-secondary); font-size: 13px; margin-top: 6px; }
+  .hero .hero-meta { color: var(--text-muted); font-size: 12px; margin-top: 3px; }
+  .hero .hero-actions { margin-left: auto; display: flex; gap: 8px; }
+
+  .btn { appearance: none; font: inherit; font-size: 13px; font-weight: 600;
+    letter-spacing: -0.005em; cursor: pointer; height: 32px; padding: 0 14px;
+    border-radius: 7px; border: 1px solid var(--border-strong);
+    background: var(--surface-1); color: var(--text-primary);
+    transition: background 120ms ease, border-color 120ms ease, transform 60ms ease;
+    display: inline-flex; align-items: center; gap: 7px; }
+  .btn:hover { background: var(--wash); }
+  .btn:active { transform: translateY(0.5px); }
+  .btn.primary { background: var(--accent); color: var(--accent-ink);
+    border-color: transparent; box-shadow: var(--shadow-1); }
+  .btn.primary:hover { filter: brightness(1.07); background: var(--accent); }
+  .btn.ghost { border-color: transparent; color: var(--text-secondary); }
+  .btn.ghost:hover { color: var(--text-primary); background: var(--wash); }
+  .btn.small { height: 27px; padding: 0 10px; font-size: 12px; }
+
+  main { padding: 0 clamp(16px, 4vw, 40px); max-width: 1440px; margin: 0 auto; }
+  .toolbar { display: flex; align-items: center; gap: 12px; margin: 18px 0 14px; flex-wrap: wrap; }
+  .toolbar .label { color: var(--text-muted); font-size: 12px; }
+  .seg { display: inline-flex; background: var(--wash); border-radius: 8px; padding: 2px; }
+  .seg button { appearance: none; border: 1px solid transparent; background: transparent;
+    color: var(--text-secondary); font: inherit; font-size: 12.5px; font-weight: 500;
+    padding: 5px 12px; cursor: pointer; border-radius: 6px;
+    transition: color 120ms ease, background 120ms ease; }
+  .seg button:hover { color: var(--text-primary); }
+  .seg button[aria-pressed="true"] { background: var(--surface-1); color: var(--text-primary);
+    font-weight: 600; border-color: var(--border); box-shadow: var(--shadow-1); }
+  .select { font: inherit; font-size: 12.5px; height: 30px; padding: 0 8px;
+    border: 1px solid var(--border-strong); border-radius: 7px;
+    background: var(--surface-1); color: var(--text-primary); max-width: 340px; }
+  .select:focus { outline: none; border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-tint); }
+
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    border: 1px solid var(--border); border-radius: 10px; background: var(--surface-1);
+    margin-bottom: 16px; overflow: hidden; }
+  .stat { padding: 14px 18px; border-left: 1px solid var(--border); }
+  .stat:first-child { border-left: 0; }
+  .stat .s-label { font-size: 11px; font-weight: 600; letter-spacing: 0.07em;
+    text-transform: uppercase; color: var(--text-muted); }
+  .stat .s-value { font-size: 21px; font-weight: 650; letter-spacing: -0.02em; margin-top: 5px; }
+  .stat .s-note { color: var(--text-muted); font-size: 12px; margin-top: 2px; }
+
+  .grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 14px; }
+  .card { background: var(--surface-1); border: 1px solid var(--border);
+    border-radius: 10px; padding: 18px 20px; min-width: 0;
+    transition: border-color 150ms ease; }
+  .card:hover { border-color: var(--border-strong); }
+  .card .eyebrow { font-size: 10.5px; font-weight: 600; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--text-muted); }
+  .card h2 { font-size: 14px; font-weight: 650; letter-spacing: -0.01em; margin-top: 3px; }
+  .card .c-sub { color: var(--text-muted); font-size: 12px; margin-top: 2px; margin-bottom: 14px; }
+  .span-7 { grid-column: span 7; } .span-5 { grid-column: span 5; } .span-12 { grid-column: span 12; }
+  @media (max-width: 980px) { .span-7, .span-5 { grid-column: span 12; } }
+
+  .legend { display: flex; gap: 16px; margin: 0 0 10px; font-size: 12px; color: var(--text-secondary); }
+  .legend .key { display: inline-flex; align-items: center; gap: 6px; }
+  .legend .swatch { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+
+  svg { display: block; width: 100%; }
+  svg text { font-family: inherit; }
+  .axis-label { fill: var(--text-muted); font-size: 11px; }
+  .bar-name { fill: var(--text-secondary); font-size: 12px; }
+  .bar-value { fill: var(--text-secondary); font-size: 11.5px; }
+  .gridline { stroke: var(--grid); stroke-width: 1; }
+  .baseline { stroke: var(--baseline); stroke-width: 1; }
+  .hit { fill: transparent; cursor: default; }
+  .bar-seg { transition: filter 100ms ease; }
+  .bar-seg:hover { filter: brightness(1.1); }
+
+  .tooltip { position: fixed; z-index: 60; pointer-events: none;
+    background: var(--surface-1); border: 1px solid var(--border); border-radius: 8px;
+    padding: 9px 12px; font-size: 12.5px; box-shadow: var(--shadow-2);
+    max-width: 320px; display: none; }
+  .tooltip .tt-title { color: var(--text-muted); font-size: 11.5px; margin-bottom: 5px; }
+  .tooltip .tt-row { display: flex; align-items: center; gap: 7px; margin-top: 2px; }
+  .tooltip .tt-row .linekey { width: 12px; height: 2.5px; flex: none; }
+  .tooltip .tt-row .v { font-weight: 650; font-variant-numeric: tabular-nums; }
+  .tooltip .tt-row .n { color: var(--text-secondary); }
+
+  /* ---------- tables ---------- */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; color: var(--text-muted); font-weight: 600; font-size: 11px;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 6px 10px; border-bottom: 1px solid var(--baseline);
+    white-space: nowrap; }
+  th.sortable { cursor: pointer; user-select: none; }
+  th.sortable:hover { color: var(--text-primary); }
+  th .arrow { font-size: 9px; margin-left: 3px; }
+  td { padding: 8px 10px; border-bottom: 1px solid var(--grid); }
+  tbody tr { transition: background 100ms ease; }
+  tbody tr:hover { background: var(--wash); }
+  tbody tr.clickable { cursor: pointer; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  td.strong { font-weight: 650; }
+  tr:last-child td { border-bottom: 0; }
+  tfoot td { border-top: 2px solid var(--baseline); border-bottom: 0;
+    font-weight: 650; font-variant-numeric: tabular-nums; }
+  .cell-sub { color: var(--text-muted); font-size: 11.5px; margin-top: 1px; }
+  .cellbar { width: 90px; height: 5px; border-radius: 3px; background: var(--meter-track);
+    display: inline-block; vertical-align: middle; overflow: hidden; }
+  .cellbar i { display: block; height: 100%; border-radius: 3px; }
+  .pctcell { display: flex; align-items: center; gap: 8px; justify-content: flex-end; }
+  .act { display: inline-flex; align-items: center; gap: 6px; font-size: 12px;
+    color: var(--text-secondary); }
+  .act .dot { width: 7px; height: 7px; border-radius: 50%; }
+  .neg { color: var(--status-critical); }
+
+  .docs-chip { display: inline-flex; align-items: center; gap: 4px; cursor: pointer;
+    color: var(--text-secondary); background: none; border: none; font: inherit;
+    font-size: 11.5px; padding: 2px 6px; border-radius: 5px;
+    transition: background 120ms ease; white-space: nowrap; }
+  .docs-chip:hover { background: var(--wash); color: var(--text-primary); }
+  .docs-chip svg { width: 11px; height: 11px; stroke: currentColor; }
+
+  details.notes { margin-top: 12px; }
+  details.notes summary { cursor: pointer; color: var(--text-secondary); font-size: 12.5px; }
+  details.notes .note { margin: 10px 0; }
+  details.notes .note b { font-size: 13px; }
+  details.notes .note p { color: var(--text-secondary); font-size: 12.5px; margin-top: 3px; max-width: 76ch; }
+
+  .overlay { position: fixed; inset: 0; background: rgba(10,16,17,0.5);
+    backdrop-filter: blur(2px); display: none; align-items: center;
+    justify-content: center; z-index: 40; }
+  .overlay.open { display: flex; }
+  .modal { background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px;
+    width: min(460px, 92vw); padding: 24px 26px; max-height: 90vh; overflow: auto;
+    box-shadow: var(--shadow-2); }
+  .modal h3 { font-size: 16px; font-weight: 650; letter-spacing: -0.01em; }
+  .modal .m-sub { color: var(--text-muted); font-size: 12.5px; margin-top: 3px; margin-bottom: 12px; }
+  .modal label { display: block; font-size: 12px; font-weight: 550;
+    color: var(--text-secondary); margin: 12px 0 5px; }
+  .modal input, .modal select, .modal textarea {
+    width: 100%; font: inherit; font-size: 13.5px; height: 36px; padding: 0 10px;
+    border: 1px solid var(--border-strong); border-radius: 8px;
+    background: var(--surface-1); color: var(--text-primary);
+    transition: border-color 120ms ease, box-shadow 120ms ease; }
+  .modal input:focus, .modal select:focus {
+    outline: none; border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-tint); }
+  .modal .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .modal .actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 18px; }
+  .modal .err { color: var(--status-critical); font-size: 12.5px; margin-top: 10px; min-height: 16px; }
+  .modal .checkline { display: flex; align-items: center; gap: 8px; margin-top: 12px;
+    font-size: 12.5px; color: var(--text-secondary); }
+  .modal .checkline input { width: auto; height: auto; }
+
+  .login-brand { text-align: center; margin-bottom: 16px; }
+  .login-brand .logo-sun { width: 36px; height: 36px; margin: 0 auto 12px; }
+  .login-brand .lb-city { font-weight: 650; font-size: 16px; letter-spacing: -0.01em; }
+  .login-brand .lb-sub { color: var(--text-muted); font-size: 12.5px; margin-top: 2px; }
+  .demo-creds { margin-top: 16px; padding: 10px 12px; background: var(--wash);
+    border-radius: 8px; font-size: 11.5px; color: var(--text-secondary); line-height: 1.7; }
+  .demo-creds code { font-size: 11px; background: var(--surface-1);
+    border: 1px solid var(--border); border-radius: 4px; padding: 0 4px; }
+
+  .doc-row { display: flex; align-items: center; gap: 10px; padding: 9px 0;
+    border-top: 1px solid var(--grid); }
+  .doc-row:first-child { border-top: 0; }
+  .doc-ico { width: 30px; height: 30px; border-radius: 7px; flex: none;
+    background: var(--accent-tint); display: flex; align-items: center; justify-content: center; }
+  .doc-ico svg { width: 14px; height: 14px; stroke: var(--accent); }
+  .doc-main { min-width: 0; flex: 1; }
+  .doc-main a { color: var(--text-primary); font-size: 13px; font-weight: 550;
+    text-decoration: none; display: block; overflow: hidden; text-overflow: ellipsis;
+    white-space: nowrap; }
+  .doc-main a:hover { color: var(--accent); text-decoration: underline; }
+  .doc-meta { color: var(--text-muted); font-size: 11.5px; margin-top: 1px; }
+  .doc-upload { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--grid); }
+
+  .toast { position: fixed; right: 24px; bottom: 24px; z-index: 70;
+    background: var(--surface-1); color: var(--text-primary);
+    border: 1px solid var(--border); border-radius: 10px; padding: 11px 16px;
+    font-size: 13px; box-shadow: var(--shadow-2); display: none; max-width: 480px;
+    align-items: flex-start; gap: 9px; }
+  .toast.show { display: flex; animation: toast-in 180ms ease-out; }
+  @keyframes toast-in { from { opacity: 0; transform: translateY(8px); }
+                        to { opacity: 1; transform: none; } }
+  .toast .t-dot { width: 8px; height: 8px; border-radius: 50%; flex: none; margin-top: 5px;
+    background: var(--status-good); }
+  .toast.error .t-dot { background: var(--status-critical); }
+</style>
+</head>
+<body class="viz-root">
+
+<nav>
+  <div class="logo-sun" aria-hidden="true"></div>
+  <div class="wordmark">Panama City <span>· Grant Operations</span></div>
+  <div class="nav-spacer"></div>
+  <span class="userchip" id="user-chip"></span>
+  <button class="btn ghost small" id="btn-logout" hidden>Sign out</button>
+</nav>
+
+<div class="hero">
+  <div>
+    <div class="eyebrow" id="hero-eyebrow">Federal award expenditures · SEFA</div>
+    <div class="hero-value" id="hero-value">—</div>
+    <div class="hero-sub" id="hero-sub"></div>
+    <div class="hero-meta" id="gen-meta"></div>
+  </div>
+  <div class="hero-actions">
+    <button class="btn" id="btn-add-award" hidden>New grant award</button>
+    <button class="btn primary" id="btn-add-exp" hidden>Record expenditure</button>
+  </div>
+</div>
+
+<main>
+<div class="toolbar" role="group" aria-label="Filters">
+  <span class="label">Fiscal year</span>
+  <span class="seg" id="fy-seg"></span>
+  <span class="label">Grant</span>
+  <select class="select" id="grant-filter" aria-label="Filter by grant"></select>
+</div>
+
+<div class="stats" id="stats"></div>
+
+<div class="grid">
+  <div class="card span-12">
+    <div class="eyebrow">Budget authority</div>
+    <h2>Grant balances</h2>
+    <div class="c-sub">Remaining = original award − cumulative spend · click a row to see that grant’s full history</div>
+    <div style="overflow-x:auto"><table id="balances-table"></table></div>
+  </div>
+
+  <div class="card span-12">
+    <div class="eyebrow">Transaction ledger</div>
+    <h2>Expenditure register</h2>
+    <div class="c-sub" id="register-sub">Every recorded expenditure in scope · click a column header to sort</div>
+    <div style="overflow-x:auto"><table id="register-table"></table></div>
+  </div>
+
+  <div class="card span-7">
+    <div class="eyebrow">Schedule of expenditures</div>
+    <h2>By federal program</h2>
+    <div class="c-sub">Amount retained vs. passed to subrecipients</div>
+    <div class="legend">
+      <span class="key"><span class="swatch" style="background:var(--series-1)"></span>Retained</span>
+      <span class="key"><span class="swatch" style="background:var(--series-2)"></span>Passed to subrecipients</span>
+    </div>
+    <div id="chart-programs"></div>
+  </div>
+
+  <div class="card span-5">
+    <div class="eyebrow">Internal allocation</div>
+    <h2>Spending by department</h2>
+    <div class="c-sub">From the trigger-maintained rollup</div>
+    <div id="chart-departments"></div>
+  </div>
+
+  <div class="card span-12">
+    <div class="eyebrow">Cash flow</div>
+    <h2>Monthly expenditure trend</h2>
+    <div class="c-sub">Net of adjustments — refunds post as negatives</div>
+    <div id="chart-monthly"></div>
+  </div>
+
+  <div class="card span-12">
+    <div class="eyebrow">Reporting</div>
+    <h2>SEFA detail</h2>
+    <div class="c-sub">Table view — every charted value, exactly</div>
+    <div style="overflow-x:auto"><table id="sefa-table"></table></div>
+    <details class="notes"><summary>Notes to the SEFA</summary><div id="sefa-notes"></div></details>
+  </div>
+
+  <div class="card span-7">
+    <div class="eyebrow">2 CFR 200.334</div>
+    <h2>Audit trail</h2>
+    <div class="c-sub">Append-only change log</div>
+    <div style="overflow-x:auto"><table id="audit-table"></table></div>
+  </div>
+
+  <div class="card span-5">
+    <div class="eyebrow">2 CFR 200.510(b)(5)</div>
+    <h2>Loan balances outstanding</h2>
+    <div class="c-sub">Balance at fiscal year end</div>
+    <div style="overflow-x:auto"><table id="loan-table"></table></div>
+  </div>
+</div>
+</main>
+
+<div class="tooltip" id="tooltip" role="status"></div>
+<div class="toast" id="toast" role="status"><span class="t-dot"></span><span id="toast-msg"></span></div>
+
+<!-- login -->
+<div class="overlay" id="login-overlay">
+  <form class="modal" id="login-form" style="width:min(380px,92vw)">
+    <div class="login-brand">
+      <div class="logo-sun"></div>
+      <div class="lb-city">Panama City Grant Operations</div>
+      <div class="lb-sub">Federal award expenditure tracking · City of Panama City, Florida</div>
+    </div>
+    <label for="login-user">Username</label>
+    <input id="login-user" autocomplete="username" required>
+    <label for="login-pass">Password</label>
+    <input id="login-pass" type="password" autocomplete="current-password" required>
+    <div class="err" id="login-err"></div>
+    <div class="actions"><button class="btn primary" type="submit" style="width:100%;justify-content:center">Sign in</button></div>
+    <div class="demo-creds">Demo accounts<br>
+      <code>alopez / Sunshine!2026</code> grant manager ·
+      <code>jrivera / SandDollar!26</code> finance ·
+      <code>viewer / Welcome!2026</code> read-only</div>
+  </form>
+</div>
+
+<!-- record expenditure -->
+<div class="overlay" id="exp-overlay">
+  <form class="modal" id="exp-form">
+    <h3>Record expenditure</h3>
+    <div class="m-sub">Posts through the database triggers — rollup, audit log, and over-spend control apply.</div>
+    <label for="exp-award">Grant award</label>
+    <select id="exp-award" required></select>
+    <div class="row2">
+      <div><label for="exp-amount">Amount ($)</label>
+        <input id="exp-amount" type="number" step="0.01" required></div>
+      <div><label for="exp-date">Transaction date</label>
+        <input id="exp-date" type="date" required></div>
+    </div>
+    <label for="exp-dept">Department</label>
+    <select id="exp-dept" required></select>
+    <label for="exp-desc">Description</label>
+    <input id="exp-desc" placeholder="Contractor progress payment…">
+    <label for="exp-doc">Document reference</label>
+    <input id="exp-doc" placeholder="INV-2026-01234">
+    <div class="row2">
+      <div><label for="exp-sub">Subrecipient (optional)</label>
+        <select id="exp-sub"><option value="">— none —</option></select></div>
+      <div><label for="exp-subamt">Amount to subrecipient ($)</label>
+        <input id="exp-subamt" type="number" step="0.01" value="0"></div>
+    </div>
+    <div class="err" id="exp-err"></div>
+    <div class="actions">
+      <button class="btn ghost" type="button" data-close>Cancel</button>
+      <button class="btn primary" type="submit">Save expenditure</button>
+    </div>
+  </form>
+</div>
+
+<!-- new award -->
+<div class="overlay" id="award-overlay">
+  <form class="modal" id="award-form">
+    <h3>New grant award</h3>
+    <div class="m-sub">Sets up the award and its original amount; spending is tracked against it.</div>
+    <label for="aw-program">Federal program (ALN)</label>
+    <select id="aw-program" required></select>
+    <div id="new-program-fields" hidden>
+      <div class="row2">
+        <div><label for="np-aln">New program ALN</label>
+          <input id="np-aln" placeholder="20.205"></div>
+        <div><label for="np-title">Program title</label>
+          <input id="np-title" placeholder="Highway Planning and Construction"></div>
+      </div>
+      <label for="np-agency">Federal agency</label>
+      <select id="np-agency"></select>
+      <div id="np-new-agency-wrap" hidden>
+        <label for="np-new-agency">New agency name</label>
+        <input id="np-new-agency" placeholder="U.S. Department of …">
+      </div>
+      <label for="np-cluster">Cluster name (optional)</label>
+      <input id="np-cluster" placeholder="Highway Planning and Construction Cluster">
+    </div>
+    <label for="aw-name">Award / project name</label>
+    <input id="aw-name" required placeholder="Beach Drive Stormwater Improvements">
+    <div class="row2">
+      <div><label for="aw-fain">FAIN / award number</label>
+        <input id="aw-fain" placeholder="B-26-MC-12-0021"></div>
+      <div><label for="aw-amount">Original award amount ($)</label>
+        <input id="aw-amount" type="number" step="0.01" min="1" required></div>
+    </div>
+    <label for="aw-pt">Funding path</label>
+    <select id="aw-pt"><option value="">Direct federal award</option></select>
+    <div class="row2">
+      <div><label for="aw-start">Period start</label><input id="aw-start" type="date"></div>
+      <div><label for="aw-end">Period end</label><input id="aw-end" type="date"></div>
+    </div>
+    <div class="checkline"><input type="checkbox" id="aw-deminimis">
+      <label for="aw-deminimis" style="margin:0">10% de minimis indirect rate elected</label></div>
+    <div class="err" id="award-err"></div>
+    <div class="actions">
+      <button class="btn ghost" type="button" data-close>Cancel</button>
+      <button class="btn primary" type="submit">Create award</button>
+    </div>
+  </form>
+</div>
+
+<!-- documents -->
+<div class="overlay" id="docs-overlay">
+  <div class="modal">
+    <h3 id="docs-title">Documents</h3>
+    <div class="m-sub" id="docs-sub"></div>
+    <div id="docs-list"></div>
+    <div class="doc-upload" id="docs-upload" hidden>
+      <input type="file" id="doc-file" accept="application/pdf" hidden>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn small" type="button" id="btn-upload-pdf">Upload PDF</button>
+        <button class="btn small ghost" type="button" id="btn-add-link">Add external link</button>
+      </div>
+      <div id="link-form" hidden style="margin-top:10px">
+        <label for="link-name">Link name</label>
+        <input id="link-name" placeholder="Grant agreement (state portal)">
+        <label for="link-url">URL</label>
+        <input id="link-url" placeholder="https://…">
+        <div class="actions" style="margin-top:10px">
+          <button class="btn small ghost" type="button" id="link-cancel">Cancel</button>
+          <button class="btn small primary" type="button" id="link-save">Save link</button>
+        </div>
+      </div>
+      <div class="err" id="docs-err"></div>
+    </div>
+    <div class="actions"><button class="btn ghost" type="button" data-close>Close</button></div>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script>
+"use strict";
+const LIVE = location.protocol.startsWith("http");
+const SVGNS = "http://www.w3.org/2000/svg";
+let D = null, LOOKUPS = null, currentFY = "ALL", currentAward = "ALL", docsAwardId = null;
+let regSort = {key: "transaction_date", dir: -1};
+
+const themeParam = new URLSearchParams(location.search).get("theme");
+if (themeParam === "light" || themeParam === "dark")
+  document.body.classList.add("theme-" + themeParam);
+
+const fmtFull = n => "$" + Number(n).toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2});
+const fmtWhole = n => "$" + Math.round(Number(n)).toLocaleString("en-US");
+const fmtCompact = n => {
+  const a = Math.abs(n), s = n < 0 ? "-" : "";
+  if (a >= 1e6) return s + "$" + (a/1e6).toFixed(a >= 1e7 ? 0 : 1) + "M";
+  if (a >= 1e3) return s + "$" + Math.round(a/1e3) + "K";
+  return s + "$" + Math.round(a);
+};
+const cssVar = name => getComputedStyle(document.body).getPropertyValue(name).trim();
+
+function el(tag, attrs, parent) {
+  const e = document.createElementNS(SVGNS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function div(cls, parent, text) {
+  const e = document.createElement("div");
+  if (cls) e.className = cls;
+  if (text !== undefined) e.textContent = text;
+  if (parent) parent.appendChild(e);
+  return e;
+}
+
+/* ---------- tooltip ---------- */
+const tt = document.getElementById("tooltip");
+function showTooltip(evt, title, rowsArr) {
+  tt.textContent = "";
+  div("tt-title", tt, title);
+  for (const r of rowsArr) {
+    const row = div("tt-row", tt);
+    const key = div("linekey", row); key.style.background = r.color || "transparent";
+    div("v", row, r.value);
+    div("n", row, r.name);
+  }
+  tt.style.display = "block";
+  moveTooltip(evt);
+}
+function moveTooltip(evt) {
+  const pad = 14, w = tt.offsetWidth, h = tt.offsetHeight;
+  let x = evt.clientX + pad, y = evt.clientY + pad;
+  if (x + w > innerWidth - 8) x = evt.clientX - w - pad;
+  if (y + h > innerHeight - 8) y = evt.clientY - h - pad;
+  tt.style.left = x + "px"; tt.style.top = y + "px";
+}
+function hideTooltip() { tt.style.display = "none"; }
+
+/* ---------- toast ---------- */
+let toastTimer = null;
+function toast(msg, isError) {
+  const t = document.getElementById("toast");
+  document.getElementById("toast-msg").textContent = msg;
+  t.classList.toggle("error", !!isError);
+  t.classList.remove("show"); void t.offsetWidth; t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 6000);
+}
+
+/* ---------- filtering ---------- */
+function expFiltered() {
+  let rows = D.expenditures || [];
+  if (currentFY !== "ALL") rows = rows.filter(r => r.fy_label === currentFY);
+  if (currentAward !== "ALL") rows = rows.filter(r => r.award_id === currentAward);
+  return rows;
+}
+function scopeLabel() {
+  const fy = currentFY === "ALL" ? "all fiscal years" : currentFY;
+  if (currentAward === "ALL") return fy;
+  const a = D.awards.find(a => a.award_id === currentAward);
+  return (a ? a.award_name : "grant") + " · " + fy;
+}
+
+/* ---------- aggregation from the ledger ---------- */
+function aggSefa(exps) {
+  const m = new Map();
+  for (const r of exps) {
+    const k = r.aln + "|" + r.program_title;
+    const cur = m.get(k) || {aln: r.aln, program_title: r.program_title,
+      agency_name: r.agency_name, cluster_name: r.cluster_name, total: 0, to_sub: 0};
+    cur.total += r.amount; cur.to_sub += r.to_sub;
+    m.set(k, cur);
+  }
+  return [...m.values()].sort((a, b) => b.total - a.total);
+}
+function aggDepts(exps) {
+  const m = new Map();
+  for (const r of exps) {
+    const name = r.department_name || "Unassigned";
+    const cur = m.get(name) || {department_name: name, total: 0, txns: 0};
+    cur.total += r.amount; cur.txns += 1;
+    m.set(name, cur);
+  }
+  return [...m.values()].sort((a, b) => b.total - a.total);
+}
+function aggMonthly(exps) {
+  const m = new Map();
+  for (const r of exps) {
+    const month = r.transaction_date.slice(0, 7);
+    const cur = m.get(month) || {month, fy_label: r.fy_label, total: 0};
+    cur.total += r.amount;
+    m.set(month, cur);
+  }
+  return [...m.values()].sort((a, b) => a.month < b.month ? -1 : 1);
+}
+
+/* ---------- bar with rounded data-end, square baseline ---------- */
+function hbar(x, y, w, h, color, parent) {
+  const r = Math.min(4, w);
+  return el("path", {
+    class: "bar-seg", fill: color,
+    d: `M${x},${y} h${Math.max(0, w - r)} a${r},${r} 0 0 1 ${r},${r} v${h - 2*r} a${r},${r} 0 0 1 -${r},${r} h-${Math.max(0, w - r)} z`
+  }, parent);
+}
+
+/* ---------- charts ---------- */
+function renderPrograms(rows) {
+  const host = document.getElementById("chart-programs");
+  host.textContent = "";
+  if (!rows.length) { div("c-sub", host, "No data in this scope."); return; }
+  const nameW = 210, valW = 62, rowH = 30, barH = 18, gap = 2;
+  const W = Math.max(560, host.clientWidth || 560);
+  const plotW = W - nameW - valW - 8;
+  const H = rows.length * rowH + 24;
+  const max = Math.max(...rows.map(r => r.total));
+  const svg = el("svg", {viewBox: `0 0 ${W} ${H}`, height: H});
+  host.appendChild(svg);
+
+  for (let i = 1; i <= 4; i++) {
+    const gx = nameW + plotW * i / 4;
+    el("line", {class: "gridline", x1: gx, y1: 0, x2: gx, y2: H - 20}, svg);
+    const lbl = el("text", {class: "axis-label", x: gx, y: H - 6, "text-anchor": "middle"}, svg);
+    lbl.textContent = fmtCompact(max * i / 4);
+  }
+  el("line", {class: "baseline", x1: nameW, y1: 0, x2: nameW, y2: H - 20}, svg);
+
+  rows.forEach((r, i) => {
+    const y = i * rowH + (rowH - barH) / 2;
+    const name = el("text", {class: "bar-name", x: nameW - 8, y: y + barH - 5, "text-anchor": "end"}, svg);
+    name.textContent = r.aln + "  " + (r.program_title.length > 24 ? r.program_title.slice(0, 23) + "…" : r.program_title);
+
+    const retained = r.total - r.to_sub;
+    const wRet = plotW * retained / max;
+    const wSub = plotW * r.to_sub / max;
+    if (wRet > 0.5) {
+      if (wSub > 0.5) {
+        el("rect", {class: "bar-seg", fill: cssVar("--series-1"), x: nameW, y, width: Math.max(0, wRet - gap), height: barH}, svg);
+      } else {
+        hbar(nameW, y, wRet, barH, cssVar("--series-1"), svg);
+      }
+    }
+    if (wSub > 0.5) hbar(nameW + wRet, y, wSub, barH, cssVar("--series-2"), svg);
+
+    const val = el("text", {class: "bar-value", x: nameW + wRet + wSub + 6, y: y + barH - 5}, svg);
+    val.textContent = fmtCompact(r.total);
+
+    const hit = el("rect", {class: "hit", x: 0, y: i * rowH, width: W, height: rowH, tabindex: 0}, svg);
+    const onmove = evt => showTooltip(evt, r.aln + " — " + r.program_title + (r.cluster_name ? " · " + r.cluster_name : ""), [
+      {color: cssVar("--series-1"), value: fmtFull(retained), name: "Retained"},
+      {color: cssVar("--series-2"), value: fmtFull(r.to_sub), name: "Passed to subrecipients"},
+      {color: "transparent", value: fmtFull(r.total), name: "Total expenditures"},
+    ]);
+    hit.addEventListener("pointermove", onmove);
+    hit.addEventListener("focus", e => onmove({clientX: W/2, clientY: e.target.getBoundingClientRect().top}));
+    hit.addEventListener("pointerleave", hideTooltip);
+    hit.addEventListener("blur", hideTooltip);
+  });
+}
+
+function renderDepartments(rows) {
+  const host = document.getElementById("chart-departments");
+  host.textContent = "";
+  if (!rows.length) { div("c-sub", host, "No data in this scope."); return; }
+  const nameW = 158, valW = 62, rowH = 32, barH = 18;
+  const W = Math.max(380, host.clientWidth || 380);
+  const plotW = W - nameW - valW - 8;
+  const H = rows.length * rowH + 24;
+  const max = Math.max(...rows.map(r => r.total));
+  const svg = el("svg", {viewBox: `0 0 ${W} ${H}`, height: H});
+  host.appendChild(svg);
+
+  for (let i = 1; i <= 3; i++) {
+    const gx = nameW + plotW * i / 3;
+    el("line", {class: "gridline", x1: gx, y1: 0, x2: gx, y2: H - 20}, svg);
+    const lbl = el("text", {class: "axis-label", x: gx, y: H - 6, "text-anchor": "middle"}, svg);
+    lbl.textContent = fmtCompact(max * i / 3);
+  }
+  el("line", {class: "baseline", x1: nameW, y1: 0, x2: nameW, y2: H - 20}, svg);
+
+  rows.forEach((r, i) => {
+    const y = i * rowH + (rowH - barH) / 2;
+    const name = el("text", {class: "bar-name", x: nameW - 8, y: y + barH - 5, "text-anchor": "end"}, svg);
+    name.textContent = r.department_name;
+    const w = plotW * r.total / max;
+    hbar(nameW, y, w, barH, cssVar("--series-1"), svg);
+    const val = el("text", {class: "bar-value", x: nameW + w + 6, y: y + barH - 5}, svg);
+    val.textContent = fmtCompact(r.total);
+
+    const hit = el("rect", {class: "hit", x: 0, y: i * rowH, width: W, height: rowH, tabindex: 0}, svg);
+    const onmove = evt => showTooltip(evt, r.department_name, [
+      {color: cssVar("--series-1"), value: fmtFull(r.total), name: "Total spent"},
+      {color: "transparent", value: String(r.txns), name: "Transactions"},
+    ]);
+    hit.addEventListener("pointermove", onmove);
+    hit.addEventListener("focus", e => onmove({clientX: W/2, clientY: e.target.getBoundingClientRect().top}));
+    hit.addEventListener("pointerleave", hideTooltip);
+    hit.addEventListener("blur", hideTooltip);
+  });
+}
+
+function renderMonthly(rows) {
+  const host = document.getElementById("chart-monthly");
+  host.textContent = "";
+  if (rows.length < 2) { div("c-sub", host, "Not enough data for a trend."); return; }
+  const W = Math.max(560, host.clientWidth || 560), H = 240;
+  const padL = 56, padR = 16, padT = 12, padB = 28;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+  const max = Math.max(...rows.map(r => r.total));
+  const niceMax = Math.max(1, Math.ceil(max / 250000)) * 250000;
+  const x = i => padL + plotW * i / (rows.length - 1);
+  const y = v => padT + plotH * (1 - v / niceMax);
+  const svg = el("svg", {viewBox: `0 0 ${W} ${H}`, height: H}, host);
+
+  for (let i = 0; i <= 4; i++) {
+    const gy = padT + plotH * i / 4;
+    el("line", {class: "gridline", x1: padL, y1: gy, x2: W - padR, y2: gy}, svg);
+    const lbl = el("text", {class: "axis-label", x: padL - 8, y: gy + 4, "text-anchor": "end"}, svg);
+    lbl.textContent = fmtCompact(niceMax * (4 - i) / 4);
+  }
+  el("line", {class: "baseline", x1: padL, y1: padT + plotH, x2: W - padR, y2: padT + plotH}, svg);
+
+  const step = Math.ceil(rows.length / 9);
+  rows.forEach((r, i) => {
+    if (i === rows.length - 1 || (i % step === 0 && rows.length - 1 - i >= step * 0.7)) {
+      const lbl = el("text", {class: "axis-label", x: x(i), y: H - 8,
+        "text-anchor": i === rows.length - 1 ? "end" : "middle"}, svg);
+      lbl.textContent = r.month;
+    }
+  });
+
+  const pts = rows.map((r, i) => [x(i), y(Math.max(0, r.total))]);
+  el("path", {fill: cssVar("--area-wash"), stroke: "none",
+    d: "M" + pts.map(p => p.join(",")).join(" L") + ` L${pts[pts.length-1][0]},${padT+plotH} L${pts[0][0]},${padT+plotH} Z`}, svg);
+  el("path", {fill: "none", stroke: cssVar("--series-1"), "stroke-width": 2,
+    "stroke-linejoin": "round", "stroke-linecap": "round",
+    d: "M" + pts.map(p => p.join(",")).join(" L")}, svg);
+
+  const cross = el("line", {stroke: cssVar("--baseline"), "stroke-width": 1,
+    y1: padT, y2: padT + plotH, visibility: "hidden"}, svg);
+  const dot = el("circle", {r: 4.5, fill: cssVar("--series-1"),
+    stroke: cssVar("--surface-1"), "stroke-width": 2, visibility: "hidden"}, svg);
+  el("circle", {r: 4.5, fill: cssVar("--series-1"), stroke: cssVar("--surface-1"),
+    "stroke-width": 2, cx: pts[pts.length-1][0], cy: pts[pts.length-1][1]}, svg);
+  const endLbl = el("text", {class: "bar-value", x: pts[pts.length-1][0] - 6,
+    y: pts[pts.length-1][1] - 10, "text-anchor": "end"}, svg);
+  endLbl.textContent = fmtCompact(rows[rows.length-1].total);
+
+  const hit = el("rect", {class: "hit", x: padL, y: 0, width: plotW, height: H}, svg);
+  hit.addEventListener("pointermove", evt => {
+    const box = svg.getBoundingClientRect();
+    const mx = (evt.clientX - box.left) * (W / box.width);
+    let i = Math.round((mx - padL) / plotW * (rows.length - 1));
+    i = Math.max(0, Math.min(rows.length - 1, i));
+    cross.setAttribute("x1", x(i)); cross.setAttribute("x2", x(i));
+    cross.setAttribute("visibility", "visible");
+    dot.setAttribute("cx", x(i)); dot.setAttribute("cy", pts[i][1]);
+    dot.setAttribute("visibility", "visible");
+    showTooltip(evt, rows[i].month + " · " + rows[i].fy_label, [
+      {color: cssVar("--series-1"), value: fmtFull(rows[i].total), name: "Net expenditures"},
+    ]);
+  });
+  hit.addEventListener("pointerleave", () => {
+    cross.setAttribute("visibility", "hidden");
+    dot.setAttribute("visibility", "hidden");
+    hideTooltip();
+  });
+}
+
+/* ---------- documents ---------- */
+const PAPERCLIP = 'M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48';
+function paperclipSvg() {
+  const s = el("svg", {viewBox: "0 0 24 24", fill: "none", "stroke-width": "2",
+    "stroke-linecap": "round", "stroke-linejoin": "round"});
+  el("path", {d: PAPERCLIP}, s);
+  return s;
+}
+function docsFor(awardId) {
+  return (D.documents || []).filter(d => d.award_id === awardId);
+}
+function docHref(d) {
+  if (d.external_url) return d.external_url;
+  return LIVE ? "/" + d.storage_path : "../" + d.storage_path;
+}
+function openDocs(award) {
+  docsAwardId = award.award_id;
+  document.getElementById("docs-title").textContent = "Documents — " + award.award_name;
+  document.getElementById("docs-sub").textContent =
+    award.fain_or_ptin + " · attach award letters, amendments, and invoices (PDF)";
+  const canWrite = LIVE && D.user && D.user.role !== "viewer";
+  document.getElementById("docs-upload").hidden = !canWrite;
+  document.getElementById("link-form").hidden = true;
+  document.getElementById("docs-err").textContent = "";
+  renderDocsList();
+  document.getElementById("docs-overlay").classList.add("open");
+}
+function renderDocsList() {
+  const host = document.getElementById("docs-list");
+  host.textContent = "";
+  const docs = docsFor(docsAwardId);
+  if (!docs.length) { div("m-sub", host, "No documents attached yet."); return; }
+  for (const d of docs) {
+    const row = div("doc-row", host);
+    const ico = div("doc-ico", row);
+    ico.appendChild(paperclipSvg());
+    const main = div("doc-main", row);
+    const a = document.createElement("a");
+    a.href = docHref(d); a.target = "_blank"; a.rel = "noopener";
+    a.textContent = d.file_name;
+    main.appendChild(a);
+    div("doc-meta", main,
+      d.doc_type.replace("_", " ") +
+      (d.file_size ? " · " + Math.max(1, Math.round(d.file_size / 1024)) + " KB" : "") +
+      (d.external_url ? " · external link" : "") +
+      " · " + (d.uploaded_by || "—") + " · " + (d.uploaded_at || "").slice(0, 10));
+  }
+}
+
+/* ---------- table helpers ---------- */
+function cell(tr, content, cls) {
+  const td = document.createElement("td");
+  if (cls) td.className = cls;
+  if (content && content.nodeType) td.appendChild(content);
+  else td.textContent = content == null ? "—" : content;
+  tr.appendChild(td);
+  return td;
+}
+function headerRow(table, headers, numericIdx, sortable, onSort) {
+  const thead = document.createElement("thead");
+  const trh = document.createElement("tr");
+  headers.forEach((h, i) => {
+    const th = document.createElement("th");
+    if (numericIdx.includes(i)) th.className = "num";
+    if (sortable && sortable[i]) {
+      th.classList.add("sortable");
+      th.textContent = h;
+      if (regSort.key === sortable[i]) {
+        const ar = document.createElement("span");
+        ar.className = "arrow";
+        ar.textContent = regSort.dir === 1 ? "▲" : "▼";
+        th.appendChild(ar);
+      }
+      th.addEventListener("click", () => onSort(sortable[i]));
+    } else {
+      th.textContent = h;
+    }
+    trh.appendChild(th);
+  });
+  thead.appendChild(trh);
+  table.appendChild(thead);
+}
+
+/* ---------- grant balances table ---------- */
+function renderBalances() {
+  const table = document.getElementById("balances-table");
+  table.textContent = "";
+  const list = currentAward === "ALL" ? D.awards
+    : D.awards.filter(a => a.award_id === currentAward);
+  headerRow(table,
+    ["Grant award", "ALN", "Funding path", "Original award", "Spent to date", "Remaining", "% used", "Docs"],
+    [3, 4, 5, 6], null, null);
+  const tbody = document.createElement("tbody");
+  for (const a of list) {
+    const pct = a.budget ? Math.min(100, 100 * a.spent / a.budget) : 0;
+    const remaining = (a.budget || 0) - a.spent;
+    const tr = document.createElement("tr");
+    tr.className = "clickable";
+    tr.addEventListener("click", evt => {
+      if (evt.target.closest(".docs-chip")) return;
+      currentAward = currentAward === a.award_id ? "ALL" : a.award_id;
+      document.getElementById("grant-filter").value = String(currentAward);
+      renderAll();
+    });
+    const nameTd = document.createElement("td");
+    const nm = div(null, nameTd, a.award_name);
+    nm.style.fontWeight = "550";
+    div("cell-sub", nameTd, a.fain_or_ptin);
+    tr.appendChild(nameTd);
+    cell(tr, a.aln);
+    cell(tr, a.funding_path + (a.pass_through_name ? " · " + a.pass_through_name : ""));
+    cell(tr, fmtFull(a.budget), "num");
+    cell(tr, fmtFull(a.spent), "num");
+    cell(tr, fmtFull(remaining), "num strong");
+    const pctTd = document.createElement("td");
+    pctTd.className = "num";
+    const wrap = div("pctcell", pctTd);
+    const bar = document.createElement("span");
+    bar.className = "cellbar";
+    const fill = document.createElement("i");
+    fill.style.width = pct + "%";
+    fill.style.background = pct > 90 ? "var(--status-critical)"
+      : pct > 75 ? "var(--status-warning)" : "var(--series-1)";
+    bar.appendChild(fill);
+    wrap.appendChild(bar);
+    wrap.appendChild(document.createTextNode(pct.toFixed(0) + "%"));
+    tr.appendChild(pctTd);
+    const docsTd = document.createElement("td");
+    const nDocs = docsFor(a.award_id).length;
+    const chip = document.createElement("button");
+    chip.type = "button"; chip.className = "docs-chip";
+    chip.appendChild(paperclipSvg());
+    chip.appendChild(document.createTextNode(nDocs ? String(nDocs) : "attach"));
+    chip.addEventListener("click", () => openDocs(a));
+    docsTd.appendChild(chip);
+    tr.appendChild(docsTd);
+    tbody.appendChild(tr);
+  }
+  table.appendChild(tbody);
+}
+
+/* ---------- expenditure register ---------- */
+function renderRegister() {
+  const table = document.getElementById("register-table");
+  table.textContent = "";
+  const rows = expFiltered().slice();
+  const numericKeys = {amount: 1, to_sub: 1};
+  rows.sort((a, b) => {
+    let va = a[regSort.key], vb = b[regSort.key];
+    if (numericKeys[regSort.key]) { va = Number(va); vb = Number(vb); }
+    else { va = String(va || ""); vb = String(vb || ""); }
+    return (va < vb ? -1 : va > vb ? 1 : 0) * regSort.dir;
+  });
+  headerRow(table,
+    ["Date", "Grant award", "Department", "Description", "Doc ref", "To subrecipient", "Amount", "Entered by"],
+    [5, 6],
+    ["transaction_date", "award_name", "department_name", "description",
+     "doc_reference", "to_sub", "amount", "entered_by"],
+    key => {
+      regSort = {key, dir: regSort.key === key ? -regSort.dir : (key === "transaction_date" ? -1 : 1)};
+      renderRegister();
+    });
+  const tbody = document.createElement("tbody");
+  for (const r of rows) {
+    const tr = document.createElement("tr");
+    cell(tr, r.transaction_date);
+    const awTd = document.createElement("td");
+    div(null, awTd, r.award_name);
+    div("cell-sub", awTd, r.aln + (r.subrecipient_name ? " · sub: " + r.subrecipient_name : ""));
+    tr.appendChild(awTd);
+    cell(tr, r.department_name || "—");
+    cell(tr, r.description || "—");
+    cell(tr, r.doc_reference || "—");
+    cell(tr, r.to_sub ? fmtFull(r.to_sub) : "—", "num");
+    cell(tr, fmtFull(r.amount), "num" + (r.amount < 0 ? " neg" : ""));
+    cell(tr, r.entered_by || "—");
+    tbody.appendChild(tr);
+  }
+  table.appendChild(tbody);
+  const tfoot = document.createElement("tfoot");
+  const trf = document.createElement("tr");
+  const label = document.createElement("td");
+  label.colSpan = 5;
+  label.textContent = "Total — " + rows.length + " transaction" + (rows.length === 1 ? "" : "s");
+  trf.appendChild(label);
+  const sumSub = rows.reduce((s, r) => s + r.to_sub, 0);
+  const sumAmt = rows.reduce((s, r) => s + r.amount, 0);
+  cell(trf, fmtFull(sumSub), "num");
+  cell(trf, fmtFull(sumAmt), "num");
+  cell(trf, "");
+  tfoot.appendChild(trf);
+  table.appendChild(tfoot);
+  document.getElementById("register-sub").textContent =
+    "Showing " + scopeLabel() + " · click a column header to sort";
+}
+
+/* ---------- simple tables ---------- */
+function renderTable(id, headers, rowsArr, numeric) {
+  const table = document.getElementById(id);
+  table.textContent = "";
+  headerRow(table, headers, numeric, null, null);
+  const tbody = document.createElement("tbody");
+  for (const r of rowsArr) {
+    const tr = document.createElement("tr");
+    r.forEach((c, i) => cell(tr, c, numeric.includes(i) ? "num" : ""));
+    tbody.appendChild(tr);
+  }
+  table.appendChild(tbody);
+}
+
+function actionMark(action) {
+  const s = document.createElement("span");
+  s.className = "act";
+  const d = document.createElement("span");
+  d.className = "dot";
+  d.style.background = action === "INSERT" ? "var(--status-good)"
+    : action === "UPDATE" ? "var(--series-1)" : "var(--status-critical)";
+  s.appendChild(d);
+  s.appendChild(document.createTextNode(action.toLowerCase()));
+  return s;
+}
+
+/* ---------- render everything ---------- */
+function renderAll() {
+  if (!D) return;
+  const exps = expFiltered();
+  const sefa = aggSefa(exps);
+  const depts = aggDepts(exps);
+  const monthly = aggMonthly(exps);
+
+  const total = exps.reduce((s, r) => s + r.amount, 0);
+  const toSub = exps.reduce((s, r) => s + r.to_sub, 0);
+
+  if (currentAward === "ALL") {
+    const totalBudget = D.awards.reduce((s, a) => s + (a.budget || 0), 0);
+    const totalSpent = D.awards.reduce((s, a) => s + a.spent, 0);
+    const activeAwards = currentFY === "ALL" ? D.awards.length
+      : new Set(D.award_fy_spend.filter(s => s.fy_label === currentFY).map(s => s.award_id)).size;
+    document.getElementById("hero-eyebrow").textContent = "Federal award expenditures · SEFA";
+    document.getElementById("hero-value").textContent = fmtWhole(total);
+    document.getElementById("hero-sub").textContent =
+      (currentFY === "ALL" ? "All fiscal years" : currentFY) + " · " +
+      sefa.length + " federal programs · " + activeAwards + " active awards";
+    const stats = document.getElementById("stats");
+    stats.textContent = "";
+    const mk = (label, value, note) => {
+      const s = div("stat", stats);
+      div("s-label", s, label);
+      div("s-value", s, value);
+      if (note) div("s-note", s, note);
+    };
+    mk("Remaining authority", fmtCompact(totalBudget - totalSpent),
+       "of " + fmtCompact(totalBudget) + " awarded, all years");
+    mk("To subrecipients", fmtCompact(toSub),
+       total ? (100 * toSub / total).toFixed(1) + "% of expenditures" : "");
+    mk("Transactions in scope", String(exps.length),
+       currentFY === "ALL" ? "all fiscal years" : currentFY);
+    mk("Documents on file", String((D.documents || []).length), "award letters, agreements, links");
+  } else {
+    const a = D.awards.find(x => x.award_id === currentAward);
+    const remaining = (a.budget || 0) - a.spent;
+    document.getElementById("hero-eyebrow").textContent =
+      "Grant history · " + a.fain_or_ptin + " · ALN " + a.aln;
+    document.getElementById("hero-value").textContent = fmtWhole(remaining);
+    document.getElementById("hero-sub").textContent =
+      a.award_name + " — remaining of " + fmtWhole(a.budget) + " original award · " +
+      fmtWhole(a.spent) + " spent to date";
+    const stats = document.getElementById("stats");
+    stats.textContent = "";
+    const mk = (label, value, note) => {
+      const s = div("stat", stats);
+      div("s-label", s, label);
+      div("s-value", s, value);
+      if (note) div("s-note", s, note);
+    };
+    mk("Original award", fmtCompact(a.budget || 0),
+       a.funding_path + (a.pass_through_name ? " via " + a.pass_through_name : ""));
+    mk("Spent in scope", fmtCompact(total),
+       (currentFY === "ALL" ? "all fiscal years" : currentFY) + " · " + exps.length + " transactions");
+    mk("To subrecipients", fmtCompact(toSub),
+       total ? (100 * toSub / total).toFixed(1) + "% of expenditures" : "");
+    mk("Documents", String(docsFor(a.award_id).length),
+       a.award_period_start ? "period " + a.award_period_start + " → " + a.award_period_end : "");
+  }
+
+  renderBalances();
+  renderRegister();
+  renderPrograms(sefa);
+  renderDepartments(depts);
+  renderMonthly(monthly);
+
+  renderTable("sefa-table",
+    ["ALN", "Program", "Federal agency", "Cluster", "Total expenditures", "To subrecipients"],
+    sefa.map(r => [r.aln, r.program_title, r.agency_name, r.cluster_name || "—",
+                   fmtFull(r.total), fmtFull(r.to_sub)]),
+    [4, 5]);
+
+  const loans = (currentAward === "ALL" ? D.loan_balances
+    : D.loan_balances.filter(l => l.award_id === currentAward))
+    .filter(l => currentFY === "ALL" || l.fy_label === currentFY);
+  renderTable("loan-table",
+    ["Fiscal year", "Award", "ALN", "Outstanding balance"],
+    loans.map(r => [r.fy_label, r.award_name, r.aln, fmtFull(r.outstanding_balance)]),
+    [3]);
+
+  const audits = currentAward === "ALL" ? D.audit_trail
+    : D.audit_trail.filter(r => r.award_id === currentAward);
+  renderTable("audit-table",
+    ["When (UTC)", "Action", "Grant", "Amount", "Department", "By"],
+    audits.map(r => [
+      r.changed_at, actionMark(r.action), r.award_name || "—",
+      r.action === "UPDATE" ? fmtFull(r.old_amount) + " → " + fmtFull(r.new_amount)
+        : fmtFull(r.action === "DELETE" ? r.old_amount : r.new_amount),
+      r.new_department || r.old_department || "—", r.changed_by || "—"]),
+    [3]);
+
+  document.getElementById("gen-meta").textContent =
+    D.entity.auditee_name + " · UEI " + D.entity.auditee_uei + " · EIN " + D.entity.auditee_ein +
+    " · " + D.entity.basis_of_accounting.toLowerCase().replace("_", " ") +
+    " basis · data as of " + D.generated_at;
+
+  const notesHost = document.getElementById("sefa-notes");
+  notesHost.textContent = "";
+  for (const n of D.sefa_notes) {
+    const w = div("note", notesHost);
+    const b = document.createElement("b");
+    b.textContent = "Note " + n.note_number + " — " + n.note_title + " (" + n.fy_label + ")";
+    w.appendChild(b);
+    const p = document.createElement("p");
+    p.textContent = n.note_text;
+    w.appendChild(p);
+  }
+
+  const seg = document.getElementById("fy-seg");
+  if (!seg.childElementCount) {
+    const fyOptions = [["ALL", "All years"]].concat(D.fiscal_years.map(f => [f.fy_label, f.fy_label]));
+    for (const [val, label] of fyOptions) {
+      const btn = document.createElement("button");
+      btn.type = "button"; btn.textContent = label;
+      btn.setAttribute("aria-pressed", val === currentFY ? "true" : "false");
+      btn.addEventListener("click", () => {
+        currentFY = val;
+        seg.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", "false"));
+        btn.setAttribute("aria-pressed", "true");
+        renderAll();
+      });
+      seg.appendChild(btn);
+    }
+  }
+
+  // grant filter select — rebuilt each render so new awards appear
+  const gf = document.getElementById("grant-filter");
+  const prev = String(currentAward);
+  gf.textContent = "";
+  const optAll = document.createElement("option");
+  optAll.value = "ALL"; optAll.textContent = "All grants";
+  gf.appendChild(optAll);
+  for (const a of [...D.awards].sort((x, y) => x.award_name.localeCompare(y.award_name))) {
+    const o = document.createElement("option");
+    o.value = String(a.award_id);
+    o.textContent = a.award_name;
+    gf.appendChild(o);
+  }
+  gf.value = prev;
+}
+
+document.getElementById("grant-filter").addEventListener("change", evt => {
+  currentAward = evt.target.value === "ALL" ? "ALL" : Number(evt.target.value);
+  renderAll();
+});
+
+/* ---------- live mode ---------- */
+async function api(path, opts) {
+  const res = await fetch(path, Object.assign({headers: {"Content-Type": "application/json"}}, opts));
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    if (res.status === 401 && path !== "/api/login") {
+      document.querySelectorAll(".overlay.open").forEach(o => o.classList.remove("open"));
+      document.getElementById("login-overlay").classList.add("open");
+      document.getElementById("login-err").textContent =
+        "Your session expired — sign in again and retry.";
+      throw Object.assign(new Error("session expired — sign in again"), {status: 401});
+    }
+    throw Object.assign(new Error(body.error || res.statusText), {status: res.status});
+  }
+  return body;
+}
+
+function setUserUI(user) {
+  const canWrite = user && (user.role === "grant_manager" || user.role === "finance_admin");
+  document.getElementById("btn-add-exp").hidden = !canWrite;
+  document.getElementById("btn-add-award").hidden = !canWrite;
+  document.getElementById("btn-logout").hidden = !user;
+  const chip = document.getElementById("user-chip");
+  chip.textContent = "";
+  if (user) {
+    const b = document.createElement("b");
+    b.textContent = user.display_name;
+    chip.appendChild(b);
+    chip.appendChild(document.createTextNode(" · " + user.role.replace("_", " ")));
+  }
+}
+
+async function loadData() {
+  if (!LIVE) {
+    D = window.GRANT_DATA || null;
+    if (D) renderAll();
+    else document.getElementById("stats").textContent = "No data.js found — run export_data.py or start app.py.";
+    return;
+  }
+  try {
+    D = await api("/api/data");
+    setUserUI(D.user);
+    document.getElementById("login-overlay").classList.remove("open");
+    renderAll();
+    if (!LOOKUPS && D.user.role !== "viewer") {
+      LOOKUPS = await api("/api/lookups");
+      fillForms();
+    }
+  } catch (e) {
+    if (e.status === 401) document.getElementById("login-overlay").classList.add("open");
+    else toast("Could not load data: " + e.message, true);
+  }
+}
+
+function option(select, value, label) {
+  const o = document.createElement("option");
+  o.value = value; o.textContent = label;
+  select.appendChild(o);
+}
+
+function fillForms() {
+  const expAward = document.getElementById("exp-award");
+  expAward.textContent = "";
+  for (const a of LOOKUPS.awards)
+    option(expAward, a.award_id,
+      a.award_name + " — " + fmtCompact((a.budget || 0) - a.spent) + " remaining");
+  const expDept = document.getElementById("exp-dept");
+  expDept.textContent = "";
+  for (const d of LOOKUPS.departments) option(expDept, d.department_id, d.department_name);
+  const expSub = document.getElementById("exp-sub");
+  expSub.textContent = ""; option(expSub, "", "— none —");
+  for (const s of LOOKUPS.subrecipients) option(expSub, s.subrecipient_id, s.subrecipient_name);
+  const awProgram = document.getElementById("aw-program");
+  awProgram.textContent = "";
+  for (const p of LOOKUPS.programs) option(awProgram, p.program_id, p.aln + " — " + p.program_title);
+  option(awProgram, "__new", "Don’t see your program? Add new…");
+  const npAgency = document.getElementById("np-agency");
+  npAgency.textContent = "";
+  for (const a of LOOKUPS.agencies) option(npAgency, a.agency_id, a.agency_name);
+  option(npAgency, "__new", "New agency…");
+  const awPt = document.getElementById("aw-pt");
+  awPt.textContent = ""; option(awPt, "", "Direct federal award");
+  for (const p of LOOKUPS.pass_throughs) option(awPt, p.pass_through_id, "Pass-through: " + p.pass_through_name);
+}
+
+async function refreshAfterWrite() {
+  LOOKUPS = await api("/api/lookups");
+  fillForms();
+  await loadData();
+}
+
+/* login / logout */
+document.getElementById("login-form").addEventListener("submit", async evt => {
+  evt.preventDefault();
+  const err = document.getElementById("login-err");
+  err.textContent = "";
+  try {
+    await api("/api/login", {method: "POST", body: JSON.stringify({
+      username: document.getElementById("login-user").value,
+      password: document.getElementById("login-pass").value})});
+    document.getElementById("login-pass").value = "";
+    await loadData();
+  } catch (e) { err.textContent = e.message; }
+});
+document.getElementById("btn-logout").addEventListener("click", async () => {
+  await api("/api/logout", {method: "POST", body: "{}"});
+  location.reload();
+});
+
+/* modals */
+function wireModal(overlayId, openBtnId) {
+  const ov = document.getElementById(overlayId);
+  if (openBtnId) document.getElementById(openBtnId).addEventListener("click", () => ov.classList.add("open"));
+  ov.querySelectorAll("[data-close]").forEach(b => b.addEventListener("click", () => ov.classList.remove("open")));
+  ov.addEventListener("pointerdown", e => { if (e.target === ov) ov.classList.remove("open"); });
+}
+wireModal("exp-overlay", "btn-add-exp");
+wireModal("award-overlay", "btn-add-award");
+wireModal("docs-overlay", null);
+document.getElementById("exp-date").value = new Date().toISOString().slice(0, 10);
+
+/* record expenditure */
+document.getElementById("exp-form").addEventListener("submit", async evt => {
+  evt.preventDefault();
+  const err = document.getElementById("exp-err");
+  err.textContent = "";
+  try {
+    const r = await api("/api/expenditure", {method: "POST", body: JSON.stringify({
+      award_id: document.getElementById("exp-award").value,
+      department_id: document.getElementById("exp-dept").value,
+      amount: document.getElementById("exp-amount").value,
+      transaction_date: document.getElementById("exp-date").value,
+      description: document.getElementById("exp-desc").value,
+      doc_reference: document.getElementById("exp-doc").value,
+      subrecipient_id: document.getElementById("exp-sub").value || null,
+      amount_to_subrecipient: document.getElementById("exp-subamt").value || 0,
+    })});
+    document.getElementById("exp-overlay").classList.remove("open");
+    document.getElementById("exp-amount").value = "";
+    document.getElementById("exp-desc").value = "";
+    document.getElementById("exp-doc").value = "";
+    document.getElementById("exp-subamt").value = "0";
+    toast("Saved — " + r.award_name + " now has " + fmtFull(r.remaining) +
+          " remaining of " + fmtFull(r.budget) + ".");
+    await refreshAfterWrite();
+  } catch (e) { err.textContent = e.message; }
+});
+
+/* new program reveal */
+document.getElementById("aw-program").addEventListener("change", evt => {
+  document.getElementById("new-program-fields").hidden = evt.target.value !== "__new";
+});
+document.getElementById("np-agency").addEventListener("change", evt => {
+  document.getElementById("np-new-agency-wrap").hidden = evt.target.value !== "__new";
+});
+
+/* new award */
+document.getElementById("award-form").addEventListener("submit", async evt => {
+  evt.preventDefault();
+  const err = document.getElementById("award-err");
+  err.textContent = "";
+  try {
+    let programId = document.getElementById("aw-program").value;
+    if (programId === "__new") {
+      const agencySel = document.getElementById("np-agency").value;
+      const p = await api("/api/program", {method: "POST", body: JSON.stringify({
+        aln: document.getElementById("np-aln").value,
+        program_title: document.getElementById("np-title").value,
+        agency_id: agencySel === "__new" ? null : agencySel,
+        new_agency_name: agencySel === "__new"
+          ? document.getElementById("np-new-agency").value : "",
+        cluster_name: document.getElementById("np-cluster").value,
+      })});
+      programId = p.program_id;
+      toast("Added program " + p.aln + " — " + p.program_title);
+    }
+    const r = await api("/api/award", {method: "POST", body: JSON.stringify({
+      program_id: programId,
+      award_name: document.getElementById("aw-name").value,
+      fain_or_ptin: document.getElementById("aw-fain").value,
+      original_award_amount: document.getElementById("aw-amount").value,
+      pass_through_id: document.getElementById("aw-pt").value || null,
+      award_period_start: document.getElementById("aw-start").value,
+      award_period_end: document.getElementById("aw-end").value,
+      de_minimis_elected: document.getElementById("aw-deminimis").checked,
+    })});
+    document.getElementById("award-overlay").classList.remove("open");
+    document.getElementById("award-form").reset();
+    document.getElementById("new-program-fields").hidden = true;
+    document.getElementById("np-new-agency-wrap").hidden = true;
+    toast("Created award “" + r.award_name + "” with " + fmtFull(r.budget) + " available.");
+    await refreshAfterWrite();
+  } catch (e) { err.textContent = e.message; }
+});
+
+/* document upload + link */
+document.getElementById("btn-upload-pdf").addEventListener("click", () =>
+  document.getElementById("doc-file").click());
+document.getElementById("doc-file").addEventListener("change", async evt => {
+  const f = evt.target.files[0];
+  evt.target.value = "";
+  if (!f) return;
+  const err = document.getElementById("docs-err");
+  err.textContent = "";
+  try {
+    if (f.size > 10 * 1024 * 1024) throw new Error("file must be under 10 MB");
+    const r = await fetch("/api/document?award_id=" + docsAwardId +
+      "&file_name=" + encodeURIComponent(f.name), {method: "POST", body: f});
+    const body = await r.json();
+    if (r.status === 401) {
+      document.querySelectorAll(".overlay.open").forEach(o => o.classList.remove("open"));
+      document.getElementById("login-overlay").classList.add("open");
+      document.getElementById("login-err").textContent =
+        "Your session expired — sign in again and retry.";
+      throw new Error("session expired — sign in again");
+    }
+    if (!r.ok) throw new Error(body.error || r.statusText);
+    toast("Attached " + body.file_name);
+    D = await api("/api/data");
+    renderDocsList();
+    renderAll();
+  } catch (e) { err.textContent = e.message; }
+});
+document.getElementById("btn-add-link").addEventListener("click", () => {
+  document.getElementById("link-form").hidden = false;
+});
+document.getElementById("link-cancel").addEventListener("click", () => {
+  document.getElementById("link-form").hidden = true;
+});
+document.getElementById("link-save").addEventListener("click", async () => {
+  const err = document.getElementById("docs-err");
+  err.textContent = "";
+  try {
+    const r = await api("/api/document-link", {method: "POST", body: JSON.stringify({
+      award_id: docsAwardId,
+      file_name: document.getElementById("link-name").value,
+      external_url: document.getElementById("link-url").value,
+    })});
+    toast("Linked " + r.file_name);
+    document.getElementById("link-form").hidden = true;
+    document.getElementById("link-name").value = "";
+    document.getElementById("link-url").value = "";
+    D = await api("/api/data");
+    renderDocsList();
+    renderAll();
+  } catch (e) { err.textContent = e.message; }
+});
+
+loadData();
+addEventListener("resize", () => renderAll());
+addEventListener("pointermove", evt => { if (tt.style.display === "block") moveTooltip(evt); });
+</script>
+</body>
+</html>

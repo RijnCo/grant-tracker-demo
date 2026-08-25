@@ -1,0 +1,15 @@
+# python
+__pycache__/
+*.pyc
+
+# node / builds (docs/ IS committed — it's the GitHub Pages demo)
+node_modules/
+webapp/dist/
+
+# local tooling & scratch
+webapp/.impeccable/
+_server.log
+_shot_*.png
+webapp/_shot_*.png
+webapp/_demo_test.mjs
+_cj.txt
