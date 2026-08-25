@@ -17,32 +17,40 @@ const stagger = {
 }
 
 export default function Overview() {
-  const { data, fy } = useApp()
-  const exps = useMemo(() => expInScope(data, { fy }), [data, fy])
+  const { data, fy, source } = useApp()
+  const exps = useMemo(() => expInScope(data, { fy, source }), [data, fy, source])
   const sefa = useMemo(() => aggSefa(exps), [exps])
   const depts = useMemo(() => aggDepts(exps), [exps])
   const monthly = useMemo(() => aggMonthly(exps), [exps])
 
+  const awards = useMemo(
+    () => data.awards.filter((a) => source === 'ALL' || a.funding_source === source),
+    [data, source])
   const total = exps.reduce((s, r) => s + r.amount, 0)
   const toSub = exps.reduce((s, r) => s + r.to_sub, 0)
   const fedTotal = exps.reduce((s, r) => s + (r.funding_source === 'FEDERAL' ? r.amount : 0), 0)
   const stateTotal = total - fedTotal
-  const totalBudget = data.awards.reduce((s, a) => s + (a.budget || 0), 0)
-  const totalSpent = data.awards.reduce((s, a) => s + a.spent, 0)
-  const topGrants = [...data.awards]
+  const totalBudget = awards.reduce((s, a) => s + (a.budget || 0), 0)
+  const totalSpent = awards.reduce((s, a) => s + a.spent, 0)
+  const topGrants = [...awards]
     .sort((a, b) => ((b.budget || 0) - b.spent < (a.budget || 0) - a.spent ? -1 : 1))
     .slice(0, 5)
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <motion.div custom={0} variants={stagger} initial="hidden" animate="show">
-        <div className="eyebrow">Grant expenditures · federal (SEFA) + state (SESFA)</div>
+        <div className="eyebrow">
+          {source === 'FEDERAL' ? 'Federal award expenditures · SEFA'
+            : source === 'STATE' ? 'State financial assistance · SESFA'
+            : 'Grant expenditures · federal (SEFA) + state (SESFA)'}
+        </div>
         <div className="hero-value">
           <CountUp value={total} format={fmtWhole} />
         </div>
         <div className="hero-sub">
           {(fy === 'ALL' ? 'All fiscal years' : fy)} · {sefa.length} programs ·{' '}
-          {data.awards.length} awards · {fmtCompact(fedTotal)} federal + {fmtCompact(stateTotal)} state
+          {awards.length} awards
+          {source === 'ALL' ? <> · {fmtCompact(fedTotal)} federal + {fmtCompact(stateTotal)} state</> : null}
         </div>
         <div className="hero-meta">
           {data.entity.auditee_name} · UEI {data.entity.auditee_uei} · EIN {data.entity.auditee_ein}

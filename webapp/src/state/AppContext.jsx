@@ -13,6 +13,7 @@ export function AppProvider({ children, toast }) {
   const [lookups, setLookups] = useState(null)
   const [authState, setAuthState] = useState('checking') // checking | anonymous | authed
   const [fy, setFy] = useState('ALL')
+  const [source, setSource] = useState('ALL') // ALL | FEDERAL | STATE — scopes grant pages
 
   const refresh = useCallback(async () => {
     // Static demo (GitHub Pages): read the bundled snapshot, act as a viewer.
@@ -72,8 +73,8 @@ export function AppProvider({ children, toast }) {
   const canWrite = !!user && (user.role === 'grant_manager' || user.role === 'finance_admin')
 
   const value = useMemo(
-    () => ({ data, lookups, authState, user, canWrite, fy, setFy, refresh, login, logout, guard }),
-    [data, lookups, authState, user, canWrite, fy, refresh, login, logout, guard],
+    () => ({ data, lookups, authState, user, canWrite, fy, setFy, source, setSource, refresh, login, logout, guard }),
+    [data, lookups, authState, user, canWrite, fy, source, refresh, login, logout, guard],
   )
   return <AppCtx.Provider value={value}>{children}</AppCtx.Provider>
 }

@@ -14,5 +14,13 @@ export const AMENDMENT_TYPES = {
   other: 'Other',
 }
 
+export const CRA_TXN_TYPES = {
+  tif_increment: 'TIF increment',
+  other_revenue: 'Other revenue',
+  project_expense: 'Project expense',
+  admin_expense: 'Admin expense',
+}
+
 export const stateAwardTypeLabel = (v) => STATE_AWARD_TYPES[v] || v || '—'
 export const amendmentTypeLabel = (v) => AMENDMENT_TYPES[v] || v || '—'
+export const craTxnTypeLabel = (v) => CRA_TXN_TYPES[v] || v || '—'

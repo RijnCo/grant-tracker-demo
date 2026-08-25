@@ -11,9 +11,13 @@ import AwardModal from './forms/AwardModal'
 
 const TITLES = {
   '/': 'Overview', '/grants': 'Grants', '/expenditures': 'Expenditures',
-  '/funds': 'Operating funds', '/agencies': 'Agencies', '/directory': 'Directory',
-  '/audit': 'Audit trail', '/sefa': 'SEFA report', '/sesfa': 'SESFA report',
+  '/funds': 'Operating funds', '/cra': 'CRA districts', '/agencies': 'Agencies',
+  '/directory': 'Directory', '/audit': 'Audit trail',
+  '/sefa': 'SEFA report', '/sesfa': 'SESFA report',
 }
+
+// pages where the global Federal/State scope actually filters what you see
+const SOURCE_SCOPED = new Set(['/', '/grants', '/expenditures', '/agencies'])
 
 function useTheme() {
   const [theme, setTheme] = useState(document.documentElement.dataset.theme || 'light')
@@ -27,7 +31,7 @@ function useTheme() {
 }
 
 export default function AppShell() {
-  const { data, user, canWrite, fy, setFy, logout } = useApp()
+  const { data, user, canWrite, fy, setFy, source, setSource, logout } = useApp()
   const location = useLocation()
   const [theme, toggleTheme] = useTheme()
   const [paletteOpen, setPaletteOpen] = useState(false)
@@ -70,18 +74,22 @@ export default function AppShell() {
           </div>
         </div>
         <div className="navlist">
-          <div className="nav-section">Workspace</div>
-          {PAGES.map((p) => {
-            const Icon = p.icon
-            return (
-              <NavLink key={p.to} to={p.to} end={p.to === '/'}
-                data-tour={'nav' + (p.to === '/' ? '-overview' : p.to.replace('/', '-'))}
-                className={({ isActive }) => 'navitem' + (isActive ? ' active' : '')}>
-                <Icon />
-                <span>{p.label}</span>
-              </NavLink>
-            )
-          })}
+          {[...new Set(PAGES.map((p) => p.section))].map((section) => (
+            <div key={section}>
+              <div className="nav-section">{section}</div>
+              {PAGES.filter((p) => p.section === section).map((p) => {
+                const Icon = p.icon
+                return (
+                  <NavLink key={p.to} to={p.to} end={p.to === '/'}
+                    data-tour={'nav' + (p.to === '/' ? '-overview' : p.to.replace('/', '-'))}
+                    className={({ isActive }) => 'navitem' + (isActive ? ' active' : '')}>
+                    <Icon />
+                    <span>{p.label}</span>
+                  </NavLink>
+                )
+              })}
+            </div>
+          ))}
         </div>
         <div className="foot">
           <div className="avatar">{initials}</div>
@@ -107,6 +115,15 @@ export default function AppShell() {
         <div className="topbar">
           <div className="page-title">{title}</div>
           <div className="spacer" />
+          {SOURCE_SCOPED.has(location.pathname) && (
+            <span className="seg" role="group" aria-label="Funding source" data-tour="source-scope">
+              {['ALL', 'FEDERAL', 'STATE'].map((v) => (
+                <button key={v} aria-pressed={source === v} onClick={() => setSource(v)}>
+                  {v === 'ALL' ? 'All sources' : v === 'FEDERAL' ? 'Federal' : 'State'}
+                </button>
+              ))}
+            </span>
+          )}
           <span className="seg" role="group" aria-label="Fiscal year" data-tour="fy-filter">
             {fyOptions.map((v) => (
               <button key={v} aria-pressed={fy === v} onClick={() => setFy(v)}>

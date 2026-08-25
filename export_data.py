@@ -67,7 +67,8 @@ def collect(con):
                a.original_award_amount AS original_amount,
                COALESCE(SUM(e.amount), 0) AS spent,
                a.award_date, a.award_period_start, a.award_period_end,
-               a.internal_gl_string,
+               a.internal_gl_string, a.identifier_type,
+               a.de_minimis_elected, a.indirect_cost_rate,
                (SELECT COUNT(*) FROM award_amendment am
                 WHERE am.award_id = a.award_id) AS amendment_count
         FROM award a
@@ -170,6 +171,27 @@ def collect(con):
         JOIN fiscal_year fy ON fy.fiscal_year_id = f.fiscal_year_id
         LEFT JOIN department d ON d.department_id = t.department_id
         ORDER BY t.transaction_date DESC, t.fund_txn_id DESC""")
+
+    data["cra_districts"] = rows(con, """
+        SELECT district_id, district_name, established_year, sunset_year, notes,
+               total_revenue, total_spent, trust_balance, project_count
+        FROM v_cra_district_status ORDER BY district_name""")
+
+    data["cra_projects"] = rows(con, """
+        SELECT project_id, district_id, district_name, project_name, status,
+               budget_amount, start_date, target_completion, spent, remaining
+        FROM v_cra_project_status ORDER BY budget_amount DESC""")
+
+    data["cra_transactions"] = rows(con, """
+        SELECT t.cra_txn_id, t.district_id, d.district_name, t.project_id,
+               p.project_name, t.txn_type, t.amount, t.transaction_date,
+               fy.fy_label, t.description, t.doc_reference, t.entered_by
+        FROM cra_transaction t
+        JOIN cra_district d ON d.district_id = t.district_id
+        LEFT JOIN cra_project p ON p.project_id = t.project_id
+        LEFT JOIN fiscal_year fy
+               ON t.transaction_date BETWEEN fy.start_date AND fy.end_date
+        ORDER BY t.transaction_date DESC, t.cra_txn_id DESC""")
 
     data["sefa_notes"] = rows(con, """
         SELECT fy.fy_label, n.note_number, n.note_title, n.note_text

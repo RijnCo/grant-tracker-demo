@@ -20,9 +20,11 @@ INSERT INTO federal_agency (agency_id, agency_name, cgac_code, aln_prefix) VALUE
 
 -- Florida state awarding agencies (SESFA, s. 215.97 F.S.; prefix = CSFA prefix)
 INSERT INTO federal_agency (agency_id, agency_name, cgac_code, aln_prefix, agency_level) VALUES
-(7, 'Florida Department of Transportation',           NULL, '55', 'STATE'),
-(8, 'Florida Department of Environmental Protection', NULL, '37', 'STATE'),
-(9, 'Florida Department of Commerce',                 NULL, '40', 'STATE');
+(7,  'Florida Department of Transportation',           NULL, '55', 'STATE'),
+(8,  'Florida Department of Environmental Protection', NULL, '37', 'STATE'),
+(9,  'Florida Department of Commerce',                 NULL, '40', 'STATE'),
+(10, 'Florida Division of Emergency Management',       NULL, '31', 'STATE'),
+(11, 'Florida Department of State',                    NULL, '45', 'STATE');
 
 INSERT INTO pass_through_entity (pass_through_id, pass_through_name, pass_through_award_number) VALUES
 (1, 'Florida Department of Transportation',              'FDOT-AR-2024-117'),
@@ -64,7 +66,14 @@ INSERT INTO program (program_id, aln, program_title, agency_id, cluster_name, ot
 (9,  '55.026', 'Transportation Regional Incentive Program (TRIP)',           7, NULL, NULL, 0, 0),
 (10, '37.017', 'Florida Recreation Development Assistance Program (FRDAP)',  8, NULL, NULL, 0, 0),
 (11, '37.076', 'Drinking Water State Revolving Fund Loan Program',           8, NULL, NULL, 0, 0),
-(12, '40.038', 'Local Government Special Legislative Appropriation',         9, NULL, NULL, 0, 0);
+(12, '40.038', 'Local Government Special Legislative Appropriation',         9, NULL, NULL, 0, 0),
+(15, '31.066', 'Hurricane Loss Mitigation Program',                         10, NULL, NULL, 0, 0),
+(16, '45.031', 'Historic Preservation Grants',                              11, NULL, NULL, 0, 0);
+
+-- Additional federal programs
+INSERT INTO program (program_id, aln, program_title, agency_id, cluster_name, other_cluster_name, is_clustered, is_rd) VALUES
+(13, '66.818', 'Brownfields Assessment and Cleanup Cooperative Agreements',  5, NULL, NULL, 0, 0),
+(14, '20.526', 'Buses and Bus Facilities Formula, Competitive, and Low/No Emissions Programs', 1, 'Federal Transit Cluster', NULL, 1, 0);
 
 -- award_date is when the award was made; the period of performance often
 -- begins later (e.g. awarded July 1, performance starts in the fall).
@@ -85,7 +94,12 @@ INSERT INTO award (award_id, fain_or_ptin, identifier_type, award_name, program_
 (11, 'TRIP-441509-1',    'STATE', 'Coastal Parkway Corridor TRIP Improvements',          9, NULL, 1, 2400000, '2024-07-01', '2024-09-01', '2027-08-31', '101-4300-55120', 'grant', 'state_grant_agreement',     0, NULL),
 (12, 'FRDAP-A26188',     'STATE', 'Sandpiper Park Playground & Pier Renovation',    10, NULL, 1,  200000, '2025-08-20', '2025-10-01', '2027-09-30', '240-5800-55510', 'grant', 'state_grant_agreement',     0, NULL),
 (13, 'DW120600-04',      'STATE', 'Northshore Water Main Replacement (DWSRF Loan)', 11, NULL, 1, 3500000, '2024-06-15', '2024-10-01', '2028-09-30', '502-4900-55610', 'loan',  'state_revolving_fund',      0, NULL),
-(14, 'GAA-2026-LI-1234A','STATE', 'Downtown Marina Seawall Repair (GAA Line Item)', 12, NULL, 1, 1500000, '2025-07-01', '2025-07-01', '2027-06-30', '230-5600-55410', 'grant', 'legislative_appropriation', 0, NULL);
+(14, 'GAA-2026-LI-1234A','STATE', 'Downtown Marina Seawall Repair (GAA Line Item)', 12, NULL, 1, 1500000, '2025-07-01', '2025-07-01', '2027-06-30', '230-5600-55410', 'grant', 'legislative_appropriation', 0, NULL),
+-- Round two of demo awards (federal + state) for a fuller portfolio
+(15, 'BF-02D40025',      'FAIN',  'Former Cannery Site Brownfields Assessment',     13, NULL, 1,  500000, '2024-05-20', '2024-10-01', '2028-09-30', '230-5600-55420', 'cooperative_agreement', NULL, 1, NULL),
+(16, 'FL-2026-031-00',   'FAIN',  'Low-Emission Bus Replacement Program',           14, NULL, 1, 1900000, '2025-06-10', '2025-10-01', '2028-09-30', '208-4700-55210', 'grant', NULL, 0, 0.0380),
+(17, 'HLMP-26-088',      'STATE', 'Wind Retrofit Grants for Critical Facilities',   15, NULL, 1,  750000, '2025-05-01', '2025-07-01', '2027-06-30', '101-4200-55710', 'grant', 'state_grant_agreement', 0, NULL),
+(18, 'SM-2026-1077',     'STATE', 'Old City Hall Facade Restoration (Small Matching)', 16, NULL, 1, 150000, '2025-06-25', '2025-07-01', '2026-06-30', '240-5800-55520', 'grant', 'state_grant_agreement', 0, NULL);
 
 -- Outstanding loan balances at each fiscal year end (2 CFR 200.510(b)(5);
 -- state SRF loan balances are reported on the SESFA as well)
@@ -101,7 +115,21 @@ INSERT INTO operating_fund (fund_id, fund_code, fund_name, fiscal_year_id, budge
 (1, '001', 'General Fund',               2, 46200000, 'Adopted FY2025 operating budget'),
 (2, '001', 'General Fund',               3, 48500000, 'Adopted FY2026 operating budget'),
 (3, '401', 'Water & Sewer Utility Fund', 3, 22800000, 'Enterprise fund — rates and charges for services'),
-(4, '101', 'Transportation Fund',        3,  6400000, 'Local option gas tax and mobility fees');
+(4, '101', 'Transportation Fund',        3,  6400000, 'Local option gas tax and mobility fees'),
+(5, '001', 'General Fund',               1, 44100000, 'Adopted FY2024 operating budget'),
+(6, '401', 'Water & Sewer Utility Fund', 2, 21500000, 'Enterprise fund — rates and charges for services');
+
+-- Community Redevelopment Agency districts (Ch. 163 Part III, F.S.)
+INSERT INTO cra_district (district_id, district_name, established_year, sunset_year, notes) VALUES
+(1, 'Downtown CRA',      1998, 2038, 'Core commercial district — streetscapes, facades, parking'),
+(2, 'Osprey Point CRA',  2004, 2044, 'Neighborhood revitalization — housing rehab and gateways');
+
+INSERT INTO cra_project (project_id, district_id, project_name, status, budget_amount, start_date, target_completion) VALUES
+(1, 1, 'Harmon Avenue Streetscape Phase II',    'underway', 1800000, '2024-04-01', '2026-12-31'),
+(2, 1, 'Commercial Facade Grant Program',       'underway',  350000, '2023-10-01', '2027-09-30'),
+(3, 1, 'Marina District Parking Improvements',  'planned',   900000, '2026-10-01', '2028-06-30'),
+(4, 2, 'Osprey Point Housing Rehabilitation',   'underway', 1200000, '2024-01-15', '2027-03-31'),
+(5, 2, 'Gateway Signage & Corridor Lighting',   'complete',  240000, '2023-11-01', '2025-02-28');
 
 -- SEFA notes (2 CFR 200.510(b)(6))
 INSERT INTO sefa_note (fiscal_year_id, note_number, note_title, note_text) VALUES

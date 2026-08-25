@@ -37,11 +37,12 @@ const STEPS = [
       + 'begins in the fall).',
   },
   {
-    route: '/grants', target: 'source-filter',
+    route: '/grants', target: 'source-scope',
     title: 'Federal and state, side by side',
     body: 'One portfolio, two books: federal awards (ALN numbers, SEFA) and '
-      + 'State of Florida assistance (CSFA numbers, SESFA). Filter to either '
-      + 'here — the chips on each row show which is which.',
+      + 'State of Florida assistance (CSFA numbers, SESFA). These tabs scope '
+      + 'the overview, grants, expenditures, and agencies pages to either '
+      + 'source — and every row carries a Federal or State chip.',
   },
   {
     route: '/grants/1', target: 'pop-stat',
@@ -91,6 +92,13 @@ const STEPS = [
     title: 'Operating funds',
     body: 'A simple tracker for the general operating funds — adopted budgets, '
       + 'revenues in, expenses out — kept separate from grant awards.',
+  },
+  {
+    target: 'nav-cra',
+    title: 'CRA districts',
+    body: 'Community Redevelopment Agency tracking (Ch. 163, F.S.): each '
+      + 'district’s tax-increment trust fund, its approved projects, and '
+      + 'spending against project budgets.',
   },
   {
     target: 'nav-directory',

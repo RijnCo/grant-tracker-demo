@@ -3,21 +3,23 @@ import { useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
   LayoutDashboard, Landmark, Table2, Building2, Users, ShieldCheck, FileSpreadsheet,
-  ScrollText, Wallet, ArrowRight,
+  ScrollText, Wallet, MapPin, ArrowRight,
 } from 'lucide-react'
 import { useApp } from '../state/AppContext'
 import { fmtCompact } from '../lib/format'
 
+// section groups the sidebar into "tabs" of the suite; the palette stays flat
 const PAGES = [
-  { label: 'Overview', to: '/', icon: LayoutDashboard },
-  { label: 'Grants', to: '/grants', icon: Landmark },
-  { label: 'Expenditures', to: '/expenditures', icon: Table2 },
-  { label: 'Operating funds', to: '/funds', icon: Wallet },
-  { label: 'Agencies', to: '/agencies', icon: Building2 },
-  { label: 'Directory', to: '/directory', icon: Users },
-  { label: 'Audit trail', to: '/audit', icon: ShieldCheck },
-  { label: 'SEFA report', to: '/sefa', icon: FileSpreadsheet },
-  { label: 'SESFA report', to: '/sesfa', icon: ScrollText },
+  { label: 'Overview', to: '/', icon: LayoutDashboard, section: 'Grant awards' },
+  { label: 'Grants', to: '/grants', icon: Landmark, section: 'Grant awards' },
+  { label: 'Expenditures', to: '/expenditures', icon: Table2, section: 'Grant awards' },
+  { label: 'Agencies', to: '/agencies', icon: Building2, section: 'Grant awards' },
+  { label: 'SEFA · federal', to: '/sefa', icon: FileSpreadsheet, section: 'Audit & reports' },
+  { label: 'SESFA · state', to: '/sesfa', icon: ScrollText, section: 'Audit & reports' },
+  { label: 'Audit trail', to: '/audit', icon: ShieldCheck, section: 'Audit & reports' },
+  { label: 'Operating funds', to: '/funds', icon: Wallet, section: 'City finance' },
+  { label: 'CRA districts', to: '/cra', icon: MapPin, section: 'City finance' },
+  { label: 'Directory', to: '/directory', icon: Users, section: 'Reference' },
 ]
 
 export default function CommandPalette({ open, onClose }) {

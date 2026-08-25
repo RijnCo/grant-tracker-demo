@@ -280,6 +280,41 @@ BEGIN
 END;
 
 -- ---------------------------------------------------------------------------
+-- CRA (Community Redevelopment Agency) triggers
+-- ---------------------------------------------------------------------------
+
+-- CRA ledger amounts are positive; txn_type carries the direction.
+CREATE TRIGGER trg_cra_txn_amount_ins
+BEFORE INSERT ON cra_transaction
+WHEN NEW.amount <= 0
+BEGIN
+    SELECT RAISE(ABORT, 'CRA transaction amounts must be positive; use txn_type for direction');
+END;
+
+-- A transaction that names a project must book to that project's district.
+CREATE TRIGGER trg_cra_txn_project_match
+BEFORE INSERT ON cra_transaction
+WHEN NEW.project_id IS NOT NULL
+ AND (SELECT p.district_id FROM cra_project p WHERE p.project_id = NEW.project_id)
+     IS NOT NEW.district_id
+BEGIN
+    SELECT RAISE(ABORT, 'project belongs to a different CRA district');
+END;
+
+-- Project spending may not exceed the approved project budget.
+CREATE TRIGGER trg_cra_project_budget
+BEFORE INSERT ON cra_transaction
+WHEN NEW.txn_type = 'project_expense'
+ AND NEW.project_id IS NOT NULL
+ AND (SELECT COALESCE(SUM(t.amount), 0) FROM cra_transaction t
+      WHERE t.project_id = NEW.project_id AND t.txn_type = 'project_expense')
+     + NEW.amount
+     > (SELECT p.budget_amount FROM cra_project p WHERE p.project_id = NEW.project_id)
+BEGIN
+    SELECT RAISE(ABORT, 'expense would exceed the approved project budget');
+END;
+
+-- ---------------------------------------------------------------------------
 -- Reporting views
 -- ---------------------------------------------------------------------------
 
@@ -414,6 +449,47 @@ FROM operating_fund f
 JOIN fiscal_year fy ON fy.fiscal_year_id = f.fiscal_year_id
 LEFT JOIN fund_transaction t ON t.fund_id = f.fund_id
 GROUP BY f.fund_id;
+
+-- CRA district status: TIF trust fund in/out and balance.
+CREATE VIEW v_cra_district_status AS
+SELECT
+    d.district_id,
+    d.district_name,
+    d.established_year,
+    d.sunset_year,
+    d.notes,
+    COALESCE(SUM(CASE WHEN t.txn_type IN ('tif_increment','other_revenue')
+                      THEN t.amount END), 0)  AS total_revenue,
+    COALESCE(SUM(CASE WHEN t.txn_type IN ('project_expense','admin_expense')
+                      THEN t.amount END), 0)  AS total_spent,
+    COALESCE(SUM(CASE WHEN t.txn_type IN ('tif_increment','other_revenue')
+                      THEN t.amount END), 0)
+      - COALESCE(SUM(CASE WHEN t.txn_type IN ('project_expense','admin_expense')
+                          THEN t.amount END), 0) AS trust_balance,
+    (SELECT COUNT(*) FROM cra_project p
+     WHERE p.district_id = d.district_id)     AS project_count
+FROM cra_district d
+LEFT JOIN cra_transaction t ON t.district_id = d.district_id
+GROUP BY d.district_id;
+
+-- CRA project status: approved budget vs. spent.
+CREATE VIEW v_cra_project_status AS
+SELECT
+    p.project_id,
+    p.district_id,
+    d.district_name,
+    p.project_name,
+    p.status,
+    p.budget_amount,
+    p.start_date,
+    p.target_completion,
+    COALESCE(SUM(t.amount), 0)                    AS spent,
+    p.budget_amount - COALESCE(SUM(t.amount), 0)  AS remaining
+FROM cra_project p
+JOIN cra_district d ON d.district_id = p.district_id
+LEFT JOIN cra_transaction t
+       ON t.project_id = p.project_id AND t.txn_type = 'project_expense'
+GROUP BY p.project_id;
 
 -- Subrecipient payments (supports subrecipient monitoring, 2 CFR 200.332).
 CREATE VIEW v_subrecipient_payments AS

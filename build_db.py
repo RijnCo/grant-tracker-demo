@@ -49,6 +49,11 @@ AWARD_PROFILE = {
     12: ([3],       [6],    (8000, 40000)),     # FRDAP park - Parks & Rec
     13: ([2, 3],    [1],    (100000, 450000)),  # DWSRF loan - Public Works
     14: ([2, 3],    [3],    (30000, 180000)),   # GAA line item - Community Redevelopment
+    # Round two
+    15: ([2, 3],    [3],    (20000, 90000)),    # Brownfields - Community Redevelopment
+    16: ([3],       [5],    (30000, 260000)),   # Bus replacement - Transit
+    17: ([2, 3],    [4],    (25000, 120000)),   # Wind retrofit - Emergency Mgmt
+    18: ([3],       [6],    (8000, 30000)),     # Facade restoration - Parks & Rec
 }
 
 # awards that pass funds to subrecipients: award_id -> (subrecipient_id, share)
@@ -192,6 +197,23 @@ def seed_documents(con):
              "Original award amount: $3,100,000.00",
              "", "This is a generated demo document."]),
     ]
+    samples += [
+        (11, "TRIP_Agreement_441509-1.pdf", "award_letter",
+         "FDOT TRIP Grant Agreement", [
+             "Recipient: City of Pelican Shores, Florida",
+             "Project: Coastal Parkway Corridor TRIP Improvements",
+             "CSFA 55.026 - Transportation Regional Incentive Program",
+             "Agreement amount: $2,400,000.00",
+             "Period of performance: 09/01/2024 - 08/31/2027",
+             "", "This is a generated demo document."]),
+        (14, "GAA_Line_Item_1234A_Award.pdf", "award_letter",
+         "Legislative Appropriation Award", [
+             "Recipient: City of Pelican Shores, Florida",
+             "Project: Downtown Marina Seawall Repair",
+             "GAA 2025-26 Specific Appropriation Line Item 1234A",
+             "Appropriated amount: $1,500,000.00",
+             "", "This is a generated demo document."]),
+    ]
     for award_id, fname, dtype, title, lines in samples:
         cur = con.execute(
             "INSERT INTO award_document (award_id, file_name, storage_path, doc_type, uploaded_by) "
@@ -254,7 +276,13 @@ def seed_amendments(con):
     record_amendment(con, 13, "2026-02-10", new_end="2029-09-30", amount_change=750000,
                      description="Loan amendment 1: contingency added and completion "
                                  "date extended one year.")
-    return 4
+    record_amendment(con, 6, "2026-05-12", new_end="2028-09-30",
+                     description="Amendment 1: HUD approved a one-year extension for "
+                                 "the remaining housing rehabilitation scope.")
+    record_amendment(con, 17, "2026-04-15", amount_change=250000,
+                     description="Amendment 1: FDEM added funds for two additional "
+                                 "critical-facility retrofits.")
+    return 6
 
 
 FUND_REVENUES = [
@@ -307,6 +335,65 @@ def generate_fund_transactions(con):
                  rng.choice(FUND_EXPENSES),
                  "AP-%05d" % rng.randint(1, 99999), rng.choice(STAFF)))
             inserted += 1
+    return inserted
+
+
+CRA_EXPENSES = [
+    "Contractor pay application", "Design and engineering services",
+    "Facade grant reimbursement", "Lighting installation",
+    "Site acquisition costs", "Streetscape materials", "Housing rehab draw",
+]
+
+
+def generate_cra_transactions(con):
+    """CRA trust-fund ledger: annual TIF increment in, project spending out."""
+    rng = random.Random(11)
+    from datetime import date, timedelta
+    tif_base = {1: (950000, 1250000), 2: (480000, 650000)}
+    inserted = 0
+    for district_id, (lo, hi) in tif_base.items():
+        for fy in (1, 2, 3):
+            # increment revenue lands early in the fiscal year (tax roll)
+            dep_date = FY_RANGE[fy][0][:5] + "12-%02d" % rng.randint(5, 20)
+            con.execute(
+                "INSERT INTO cra_transaction (district_id, txn_type, amount, "
+                "transaction_date, description, doc_reference, entered_by) "
+                "VALUES (?,?,?,?,?,?,?)",
+                (district_id, "tif_increment", round(rng.uniform(lo, hi), 2),
+                 dep_date, "Tax increment revenue deposit (s. 163.387, F.S.)",
+                 "TIF-%d-%d" % (fy + 2023, district_id), rng.choice(STAFF)))
+            inserted += 1
+            # a little admin overhead each year
+            adm_date = rand_date(rng, fy, None, "2026-08-20")
+            con.execute(
+                "INSERT INTO cra_transaction (district_id, txn_type, amount, "
+                "transaction_date, description, entered_by) VALUES (?,?,?,?,?,?)",
+                (district_id, "admin_expense", round(rng.uniform(15000, 40000), 2),
+                 adm_date, "CRA administration allocation", rng.choice(STAFF)))
+            inserted += 1
+    projects = con.execute(
+        "SELECT project_id, district_id, budget_amount, status, start_date "
+        "FROM cra_project WHERE status IN ('underway','complete')").fetchall()
+    for project_id, district_id, budget, status, start in projects:
+        cap = budget * (0.95 if status == "complete" else 0.65)
+        spent = 0.0
+        for fy in (1, 2, 3):
+            for _ in range(rng.randint(1, 3)):
+                amount = round(rng.uniform(budget * 0.04, budget * 0.18), 2)
+                if spent + amount > cap:
+                    continue
+                txn_date = rand_date(rng, fy, start, "2026-08-20")
+                if txn_date is None:
+                    continue
+                con.execute(
+                    "INSERT INTO cra_transaction (district_id, project_id, txn_type, "
+                    "amount, transaction_date, description, doc_reference, entered_by) "
+                    "VALUES (?,?,?,?,?,?,?,?)",
+                    (district_id, project_id, "project_expense", amount, txn_date,
+                     rng.choice(CRA_EXPENSES),
+                     "CRA-%05d" % rng.randint(1, 99999), rng.choice(STAFF)))
+                spent += amount
+                inserted += 1
     return inserted
 
 
@@ -490,6 +577,29 @@ def verify(con):
     check("operating funds tracked; out-of-FY fund transaction rejected", ok_funds,
           "%d fund-years" % funds[0])
 
+    # 9. CRA tracker: balances derive from the ledger; controls hold
+    cra = con.execute(
+        "SELECT COUNT(*), SUM(total_revenue), SUM(total_spent) "
+        "FROM v_cra_district_status").fetchone()
+    ok_cra = cra[0] >= 2 and (cra[1] or 0) > 0 and (cra[2] or 0) > 0
+    over = con.execute(
+        "SELECT COUNT(*) FROM v_cra_project_status WHERE spent > budget_amount").fetchone()[0]
+    ok_cra = ok_cra and over == 0
+    try:
+        con.execute("INSERT INTO cra_transaction (district_id, project_id, txn_type, amount, transaction_date) "
+                    "VALUES (1, 1, 'project_expense', 99999999, '2026-01-15')")
+        ok_cra = False
+    except sqlite3.IntegrityError as e:
+        ok_cra = ok_cra and "exceed the approved project budget" in str(e)
+    try:
+        con.execute("INSERT INTO cra_transaction (district_id, project_id, txn_type, amount, transaction_date) "
+                    "VALUES (2, 1, 'project_expense', 100, '2026-01-15')")
+        ok_cra = False
+    except sqlite3.IntegrityError as e:
+        ok_cra = ok_cra and "different CRA district" in str(e)
+    check("CRA trust funds ledgered; budget cap + district match enforced", ok_cra,
+          "%d districts" % cra[0])
+
     return results
 
 
@@ -520,6 +630,8 @@ def main():
     print("seeded %d award amendments (trigger applied dates/amounts to awards)" % na)
     nf = generate_fund_transactions(con)
     print("generated %d operating-fund transactions" % nf)
+    nc = generate_cra_transactions(con)
+    print("generated %d CRA trust-fund transactions" % nc)
     upd, dele = demo_paper_trail(con)
     print("paper-trail demo: updated expenditure %d, deleted expenditure %d" % (upd, dele))
     con.commit()

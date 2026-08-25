@@ -10,10 +10,9 @@ import SourceChip from '../components/SourceChip'
 import UsageBar from '../components/UsageBar'
 
 export default function Grants() {
-  const { data } = useApp()
+  const { data, source } = useApp()
   const navigate = useNavigate()
   const [q, setQ] = useState('')
-  const [source, setSource] = useState('ALL')
 
   const rows = useMemo(() => {
     const needle = q.trim().toLowerCase()
@@ -108,15 +107,8 @@ export default function Grants() {
             </div>
           </div>
           <div style={{ flex: 1 }} />
-          <span className="seg" role="group" aria-label="Funding source" data-tour="source-filter">
-            {['ALL', 'FEDERAL', 'STATE'].map((v) => (
-              <button key={v} aria-pressed={source === v} onClick={() => setSource(v)}>
-                {v === 'ALL' ? 'All sources' : v === 'FEDERAL' ? 'Federal' : 'State'}
-              </button>
-            ))}
-          </span>
           <input className="input" placeholder="Search grants…" value={q}
-                 onChange={(e) => setQ(e.target.value)} style={{ width: 200 }} />
+                 onChange={(e) => setQ(e.target.value)} style={{ width: 220 }} />
           <button className="btn small" onClick={() =>
             downloadCsv(
               'grant-balances.csv',

@@ -10,8 +10,8 @@ import SourceChip from '../components/SourceChip'
 import UsageBar from '../components/UsageBar'
 
 export default function Agencies() {
-  const { data, fy } = useApp()
-  const exps = useMemo(() => expInScope(data, { fy }), [data, fy])
+  const { data, fy, source } = useApp()
+  const exps = useMemo(() => expInScope(data, { fy, source }), [data, fy, source])
   const agencies = useMemo(() => aggAgencies(data, exps), [data, exps])
   const grandTotal = agencies.reduce((s, a) => s + a.total, 0)
 

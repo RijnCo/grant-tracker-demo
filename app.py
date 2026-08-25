@@ -221,6 +221,12 @@ class Handler(BaseHTTPRequestHandler):
                         "f.budget_amount FROM operating_fund f "
                         "JOIN fiscal_year fy ON fy.fiscal_year_id = f.fiscal_year_id "
                         "ORDER BY f.fund_code, fy.start_date"),
+                    "cra_districts": rows(
+                        "SELECT district_id, district_name FROM cra_district "
+                        "ORDER BY district_name"),
+                    "cra_projects": rows(
+                        "SELECT project_id, district_id, project_name, status "
+                        "FROM cra_project ORDER BY project_name"),
                 })
             finally:
                 con.close()
@@ -261,6 +267,10 @@ class Handler(BaseHTTPRequestHandler):
             return self._add_fund(sess)
         if path == "/api/fund-transaction":
             return self._add_fund_transaction(sess)
+        if path == "/api/cra-project":
+            return self._add_cra_project(sess)
+        if path == "/api/cra-transaction":
+            return self._add_cra_transaction(sess)
         if path == "/api/document":
             return self._upload_document(sess)
         if path == "/api/document-link":
@@ -543,6 +553,71 @@ class Handler(BaseHTTPRequestHandler):
                 "fund_code": status[0], "fund_name": status[1],
                 "budget": status[2], "total_in": status[3],
                 "total_out": status[4], "available": status[5]})
+        finally:
+            con.close()
+
+    def _add_cra_project(self, sess):
+        b = self._body()
+        try:
+            district_id = int(b["district_id"])
+            name = str(b["project_name"]).strip()[:200]
+            budget = round(float(b["budget_amount"]), 2)
+        except (KeyError, TypeError, ValueError):
+            return self._json(400, {"error": "district, project name, and budget are required"})
+        if not name or budget <= 0:
+            return self._json(400, {"error": "project needs a name and a positive budget"})
+        status = str(b.get("status") or "planned")
+        if status not in ("planned", "underway", "complete"):
+            return self._json(400, {"error": "unknown project status"})
+        con = db()
+        try:
+            if not con.execute("SELECT 1 FROM cra_district WHERE district_id = ?",
+                               (district_id,)).fetchone():
+                return self._json(400, {"error": "unknown CRA district"})
+            cur = con.execute(
+                "INSERT INTO cra_project (district_id, project_name, status, budget_amount, "
+                "start_date, target_completion) VALUES (?,?,?,?,?,?)",
+                (district_id, name, status, budget,
+                 str(b.get("start_date") or "") or None,
+                 str(b.get("target_completion") or "") or None))
+            con.commit()
+            return self._json(200, {"ok": True, "project_id": cur.lastrowid,
+                                    "project_name": name, "budget": budget})
+        finally:
+            con.close()
+
+    def _add_cra_transaction(self, sess):
+        b = self._body()
+        try:
+            district_id = int(b["district_id"])
+            txn_type = str(b["txn_type"])
+            amount = round(float(b["amount"]), 2)
+            txn_date = str(b["transaction_date"])
+        except (KeyError, TypeError, ValueError):
+            return self._json(400, {"error": "district, type, amount, and date are required"})
+        if txn_type not in ("tif_increment", "other_revenue", "project_expense", "admin_expense"):
+            return self._json(400, {"error": "unknown transaction type"})
+        project = b.get("project_id") or None
+        con = db()
+        try:
+            try:
+                cur = con.execute(
+                    """INSERT INTO cra_transaction
+                       (district_id, project_id, txn_type, amount, transaction_date,
+                        description, doc_reference, entered_by)
+                       VALUES (?,?,?,?,?,?,?,?)""",
+                    (district_id, int(project) if project else None, txn_type, amount,
+                     txn_date, str(b.get("description") or "")[:500],
+                     str(b.get("doc_reference") or "")[:120], sess["username"]))
+                con.commit()
+            except sqlite3.IntegrityError as e:
+                return self._json(400, {"error": str(e)})
+            status = con.execute(
+                "SELECT district_name, trust_balance FROM v_cra_district_status "
+                "WHERE district_id = ?", (district_id,)).fetchone()
+            return self._json(200, {
+                "ok": True, "cra_txn_id": cur.lastrowid,
+                "district_name": status[0], "trust_balance": status[1]})
         finally:
             con.close()
 

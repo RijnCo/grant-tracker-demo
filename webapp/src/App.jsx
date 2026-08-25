@@ -14,6 +14,7 @@ import Audit from './pages/Audit'
 import Sefa from './pages/Sefa'
 import Sesfa from './pages/Sesfa'
 import Funds from './pages/Funds'
+import Cra from './pages/Cra'
 
 function Skeleton() {
   return (
@@ -45,6 +46,7 @@ function Gate() {
         <Route path="sefa" element={<Sefa />} />
         <Route path="sesfa" element={<Sesfa />} />
         <Route path="funds" element={<Funds />} />
+        <Route path="cra" element={<Cra />} />
         <Route path="*" element={<Overview />} />
       </Route>
     </Routes>

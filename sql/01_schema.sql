@@ -198,6 +198,48 @@ CREATE TABLE fund_transaction (
 );
 
 -- ---------------------------------------------------------------------------
+-- Community Redevelopment Agency (CRA) tracker — Ch. 163 Part III, F.S.
+-- Each district has a tax-increment (TIF) redevelopment trust fund; projects
+-- spend against approved budgets from that fund.
+-- ---------------------------------------------------------------------------
+
+CREATE TABLE cra_district (
+    district_id      INTEGER PRIMARY KEY,
+    district_name    TEXT NOT NULL,
+    established_year INTEGER,
+    sunset_year      INTEGER,
+    notes            TEXT
+);
+
+CREATE TABLE cra_project (
+    project_id        INTEGER PRIMARY KEY,
+    district_id       INTEGER NOT NULL REFERENCES cra_district(district_id),
+    project_name      TEXT NOT NULL,
+    status            TEXT NOT NULL DEFAULT 'planned'
+                      CHECK (status IN ('planned','underway','complete')),
+    budget_amount     NUMERIC NOT NULL,
+    start_date        DATE,
+    target_completion DATE
+);
+
+-- Trust-fund ledger: amounts are positive, txn_type carries the direction.
+-- Revenues (TIF increment deposits) attach to the district; expenses may
+-- also name the project they draw down.
+CREATE TABLE cra_transaction (
+    cra_txn_id       INTEGER PRIMARY KEY,
+    district_id      INTEGER NOT NULL REFERENCES cra_district(district_id),
+    project_id       INTEGER REFERENCES cra_project(project_id),
+    txn_type         TEXT NOT NULL CHECK (txn_type IN
+                     ('tif_increment','other_revenue','project_expense','admin_expense')),
+    amount           NUMERIC NOT NULL,
+    transaction_date DATE NOT NULL,
+    description      TEXT,
+    doc_reference    TEXT,
+    entered_by       TEXT,
+    entered_at       TEXT DEFAULT (datetime('now'))
+);
+
+-- ---------------------------------------------------------------------------
 -- Paper-trail tables (2 CFR 200.303 internal controls / 200.334 records)
 -- ---------------------------------------------------------------------------
 
@@ -250,3 +292,6 @@ CREATE INDEX idx_audit_expenditure      ON expenditure_audit_log(expenditure_id)
 CREATE INDEX idx_loan_balance_fy        ON loan_balance(fiscal_year_id);
 CREATE INDEX idx_amendment_award        ON award_amendment(award_id);
 CREATE INDEX idx_fund_txn_fund          ON fund_transaction(fund_id);
+CREATE INDEX idx_cra_txn_district       ON cra_transaction(district_id);
+CREATE INDEX idx_cra_txn_project        ON cra_transaction(project_id);
+CREATE INDEX idx_cra_project_district   ON cra_project(district_id);

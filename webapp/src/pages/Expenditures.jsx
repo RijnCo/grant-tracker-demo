@@ -8,12 +8,12 @@ import DataTable from '../components/DataTable'
 import SourceChip from '../components/SourceChip'
 
 export default function Expenditures() {
-  const { data, fy } = useApp()
+  const { data, fy, source } = useApp()
   const [q, setQ] = useState('')
   const [awardId, setAwardId] = useState('ALL')
 
   const rows = useMemo(() => {
-    let r = expInScope(data, { fy, awardId: awardId === 'ALL' ? 'ALL' : Number(awardId) })
+    let r = expInScope(data, { fy, source, awardId: awardId === 'ALL' ? 'ALL' : Number(awardId) })
     const needle = q.trim().toLowerCase()
     if (needle) {
       r = r.filter((x) =>
@@ -24,7 +24,7 @@ export default function Expenditures() {
         (x.entered_by || '').toLowerCase().includes(needle))
     }
     return r
-  }, [data, fy, awardId, q])
+  }, [data, fy, source, awardId, q])
 
   const sumAmt = rows.reduce((s, r) => s + r.amount, 0)
   const sumSub = rows.reduce((s, r) => s + r.to_sub, 0)

@@ -208,6 +208,39 @@ export default function GrantDetail() {
             <div className="c-sub">Award letters, amendments, invoices</div>
             <DocsPanel awardId={awardId} />
           </div>
+          <div className="card">
+            <div className="eyebrow">Award record</div>
+            <h2>Award facts</h2>
+            <div className="c-sub">Full detail as recorded in the database</div>
+            {[
+              ['Award number', `${award.fain_or_ptin || '—'} (${award.identifier_type || '—'})`],
+              ['Award type', award.award_type + (award.state_award_type
+                ? ' · ' + stateAwardTypeLabel(award.state_award_type) : '')],
+              ['Awarding agency', award.agency_name],
+              ['Funding path', award.funding_path
+                + (award.pass_through_name ? ' via ' + award.pass_through_name : '')],
+              ['GL account', award.internal_gl_string || '—'],
+              ['Indirect cost', award.de_minimis_elected
+                ? '10% de minimis elected (2 CFR 200.414(f))'
+                : award.indirect_cost_rate
+                  ? (100 * award.indirect_cost_rate).toFixed(2) + '% negotiated rate'
+                  : '—'],
+              ['Awarded', award.award_date || '—'],
+              ['Period of performance',
+                award.award_period_start
+                  ? `${award.award_period_start} → ${award.award_period_end}` : '—'],
+              ['Original amount', fmtFull(award.original_amount || 0)],
+              ['Current amount', fmtFull(award.budget || 0)],
+            ].map(([label, value]) => (
+              <div key={label} style={{
+                display: 'flex', gap: 12, justifyContent: 'space-between',
+                padding: '6px 0', borderTop: '1px solid var(--grid)', fontSize: 12.5,
+              }}>
+                <span style={{ color: 'var(--ink-2)', whiteSpace: 'nowrap' }}>{label}</span>
+                <span style={{ textAlign: 'right', fontWeight: 550 }}>{value}</span>
+              </div>
+            ))}
+          </div>
           {loans.length > 0 && (
             <div className="card">
               <div className="eyebrow">2 CFR 200.510(b)(5)</div>
