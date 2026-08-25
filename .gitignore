@@ -12,4 +12,5 @@ _server.log
 _shot_*.png
 webapp/_shot_*.png
 webapp/_demo_test.mjs
+webapp/_live_test.mjs
 _cj.txt
