@@ -108,7 +108,7 @@ export default function GrantDetail() {
               : award.award_type}
           </div>
         </div>
-        <div className="stat">
+        <div className="stat" data-tour="pop-stat">
           <div className="s-label">Period of performance</div>
           <div className="s-value" style={{ fontSize: 16 }}>
             {award.award_period_start
@@ -158,7 +158,7 @@ export default function GrantDetail() {
         </div>
 
         <div className="span-4" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <div className="card">
+          <div className="card" data-tour="amendments-card">
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
               <div style={{ flex: 1 }}>
                 <div className="eyebrow">Modification history</div>

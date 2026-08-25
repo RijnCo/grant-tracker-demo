@@ -108,7 +108,7 @@ export default function Grants() {
             </div>
           </div>
           <div style={{ flex: 1 }} />
-          <span className="seg" role="group" aria-label="Funding source">
+          <span className="seg" role="group" aria-label="Funding source" data-tour="source-filter">
             {['ALL', 'FEDERAL', 'STATE'].map((v) => (
               <button key={v} aria-pressed={source === v} onClick={() => setSource(v)}>
                 {v === 'ALL' ? 'All sources' : v === 'FEDERAL' ? 'Federal' : 'State'}

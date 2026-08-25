@@ -70,7 +70,7 @@ export default function Audit() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-      <div className="card" style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
+      <div className="card" style={{ display: 'flex', gap: 14, alignItems: 'center' }} data-tour="audit-log">
         <div className="doc-ico" style={{ width: 38, height: 38 }}><ShieldCheck /></div>
         <div style={{ flex: 1 }}>
           <h2 style={{ marginTop: 0 }}>Append-only change log</h2>

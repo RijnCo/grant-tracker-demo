@@ -106,7 +106,8 @@ export default function Expenditures() {
         <input className="input" placeholder="Search register…" value={q}
                onChange={(e) => setQ(e.target.value)} style={{ width: 220 }} />
         <button className="btn small" onClick={exportCsv}><Download /> Export CSV</button>
-        <button className="btn small" onClick={exportOpenGov} title="Journal-import layout keyed by GL account">
+        <button className="btn small" onClick={exportOpenGov} data-tour="opengov-export"
+                title="Journal-import layout keyed by GL account">
           <FileOutput /> OpenGov ERP
         </button>
       </div>
