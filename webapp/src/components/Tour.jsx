@@ -17,10 +17,11 @@ export const TOUR_DONE_KEY = 'pcg-tour-done'
 const STEPS = [
   {
     target: null,
-    title: 'Welcome to Grant Operations',
-    body: 'This tracks every federal and state award the city holds — budgets, '
-      + 'spending, amendments, and the audit-ready SEFA/SESFA schedules. '
-      + 'A quick walk through the whole suite:',
+    title: 'Welcome to City Operations',
+    body: 'One tracker for the city’s day-to-day: grant awards and their '
+      + 'audit-ready SEFA/SESFA schedules, every revenue stream, operating '
+      + 'funds, CRA districts, utility billing adjustments, and revenue '
+      + 'integrity work. A quick walk through the whole suite:',
   },
   {
     target: 'nav-overview',
@@ -100,6 +101,21 @@ const STEPS = [
     title: 'Operating funds',
     body: 'A simple tracker for the general operating funds — adopted budgets, '
       + 'revenues in, expenses out — kept separate from grant awards.',
+  },
+  {
+    target: 'nav-billing',
+    title: 'Utility billing',
+    body: 'The customer discrepancy and adjustment log: intake, investigation, '
+      + 'and resolution, with the $50/$500 approval matrix, the journal-entry '
+      + 'rule, and the resolved-only-with-a-verified-code rule enforced by the '
+      + 'database. The User guide tab is the SOP.',
+  },
+  {
+    target: 'nav-integrity',
+    title: 'Revenue integrity',
+    body: 'Finding money the city already earns: the non-revenue water audit, '
+      + 'business tax receipt compliance (Ch. 205, F.S.), and the indirect '
+      + 'cost allocation plan that reimburses the General Fund.',
   },
   {
     target: 'nav-cra',

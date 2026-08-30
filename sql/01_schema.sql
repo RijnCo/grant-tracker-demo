@@ -356,6 +356,113 @@ CREATE TABLE revenue_alert (
 );
 
 -- ---------------------------------------------------------------------------
+-- Utility billing adjustment tracker — digital log for customer billing
+-- discrepancies and adjustments (intake → investigation → resolution), with
+-- the adjustment approval matrix and closing rules enforced by triggers.
+-- ---------------------------------------------------------------------------
+
+CREATE TABLE billing_ticket (
+    ticket_id            INTEGER PRIMARY KEY,
+    ticket_code          TEXT UNIQUE,       -- UB-2026-001
+    account_number       TEXT NOT NULL,
+    customer_name        TEXT NOT NULL,
+    contact_info         TEXT,
+    service_address      TEXT,
+    utility_service      TEXT NOT NULL DEFAULT 'water' CHECK (utility_service IN
+                         ('water','sewer','gas','solid_waste')),
+    category             TEXT NOT NULL CHECK (category IN
+                         ('meter_read_error','data_entry_error','broken_meter',
+                          'leak_adjustment','overbilling','underbilling',
+                          'unmetered_connection','inactive_account_usage',
+                          'meter_under_registration','other')),
+    source               TEXT NOT NULL DEFAULT 'customer' CHECK (source IN
+                         ('customer','field_audit','reconciliation')),
+    original_bill_amount NUMERIC,
+    disputed_bill_amount NUMERIC,
+    original_usage       NUMERIC,
+    corrected_usage      NUMERIC,
+    usage_unit           TEXT CHECK (usage_unit IN ('gal','kwh','therms','ccf')),
+    ticket_owner         TEXT,
+    status               TEXT NOT NULL DEFAULT 'new' CHECK (status IN
+                         ('new','under_review','pending_approval','resolved')),
+    priority             TEXT NOT NULL DEFAULT 'medium' CHECK (priority IN
+                         ('low','medium','high')),
+    date_received        DATE NOT NULL,
+    resolution_deadline  DATE,
+    notes                TEXT,
+    entered_by           TEXT,
+    last_updated_by      TEXT,
+    entered_at           TEXT DEFAULT (datetime('now'))
+);
+
+-- Financial adjustments against a ticket. Amounts are positive; the type
+-- carries direction (credit = money back to the customer, back_bill =
+-- revenue recovered, no_change = dispute closed without adjustment).
+CREATE TABLE billing_adjustment (
+    adjustment_id   INTEGER PRIMARY KEY,
+    ticket_id       INTEGER NOT NULL REFERENCES billing_ticket(ticket_id),
+    adjustment_type TEXT NOT NULL CHECK (adjustment_type IN
+                    ('credit','back_bill','no_change')),
+    amount          NUMERIC NOT NULL DEFAULT 0,
+    adjustment_code TEXT,      -- verified code pushed to the billing system
+    je_reference    TEXT,      -- journal entry ref; required above $50 (trigger)
+    approved_by     TEXT,
+    approval_role   TEXT CHECK (approval_role IN
+                    ('frontline','supervisor','director_cfo')),
+    approval_date   DATE,
+    notes           TEXT,
+    entered_by      TEXT,
+    entered_at      TEXT DEFAULT (datetime('now'))
+);
+
+-- Append-only status history per ticket (written by trigger on every status
+-- change) — supports the SLA/aging reports and the weekly audits.
+CREATE TABLE billing_ticket_event (
+    event_id   INTEGER PRIMARY KEY,
+    ticket_id  INTEGER NOT NULL,
+    old_status TEXT,
+    new_status TEXT,
+    changed_by TEXT,
+    changed_at TEXT DEFAULT (datetime('now'))
+);
+
+-- ---------------------------------------------------------------------------
+-- Revenue integrity initiatives
+-- ---------------------------------------------------------------------------
+
+-- Business tax receipt compliance review (Ch. 205, F.S.): businesses found
+-- operating in the city without a current registration.
+CREATE TABLE btr_case (
+    case_id              INTEGER PRIMARY KEY,
+    business_name        TEXT NOT NULL,
+    business_address     TEXT,
+    case_status          TEXT NOT NULL DEFAULT 'identified' CHECK (case_status IN
+                         ('identified','notice_sent','registered','exempt','referred')),
+    identified_date      DATE,
+    notice_date          DATE,
+    estimated_annual_tax NUMERIC,
+    collected_amount     NUMERIC NOT NULL DEFAULT 0,
+    notes                TEXT,
+    entered_by           TEXT,
+    entered_at           TEXT DEFAULT (datetime('now'))
+);
+
+-- Indirect cost allocation plan (ICAP): central administrative services
+-- (HR, IT, Legal…) charged to the enterprise funds and grant programs so the
+-- General Fund is reimbursed for the support it provides them.
+CREATE TABLE icap_allocation (
+    allocation_id    INTEGER PRIMARY KEY,
+    fiscal_year_id   INTEGER NOT NULL REFERENCES fiscal_year(fiscal_year_id),
+    plan_status      TEXT NOT NULL DEFAULT 'adopted' CHECK (plan_status IN
+                     ('adopted','proposed')),
+    central_service  TEXT NOT NULL,   -- HR, IT, Legal, City Manager, Clerk, Finance
+    paying_fund      TEXT NOT NULL,   -- Water & Sewer, Solid Waste, grant programs…
+    allocation_basis TEXT,            -- FTEs served, budget share, transaction volume
+    annual_amount    NUMERIC NOT NULL,
+    UNIQUE (fiscal_year_id, central_service, paying_fund)
+);
+
+-- ---------------------------------------------------------------------------
 -- Paper-trail tables (2 CFR 200.303 internal controls / 200.334 records)
 -- ---------------------------------------------------------------------------
 
@@ -418,3 +525,7 @@ CREATE INDEX idx_rev_receipt_stream     ON revenue_receipt(stream_id);
 CREATE INDEX idx_rev_receipt_fy         ON revenue_receipt(fiscal_year_id);
 CREATE INDEX idx_rev_budget_fy          ON revenue_budget(fiscal_year_id);
 CREATE INDEX idx_rev_alert_stream       ON revenue_alert(stream_id);
+CREATE INDEX idx_billing_adj_ticket     ON billing_adjustment(ticket_id);
+CREATE INDEX idx_billing_event_ticket   ON billing_ticket_event(ticket_id);
+CREATE INDEX idx_billing_ticket_status  ON billing_ticket(status);
+CREATE INDEX idx_icap_fy                ON icap_allocation(fiscal_year_id);

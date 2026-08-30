@@ -81,6 +81,38 @@ seasonal baseline** automatically writes a row to the append-only
 the dashboard's alert panel (the local stand-in for an alert email; SMTP can
 be added when the app is packaged).
 
+### Utility billing adjustment tracker
+
+A digital log for customer billing discrepancies and adjustments, structured
+intake → investigation → resolution. Tickets carry the account, customer, and
+service details, a **discrepancy category** (meter read error, data entry
+error, broken meter, leak adjustment, over/underbilling — plus the
+non-revenue-water categories below), financial & usage metrics, a ticket
+owner, priority, status (New → Under review → Pending approval → Resolved),
+and a resolution deadline with automatic overdue flags.
+
+The SOP's internal controls are database triggers: the **adjustment approval
+matrix** ($0–$50 frontline rep, $50.01–$500 supervisor, over $500
+director/CFO), the **JE-reference rule** (a journal entry number is required
+for any adjustment over $50), and the **closing rule** (a ticket can only be
+Resolved once a verified adjustment code is on file). Every status change is
+written to an append-only event log, and the **Reconciliation tab** gives the
+supervisor the weekly audit of logged adjustments vs. credits issued. The
+**User guide tab** is the Tracker User Guide — logging protocol, approval
+matrix, closing rules, the 30-day pilot plan, and role-based training with
+the five resolved sandbox tickets (UB-2026-001…005).
+
+### Revenue integrity
+
+Three initiatives that recover money the city already earns: the
+**non-revenue water audit** (under-registering meters, inactive-but-consuming
+accounts, unmetered connections — worked as field-audit tickets in the
+billing tracker), **business tax receipt compliance** under Ch. 205, F.S.
+(cases for businesses operating without registration, from identification
+through notice to collection), and the **indirect cost allocation plan**
+(central HR/IT/Legal/City Manager/Clerk/Finance costs charged to the
+enterprise funds, grant programs, and CRA — FY2026 adopted, FY2027 proposed).
+
 ### Amendments (dates and money change all the time)
 
 Award dates and amounts are living values: a "3-year" award routinely runs 6,

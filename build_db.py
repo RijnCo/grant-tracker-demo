@@ -530,6 +530,131 @@ def sweep_revenue_alerts(con, as_of):
     return alerts
 
 
+# Utility billing adjustment tracker demo tickets. The first five resolved
+# tickets are the "sandbox" — five historical disputes staff can study end to
+# end during training. Status steps run as UPDATEs so the event-log trigger
+# fires exactly as live entry would; adjustments observe the approval matrix.
+BILLING_TICKETS = [
+    # (code, service, category, source, customer, contact, address, acct,
+    #  orig_bill, disputed, orig_use, corr_use, unit, owner, priority,
+    #  received, deadline, notes, final_status,
+    #  adjustment: (type, amount, code, je, approved_by, role, date) or None)
+    ('UB-2026-001', 'water', 'leak_adjustment', 'customer', 'Martha Ellison',
+     '(850) 555-0142', '412 Seagrass Ave', '04-118234-01',
+     486.20, 291.10, 46200, 12800, 'gal', 'mgarcia', 'medium',
+     '2026-05-04', '2026-05-18', 'Slab leak repaired 5/02; plumber invoice on file.',
+     'resolved', ('credit', 214.50, 'ADJ-77121', 'JE-2026-0491', 'dwilliams', 'supervisor', '2026-05-12')),
+    ('UB-2026-002', 'water', 'meter_read_error', 'customer', 'Del Rio Bakery',
+     '(850) 555-0177', '77 Harmon Ave', '04-102911-02',
+     212.40, 42.10, 18100, 14400, 'gal', 'kpatel', 'low',
+     '2026-05-18', '2026-06-01', 'Transposed read confirmed against photo.',
+     'resolved', ('credit', 42.10, 'ADJ-77256', None, 'kpatel', 'frontline', '2026-05-22')),
+    ('UB-2026-003', 'sewer', 'data_entry_error', 'customer', 'Bayview Condominium Assn',
+     '(850) 555-0119', '318 Bayview Ave', '11-220476-01',
+     2140.00, 1130.00, None, None, None, 'dwilliams', 'high',
+     '2026-05-26', '2026-06-16', 'Wrong rate class keyed at account setup.',
+     'resolved', ('credit', 612.40, 'ADJ-77302', 'JE-2026-0523', 'R. Alvarez', 'director_cfo', '2026-06-03')),
+    ('UB-2026-004', 'water', 'overbilling', 'customer', 'James & Ada Okafor',
+     '(850) 555-0163', '9 Osprey Point Rd', '04-131877-01',
+     341.90, 128.75, 30400, 19100, 'gal', 'mgarcia', 'medium',
+     '2026-06-02', '2026-06-23', None,
+     'resolved', ('credit', 128.75, 'ADJ-77419', 'JE-2026-0544', 'dwilliams', 'supervisor', '2026-06-17')),
+    ('UB-2026-005', 'water', 'underbilling', 'customer', 'Pelican Shores Storage LLC',
+     '(850) 555-0101', '1500 Millville Ave', '04-140212-03',
+     96.10, 481.50, 8200, 41500, 'gal', 'jchen', 'medium',
+     '2026-06-09', '2026-07-07', 'Meter multiplier set wrong since March.',
+     'resolved', ('back_bill', 385.40, 'ADJ-77488', 'JE-2026-0561', 'dwilliams', 'supervisor', '2026-06-28')),
+    ('UB-2026-006', 'gas', 'broken_meter', 'customer', 'Tran Family',
+     '(850) 555-0135', '25 Sandpiper Ct', '07-118902-01',
+     88.30, 88.30, 64, None, 'therms', 'jchen', 'medium',
+     '2026-08-02', '2026-08-30', 'Meter stopped registering; replacement scheduled.',
+     'under_review', None),
+    ('UB-2026-007', 'water', 'leak_adjustment', 'customer', 'Coral Reef Motel',
+     '(850) 555-0189', '640 Bayview Ave', '04-109344-01',
+     1893.44, 1120.00, 168000, 61000, 'gal', 'dwilliams', 'high',
+     '2026-07-21', '2026-08-11', 'Pool supply line leak; awaiting director approval over $500.',
+     'pending_approval', None),
+    ('UB-2026-008', 'solid_waste', 'data_entry_error', 'customer', 'Anders Duplex',
+     '(850) 555-0148', '210 Blue Heron Way', '21-116733-01',
+     64.00, 32.00, None, None, None, 'kpatel', 'low',
+     '2026-08-24', '2026-09-07', 'Billed for two carts; only one delivered.',
+     'new', None),
+    ('UB-2026-009', 'water', 'overbilling', 'customer', 'G. Whitfield',
+     '(850) 555-0122', '84 Seagrass Ave', '04-125660-01',
+     158.90, 74.20, 14700, 9800, 'gal', 'mgarcia', 'medium',
+     '2026-08-15', '2026-08-29', None,
+     'under_review', None),
+    ('UB-2026-010', 'sewer', 'other', 'customer', 'Marisol Vega',
+     '(850) 555-0170', '341 Harmon Ave', '11-233108-01',
+     92.60, 92.60, None, None, None, 'kpatel', 'low',
+     '2026-08-27', '2026-09-10', 'Disputes sewer charge during documented outage; researching.',
+     'new', None),
+    # Non-revenue water audit findings (source: field_audit)
+    ('UB-2026-011', 'water', 'unmetered_connection', 'field_audit', 'Dockside Fish House',
+     '(850) 555-0158', '12 Marina Dr', '04-150488-01',
+     0.00, 940.00, 0, 78000, 'gal', 'rthompson', 'high',
+     '2026-07-02', '2026-08-01', 'Irrigation tap ahead of the meter found during NRW audit.',
+     'resolved', ('back_bill', 940.00, 'ADJ-77621', 'JE-2026-0577', 'R. Alvarez', 'director_cfo', '2026-07-19')),
+    ('UB-2026-012', 'water', 'inactive_account_usage', 'field_audit', 'Vacant parcel — 88 Millville Ave',
+     None, '88 Millville Ave', '04-160901-01',
+     0.00, 0.00, 0, 12400, 'gal', 'rthompson', 'medium',
+     '2026-08-06', '2026-09-05', 'Closed account still drawing water; ownership search underway.',
+     'under_review', None),
+    ('UB-2026-013', 'water', 'meter_under_registration', 'field_audit', 'Osprey Point Apartments (master meter)',
+     '(850) 555-0111', '400 Osprey Point Rd', '04-171203-01',
+     3820.00, 4390.00, 1480000, 1712000, 'gal', 'dwilliams', 'high',
+     '2026-07-30', '2026-09-15', 'Bench test shows 13% under-registration on the 6-inch master meter.',
+     'pending_approval', None),
+    ('UB-2026-014', 'water', 'underbilling', 'reconciliation', 'Weekly recon variance — route 12',
+     None, None, 'ROUTE-12', 0.00, 210.00, None, None, 'gal', 'mgarcia', 'medium',
+     '2026-08-21', '2026-09-11', 'Route total short vs. register; narrowing to two accounts.',
+     'under_review', None),
+]
+
+STATUS_PATH = {
+    'new': [],
+    'under_review': ['under_review'],
+    'pending_approval': ['under_review', 'pending_approval'],
+    'resolved': ['under_review', 'pending_approval', 'resolved'],
+}
+
+
+def seed_billing(con):
+    tickets = adjustments = 0
+    for (code, service, category, source, customer, contact, address, acct,
+         orig_bill, disputed, orig_use, corr_use, unit, owner, priority,
+         received, deadline, notes, final_status, adj) in BILLING_TICKETS:
+        cur = con.execute(
+            """INSERT INTO billing_ticket
+               (ticket_code, account_number, customer_name, contact_info,
+                service_address, utility_service, category, source,
+                original_bill_amount, disputed_bill_amount, original_usage,
+                corrected_usage, usage_unit, ticket_owner, status, priority,
+                date_received, resolution_deadline, notes, entered_by)
+               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,'new',?,?,?,?,?)""",
+            (code, acct, customer, contact, address, service, category, source,
+             orig_bill, disputed, orig_use, corr_use, unit, owner, priority,
+             received, deadline, notes, owner))
+        ticket_id = cur.lastrowid
+        tickets += 1
+        steps = STATUS_PATH[final_status]
+        for step in steps:
+            if step == 'resolved' and adj:
+                atype, amount, acode, je, approver, role, adate = adj
+                con.execute(
+                    """INSERT INTO billing_adjustment
+                       (ticket_id, adjustment_type, amount, adjustment_code,
+                        je_reference, approved_by, approval_role, approval_date,
+                        entered_by)
+                       VALUES (?,?,?,?,?,?,?,?,?)""",
+                    (ticket_id, atype, amount, acode, je, approver, role, adate, owner))
+                adjustments += 1
+            con.execute(
+                "UPDATE billing_ticket SET status = ?, last_updated_by = ? "
+                "WHERE ticket_id = ?", (step, owner, ticket_id))
+    return tickets, adjustments
+
+
 def demo_paper_trail(con):
     """One UPDATE and one DELETE so the audit log shows all three actions."""
     row = con.execute(
@@ -822,6 +947,77 @@ def verify(con):
           "%d FY2026 streams, $%.0f collected, %d alerts"
           % (fy26[0], fy26[1] or 0, n_alerts))
 
+    # 12. Utility billing tracker: approval matrix + JE rule + resolve gate
+    # enforced; status changes logged append-only; sandbox + overdue present.
+    ok_bill = True
+    open_ticket = con.execute(
+        "SELECT ticket_id FROM billing_ticket WHERE status = 'new' LIMIT 1").fetchone()[0]
+    try:
+        con.execute("INSERT INTO billing_adjustment (ticket_id, adjustment_type, "
+                    "amount, approval_role, je_reference) "
+                    "VALUES (?, 'credit', 600, 'supervisor', 'JE-X')", (open_ticket,))
+        ok_bill = False
+    except sqlite3.IntegrityError as e:
+        ok_bill = ok_bill and "approval matrix" in str(e)
+    try:
+        con.execute("INSERT INTO billing_adjustment (ticket_id, adjustment_type, "
+                    "amount, approval_role, je_reference) "
+                    "VALUES (?, 'credit', 100, 'frontline', 'JE-X')", (open_ticket,))
+        ok_bill = False
+    except sqlite3.IntegrityError as e:
+        ok_bill = ok_bill and "approval matrix" in str(e)
+    try:
+        con.execute("INSERT INTO billing_adjustment (ticket_id, adjustment_type, "
+                    "amount, approval_role) VALUES (?, 'credit', 80, 'supervisor')",
+                    (open_ticket,))
+        ok_bill = False
+    except sqlite3.IntegrityError as e:
+        ok_bill = ok_bill and "JE" in str(e)
+    try:
+        con.execute("UPDATE billing_ticket SET status = 'resolved' "
+                    "WHERE ticket_id = ?", (open_ticket,))
+        ok_bill = False
+    except sqlite3.IntegrityError as e:
+        ok_bill = ok_bill and "adjustment code" in str(e)
+    try:
+        con.execute("DELETE FROM billing_ticket_event")
+        ok_bill = False
+    except sqlite3.IntegrityError as e:
+        ok_bill = ok_bill and "append-only" in str(e)
+    counts = con.execute("""
+        SELECT SUM(status = 'resolved'),
+               SUM(is_overdue),
+               (SELECT COUNT(*) FROM billing_ticket_event),
+               SUM(source = 'field_audit')
+        FROM v_billing_ticket_status""").fetchone()
+    ok_bill = ok_bill and counts[0] >= 5 and counts[1] >= 1 \
+        and counts[2] >= 10 and counts[3] >= 3
+    recon = con.execute("SELECT COUNT(*), SUM(missing_je_refs) "
+                        "FROM v_billing_weekly_recon").fetchone()
+    small_no_je = con.execute(
+        "SELECT COUNT(*) FROM billing_adjustment "
+        "WHERE amount <= 50 AND adjustment_type <> 'no_change' "
+        "  AND (je_reference IS NULL OR je_reference = '')").fetchone()[0]
+    ok_bill = ok_bill and recon[0] >= 3 and (recon[1] or 0) == 0 and small_no_je == 1
+    check("billing tracker: approval matrix, JE rule, resolve gate, "
+          "append-only events; sandbox + overdue + NRW findings seeded", ok_bill,
+          "%d resolved, %d overdue, %d NRW, %d recon weeks"
+          % (counts[0], counts[1], counts[3], recon[0]))
+
+    # 13. Revenue integrity: BTR cases across statuses; ICAP adopted + proposed.
+    btr = con.execute("SELECT COUNT(*), COUNT(DISTINCT case_status), "
+                      "SUM(collected_amount) FROM btr_case").fetchone()
+    icap = con.execute("""
+        SELECT SUM(CASE WHEN plan_status = 'adopted'  THEN annual_amount END),
+               SUM(CASE WHEN plan_status = 'proposed' THEN annual_amount END)
+        FROM icap_allocation""").fetchone()
+    ok_int = (btr[0] >= 5 and btr[1] >= 3 and (btr[2] or 0) > 0
+              and (icap[0] or 0) > 0 and (icap[1] or 0) > (icap[0] or 0))
+    check("revenue integrity: BTR cases span statuses; ICAP adopted + "
+          "proposed plans present", ok_int,
+          "%d BTR cases, ICAP $%.0f adopted / $%.0f proposed"
+          % (btr[0], icap[0] or 0, icap[1] or 0))
+
     return results
 
 
@@ -861,6 +1057,9 @@ def main():
     na2 = sweep_revenue_alerts(con, rev_as_of)
     print("seeded %d seasonality curves; generated %d revenue receipts; "
           "%d revenue alerts raised" % (ns, nr, na2))
+    nt, nadj = seed_billing(con)
+    print("seeded %d billing tickets with %d adjustments (matrix + event "
+          "triggers exercised)" % (nt, nadj))
     upd, dele = demo_paper_trail(con)
     print("paper-trail demo: updated expenditure %d, deleted expenditure %d" % (upd, dele))
     con.commit()

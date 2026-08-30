@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
   LayoutDashboard, Landmark, Table2, Building2, Users, ShieldCheck, FileSpreadsheet,
-  ScrollText, Wallet, MapPin, ArrowRight, CircleDollarSign,
+  ScrollText, Wallet, MapPin, ArrowRight, CircleDollarSign, Droplets, BadgeCheck,
 } from 'lucide-react'
 import { useApp } from '../state/AppContext'
 import { fmtCompact } from '../lib/format'
@@ -20,6 +20,8 @@ const PAGES = [
   { label: 'Revenue tracker', to: '/revenue', icon: CircleDollarSign, section: 'City finance' },
   { label: 'Operating funds', to: '/funds', icon: Wallet, section: 'City finance' },
   { label: 'CRA districts', to: '/cra', icon: MapPin, section: 'City finance' },
+  { label: 'Utility billing', to: '/billing', icon: Droplets, section: 'City operations' },
+  { label: 'Revenue integrity', to: '/integrity', icon: BadgeCheck, section: 'City operations' },
   { label: 'Directory', to: '/directory', icon: Users, section: 'Reference' },
 ]
 

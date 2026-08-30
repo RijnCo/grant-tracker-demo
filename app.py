@@ -285,6 +285,16 @@ class Handler(BaseHTTPRequestHandler):
             return self._set_revenue_budget(sess)
         if path == "/api/revenue-import":
             return self._import_revenue(sess)
+        if path == "/api/billing-ticket":
+            return self._add_billing_ticket(sess)
+        if path == "/api/billing-ticket-update":
+            return self._update_billing_ticket(sess)
+        if path == "/api/billing-adjustment":
+            return self._add_billing_adjustment(sess)
+        if path == "/api/btr-case":
+            return self._add_btr_case(sess)
+        if path == "/api/btr-case-update":
+            return self._update_btr_case(sess)
         if path == "/api/document":
             return self._upload_document(sess)
         if path == "/api/document-link":
@@ -876,6 +886,219 @@ class Handler(BaseHTTPRequestHandler):
             con.commit()
             return self._json(200, {"ok": True, "inserted": len(items),
                                     "streams": len(touched), "alerts": alerts})
+        finally:
+            con.close()
+
+    # ---------- utility billing adjustment tracker ----------
+
+    BILLING_CATEGORIES = ("meter_read_error", "data_entry_error", "broken_meter",
+                          "leak_adjustment", "overbilling", "underbilling",
+                          "unmetered_connection", "inactive_account_usage",
+                          "meter_under_registration", "other")
+    BILLING_STATUSES = ("new", "under_review", "pending_approval", "resolved")
+
+    def _add_billing_ticket(self, sess):
+        b = self._body()
+        acct = str(b.get("account_number") or "").strip()[:40]
+        customer = str(b.get("customer_name") or "").strip()[:200]
+        category = str(b.get("category") or "")
+        if not acct or not customer:
+            return self._json(400, {"error": "account number and customer name are required"})
+        if category not in self.BILLING_CATEGORIES:
+            return self._json(400, {"error": "unknown discrepancy category"})
+        if category == "other" and not str(b.get("notes") or "").strip():
+            return self._json(400, {"error": "category Other requires an exhaustive note"})
+        service = str(b.get("utility_service") or "water")
+        source = str(b.get("source") or "customer")
+        priority = str(b.get("priority") or "medium")
+        received = str(b.get("date_received") or "").strip()
+        if not received:
+            return self._json(400, {"error": "date received is required"})
+        def num(k):
+            v = b.get(k)
+            return round(float(v), 2) if v not in (None, "") else None
+        con = db()
+        try:
+            seq = con.execute("SELECT COUNT(*) + 1 FROM billing_ticket").fetchone()[0]
+            code = "UB-%s-%03d" % (received[:4], seq)
+            try:
+                cur = con.execute(
+                    """INSERT INTO billing_ticket
+                       (ticket_code, account_number, customer_name, contact_info,
+                        service_address, utility_service, category, source,
+                        original_bill_amount, disputed_bill_amount, original_usage,
+                        corrected_usage, usage_unit, ticket_owner, priority,
+                        date_received, resolution_deadline, notes, entered_by)
+                       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                    (code, acct, customer,
+                     str(b.get("contact_info") or "").strip()[:200] or None,
+                     str(b.get("service_address") or "").strip()[:200] or None,
+                     service, category, source,
+                     num("original_bill_amount"), num("disputed_bill_amount"),
+                     num("original_usage"), num("corrected_usage"),
+                     str(b.get("usage_unit") or "") or None,
+                     str(b.get("ticket_owner") or "").strip()[:80] or sess["username"],
+                     priority, received,
+                     str(b.get("resolution_deadline") or "") or None,
+                     str(b.get("notes") or "")[:1000] or None, sess["username"]))
+                con.commit()
+            except (sqlite3.IntegrityError, TypeError, ValueError) as e:
+                return self._json(400, {"error": str(e)})
+            return self._json(200, {"ok": True, "ticket_id": cur.lastrowid,
+                                    "ticket_code": code})
+        finally:
+            con.close()
+
+    def _update_billing_ticket(self, sess):
+        b = self._body()
+        try:
+            ticket_id = int(b["ticket_id"])
+        except (KeyError, TypeError, ValueError):
+            return self._json(400, {"error": "ticket_id is required"})
+        sets, vals = [], []
+        if b.get("status"):
+            if b["status"] not in self.BILLING_STATUSES:
+                return self._json(400, {"error": "unknown status"})
+            sets.append("status = ?")
+            vals.append(b["status"])
+        if b.get("ticket_owner"):
+            sets.append("ticket_owner = ?")
+            vals.append(str(b["ticket_owner"]).strip()[:80])
+        if b.get("priority"):
+            if b["priority"] not in ("low", "medium", "high"):
+                return self._json(400, {"error": "unknown priority"})
+            sets.append("priority = ?")
+            vals.append(b["priority"])
+        if b.get("resolution_deadline"):
+            sets.append("resolution_deadline = ?")
+            vals.append(str(b["resolution_deadline"]))
+        if b.get("notes") is not None:
+            sets.append("notes = ?")
+            vals.append(str(b.get("notes") or "")[:1000] or None)
+        if not sets:
+            return self._json(400, {"error": "nothing to update"})
+        sets.append("last_updated_by = ?")
+        vals.append(sess["username"])
+        con = db()
+        try:
+            if not con.execute("SELECT 1 FROM billing_ticket WHERE ticket_id = ?",
+                               (ticket_id,)).fetchone():
+                return self._json(400, {"error": "unknown ticket"})
+            try:
+                con.execute("UPDATE billing_ticket SET %s WHERE ticket_id = ?"
+                            % ", ".join(sets), vals + [ticket_id])
+                con.commit()
+            except sqlite3.IntegrityError as e:
+                return self._json(400, {"error": str(e)})
+            return self._json(200, {"ok": True})
+        finally:
+            con.close()
+
+    def _add_billing_adjustment(self, sess):
+        b = self._body()
+        try:
+            ticket_id = int(b["ticket_id"])
+            atype = str(b["adjustment_type"])
+            amount = round(float(b.get("amount") or 0), 2)
+        except (KeyError, TypeError, ValueError):
+            return self._json(400, {"error": "ticket, adjustment type, and amount are required"})
+        if atype not in ("credit", "back_bill", "no_change"):
+            return self._json(400, {"error": "unknown adjustment type"})
+        role = str(b.get("approval_role") or "") or None
+        con = db()
+        try:
+            row = con.execute("SELECT ticket_code FROM billing_ticket "
+                              "WHERE ticket_id = ?", (ticket_id,)).fetchone()
+            if not row:
+                return self._json(400, {"error": "unknown ticket"})
+            try:
+                cur = con.execute(
+                    """INSERT INTO billing_adjustment
+                       (ticket_id, adjustment_type, amount, adjustment_code,
+                        je_reference, approved_by, approval_role, approval_date,
+                        notes, entered_by)
+                       VALUES (?,?,?,?,?,?,?,?,?,?)""",
+                    (ticket_id, atype, amount,
+                     str(b.get("adjustment_code") or "").strip()[:60] or None,
+                     str(b.get("je_reference") or "").strip()[:60] or None,
+                     str(b.get("approved_by") or "").strip()[:120] or None, role,
+                     str(b.get("approval_date") or "") or None,
+                     str(b.get("notes") or "")[:500] or None, sess["username"]))
+                con.commit()
+            except sqlite3.IntegrityError as e:
+                return self._json(400, {"error": str(e)})
+            return self._json(200, {"ok": True, "adjustment_id": cur.lastrowid,
+                                    "ticket_code": row[0]})
+        finally:
+            con.close()
+
+    # ---------- revenue integrity ----------
+
+    def _add_btr_case(self, sess):
+        b = self._body()
+        name = str(b.get("business_name") or "").strip()[:200]
+        if not name:
+            return self._json(400, {"error": "business name is required"})
+        status = str(b.get("case_status") or "identified")
+        if status not in ("identified", "notice_sent", "registered", "exempt", "referred"):
+            return self._json(400, {"error": "unknown case status"})
+        est = b.get("estimated_annual_tax")
+        try:
+            est = round(float(est), 2) if est not in (None, "") else None
+        except (TypeError, ValueError):
+            return self._json(400, {"error": "estimated tax must be a number"})
+        con = db()
+        try:
+            cur = con.execute(
+                """INSERT INTO btr_case
+                   (business_name, business_address, case_status, identified_date,
+                    notice_date, estimated_annual_tax, notes, entered_by)
+                   VALUES (?,?,?,?,?,?,?,?)""",
+                (name, str(b.get("business_address") or "").strip()[:200] or None,
+                 status, str(b.get("identified_date") or "") or None,
+                 str(b.get("notice_date") or "") or None, est,
+                 str(b.get("notes") or "")[:1000] or None, sess["username"]))
+            con.commit()
+            return self._json(200, {"ok": True, "case_id": cur.lastrowid})
+        finally:
+            con.close()
+
+    def _update_btr_case(self, sess):
+        b = self._body()
+        try:
+            case_id = int(b["case_id"])
+        except (KeyError, TypeError, ValueError):
+            return self._json(400, {"error": "case_id is required"})
+        sets, vals = [], []
+        if b.get("case_status"):
+            if b["case_status"] not in ("identified", "notice_sent", "registered",
+                                        "exempt", "referred"):
+                return self._json(400, {"error": "unknown case status"})
+            sets.append("case_status = ?")
+            vals.append(b["case_status"])
+        if b.get("notice_date"):
+            sets.append("notice_date = ?")
+            vals.append(str(b["notice_date"]))
+        if b.get("collected_amount") not in (None, ""):
+            try:
+                sets.append("collected_amount = ?")
+                vals.append(round(float(b["collected_amount"]), 2))
+            except (TypeError, ValueError):
+                return self._json(400, {"error": "collected amount must be a number"})
+        if b.get("notes") is not None:
+            sets.append("notes = ?")
+            vals.append(str(b.get("notes") or "")[:1000] or None)
+        if not sets:
+            return self._json(400, {"error": "nothing to update"})
+        con = db()
+        try:
+            if not con.execute("SELECT 1 FROM btr_case WHERE case_id = ?",
+                               (case_id,)).fetchone():
+                return self._json(400, {"error": "unknown case"})
+            con.execute("UPDATE btr_case SET %s WHERE case_id = ?"
+                        % ", ".join(sets), vals + [case_id])
+            con.commit()
+            return self._json(200, {"ok": True})
         finally:
             con.close()
 

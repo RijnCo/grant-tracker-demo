@@ -272,6 +272,47 @@ def collect(con):
         JOIN fiscal_year fy   ON fy.fiscal_year_id = a.fiscal_year_id
         ORDER BY a.alert_date DESC, a.alert_id DESC""")
 
+    # --- Utility billing adjustment tracker ---
+    data["billing_tickets"] = rows(con, """
+        SELECT ticket_id, ticket_code, account_number, customer_name,
+               contact_info, service_address, utility_service, category,
+               source, original_bill_amount, disputed_bill_amount,
+               original_usage, corrected_usage, usage_unit, ticket_owner,
+               status, priority, date_received, resolution_deadline, notes,
+               credits_issued, back_billed, adjustment_count, is_overdue,
+               days_open, entered_by
+        FROM v_billing_ticket_status
+        ORDER BY date_received DESC, ticket_id DESC""")
+
+    data["billing_adjustments"] = rows(con, """
+        SELECT a.adjustment_id, a.ticket_id, t.ticket_code, t.customer_name,
+               a.adjustment_type, a.amount, a.adjustment_code, a.je_reference,
+               a.approved_by, a.approval_role, a.approval_date, a.notes,
+               a.entered_by
+        FROM billing_adjustment a
+        JOIN billing_ticket t ON t.ticket_id = a.ticket_id
+        ORDER BY COALESCE(a.approval_date, a.entered_at) DESC, a.adjustment_id DESC""")
+
+    data["billing_recon"] = rows(con, """
+        SELECT week, week_start, adjustments, credits_issued, back_billed,
+               net_revenue_impact, missing_je_refs
+        FROM v_billing_weekly_recon ORDER BY week DESC""")
+
+    # --- Revenue integrity initiatives ---
+    data["btr_cases"] = rows(con, """
+        SELECT case_id, business_name, business_address, case_status,
+               identified_date, notice_date, estimated_annual_tax,
+               collected_amount, notes, entered_by
+        FROM btr_case ORDER BY identified_date DESC, case_id DESC""")
+
+    data["icap_allocations"] = rows(con, """
+        SELECT i.allocation_id, i.fiscal_year_id, fy.fy_label, i.plan_status,
+               i.central_service, i.paying_fund, i.allocation_basis,
+               i.annual_amount
+        FROM icap_allocation i
+        JOIN fiscal_year fy ON fy.fiscal_year_id = i.fiscal_year_id
+        ORDER BY fy.fy_label, i.paying_fund, i.central_service""")
+
     data["sefa_notes"] = rows(con, """
         SELECT fy.fy_label, n.note_number, n.note_title, n.note_text
         FROM sefa_note n JOIN fiscal_year fy ON fy.fiscal_year_id = n.fiscal_year_id

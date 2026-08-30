@@ -14,6 +14,7 @@ const TITLES = {
   '/funds': 'Operating funds', '/cra': 'CRA districts', '/agencies': 'Agencies',
   '/directory': 'Directory', '/audit': 'Audit trail',
   '/sefa': 'SEFA report', '/sesfa': 'SESFA report', '/revenue': 'Revenue tracker',
+  '/billing': 'Utility billing', '/integrity': 'Revenue integrity',
 }
 
 // pages where the global Federal/State scope actually filters what you see
@@ -70,7 +71,7 @@ export default function AppShell() {
           <div className="logo-sun" aria-hidden="true" />
           <div className="b-text">
             <div className="b-name">Pelican Shores</div>
-            <div className="b-sub">Grant Operations</div>
+            <div className="b-sub">City Operations</div>
           </div>
         </div>
         <div className="navlist">

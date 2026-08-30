@@ -371,6 +371,75 @@ BEGIN
 END;
 
 -- ---------------------------------------------------------------------------
+-- Utility billing adjustment triggers (the SOP's internal controls)
+-- ---------------------------------------------------------------------------
+
+-- Adjustment amounts are positive; the type carries direction.
+CREATE TRIGGER trg_billing_adj_amount
+BEFORE INSERT ON billing_adjustment
+WHEN (NEW.adjustment_type <> 'no_change' AND NEW.amount <= 0)
+  OR NEW.amount < 0
+BEGIN
+    SELECT RAISE(ABORT, 'adjustment amounts must be positive; the type carries direction');
+END;
+
+-- Approval matrix: $0-$50 frontline, $50.01-$500 supervisor, >$500
+-- department director / CFO.
+CREATE TRIGGER trg_billing_adj_matrix
+BEFORE INSERT ON billing_adjustment
+WHEN NEW.adjustment_type <> 'no_change' AND (
+        NEW.approval_role IS NULL
+     OR (NEW.amount > 500 AND NEW.approval_role <> 'director_cfo')
+     OR (NEW.amount > 50  AND NEW.approval_role NOT IN ('supervisor','director_cfo'))
+)
+BEGIN
+    SELECT RAISE(ABORT, 'adjustment exceeds the approver''s authority under the approval matrix');
+END;
+
+-- Journal entry reference required for any adjustment exceeding $50.
+CREATE TRIGGER trg_billing_adj_je
+BEFORE INSERT ON billing_adjustment
+WHEN NEW.adjustment_type <> 'no_change' AND NEW.amount > 50
+ AND (NEW.je_reference IS NULL OR NEW.je_reference = '')
+BEGIN
+    SELECT RAISE(ABORT, 'a journal entry (JE) reference is required for adjustments over $50');
+END;
+
+-- A ticket may only be Resolved once a verified adjustment code has been
+-- pushed to the billing system (recorded on an adjustment row).
+CREATE TRIGGER trg_billing_resolve_gate
+BEFORE UPDATE OF status ON billing_ticket
+WHEN NEW.status = 'resolved'
+ AND NOT EXISTS (SELECT 1 FROM billing_adjustment a
+                 WHERE a.ticket_id = NEW.ticket_id
+                   AND a.adjustment_code IS NOT NULL AND a.adjustment_code <> '')
+BEGIN
+    SELECT RAISE(ABORT, 'a verified adjustment code must be on file before a ticket is resolved');
+END;
+
+-- Every status change is logged, append-only.
+CREATE TRIGGER trg_billing_status_event
+AFTER UPDATE OF status ON billing_ticket
+WHEN OLD.status IS NOT NEW.status
+BEGIN
+    INSERT INTO billing_ticket_event (ticket_id, old_status, new_status, changed_by)
+    VALUES (NEW.ticket_id, OLD.status, NEW.status,
+            COALESCE(NEW.last_updated_by, NEW.entered_by));
+END;
+
+CREATE TRIGGER trg_billing_event_no_update
+BEFORE UPDATE ON billing_ticket_event
+BEGIN
+    SELECT RAISE(ABORT, 'billing ticket event log is append-only');
+END;
+
+CREATE TRIGGER trg_billing_event_no_delete
+BEFORE DELETE ON billing_ticket_event
+BEGIN
+    SELECT RAISE(ABORT, 'billing ticket event log is append-only');
+END;
+
+-- ---------------------------------------------------------------------------
 -- Reporting views
 -- ---------------------------------------------------------------------------
 
@@ -598,6 +667,50 @@ SELECT
 FROM revenue_budget b
 JOIN revenue_stream s ON s.stream_id = b.stream_id
 JOIN fiscal_year fy   ON fy.fiscal_year_id = b.fiscal_year_id;
+
+-- Billing ticket status: adjustments rolled up, aging, and overdue flag.
+CREATE VIEW v_billing_ticket_status AS
+SELECT
+    t.*,
+    COALESCE((SELECT SUM(a.amount) FROM billing_adjustment a
+              WHERE a.ticket_id = t.ticket_id
+                AND a.adjustment_type = 'credit'), 0)     AS credits_issued,
+    COALESCE((SELECT SUM(a.amount) FROM billing_adjustment a
+              WHERE a.ticket_id = t.ticket_id
+                AND a.adjustment_type = 'back_bill'), 0)  AS back_billed,
+    (SELECT COUNT(*) FROM billing_adjustment a
+     WHERE a.ticket_id = t.ticket_id)                     AS adjustment_count,
+    CASE WHEN t.status <> 'resolved'
+          AND t.resolution_deadline IS NOT NULL
+          AND t.resolution_deadline < date('now')
+         THEN 1 ELSE 0 END                                AS is_overdue,
+    CAST(julianday(COALESCE(
+        (SELECT MAX(e.changed_at) FROM billing_ticket_event e
+         WHERE e.ticket_id = t.ticket_id AND e.new_status = 'resolved'),
+        datetime('now')))
+      - julianday(t.date_received) AS INTEGER)            AS days_open
+FROM billing_ticket t;
+
+-- Weekly reconciliation audit: total logged adjustments per week, split into
+-- credits issued vs. revenue recovered — the supervisor compares this
+-- against the credits issued in the utility billing ledger.
+CREATE VIEW v_billing_weekly_recon AS
+SELECT
+    strftime('%Y-W%W', COALESCE(a.approval_date, a.entered_at)) AS week,
+    MIN(date(COALESCE(a.approval_date, a.entered_at)))          AS week_start,
+    COUNT(*)                                                    AS adjustments,
+    SUM(CASE WHEN a.adjustment_type = 'credit'
+             THEN a.amount ELSE 0 END)                          AS credits_issued,
+    SUM(CASE WHEN a.adjustment_type = 'back_bill'
+             THEN a.amount ELSE 0 END)                          AS back_billed,
+    SUM(CASE WHEN a.adjustment_type = 'back_bill' THEN a.amount
+             WHEN a.adjustment_type = 'credit' THEN -a.amount
+             ELSE 0 END)                                        AS net_revenue_impact,
+    SUM(CASE WHEN a.amount > 50 AND (a.je_reference IS NULL OR a.je_reference = '')
+             THEN 1 ELSE 0 END)                                 AS missing_je_refs
+FROM billing_adjustment a
+WHERE a.adjustment_type <> 'no_change'
+GROUP BY week;
 
 -- Subrecipient payments (supports subrecipient monitoring, 2 CFR 200.332).
 CREATE VIEW v_subrecipient_payments AS

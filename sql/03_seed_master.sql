@@ -273,3 +273,61 @@ INSERT INTO revenue_budget (stream_id, fiscal_year_id, budgeted_amount) VALUES
 (13, 1, 1488000), (13, 2, 1544000), (13, 3, 1600000), (13, 4, 1664000),
 (14, 1, 1246000), (14, 2, 1293000), (14, 3, 1340000), (14, 4, 1394000),
 (15, 1, 7626000), (15, 2, 7913000), (15, 3, 8200000), (15, 4, 8528000);
+
+-- =============================================================================
+-- Revenue integrity initiatives
+-- =============================================================================
+
+-- Business tax receipt compliance review (Ch. 205, F.S.)
+INSERT INTO btr_case (case_id, business_name, business_address, case_status,
+                      identified_date, notice_date, estimated_annual_tax,
+                      collected_amount, notes, entered_by) VALUES
+(1, 'Gulf Breeze Detailing LLC',        '1240 Harmon Ave',            'identified',  '2026-06-12', NULL,        158,   0, 'Mobile detailing operating from a commercial bay; no BTR on file', 'kpatel'),
+(2, 'Sandbar Vacation Rentals',         '318 Bayview Ave',            'notice_sent', '2026-05-20', '2026-06-02', 312,   0, 'Six listed units; short-term rental registration also pending',    'kpatel'),
+(3, 'Pelican Point Charters',           'Slip 14, City Marina',       'notice_sent', '2026-07-08', '2026-07-15', 264,   0, NULL,                                                                'dwilliams'),
+(4, 'Shoreline Web Design',             '92 Osprey Point Rd',         'registered',  '2026-04-11', '2026-04-25',  79,  79, 'Registered and paid after first notice',                           'kpatel'),
+(5, 'Harbor Light Ministries Thrift',   '507 Millville Ave',          'exempt',      '2026-05-05', NULL,           0,   0, 'Nonprofit exemption verified under s. 205.192',                    'dwilliams'),
+(6, 'Coastal Craft Coffee (food truck)','Various — event circuit',    'identified',  '2026-08-10', NULL,         132,   0, 'Operates at city events; needs mobile vendor BTR',                 'mgarcia');
+
+-- Indirect cost allocation plan: FY2026 adopted; FY2027 proposed (+~5%),
+-- under review so enterprise and grant operations carry their share of
+-- central administrative costs.
+INSERT INTO icap_allocation (fiscal_year_id, plan_status, central_service, paying_fund, allocation_basis, annual_amount) VALUES
+(3, 'adopted', 'Human Resources', 'Water & Sewer Utility Fund', 'FTEs supported',     118000),
+(3, 'adopted', 'Information Technology', 'Water & Sewer Utility Fund', 'devices & seats', 142000),
+(3, 'adopted', 'Legal',           'Water & Sewer Utility Fund', 'hours logged',        58000),
+(3, 'adopted', 'City Manager',    'Water & Sewer Utility Fund', 'budget share',        84000),
+(3, 'adopted', 'City Clerk',      'Water & Sewer Utility Fund', 'agenda items',        24000),
+(3, 'adopted', 'Finance',         'Water & Sewer Utility Fund', 'transaction volume', 187000),
+(3, 'adopted', 'Human Resources', 'Solid Waste Fund',           'FTEs supported',      46000),
+(3, 'adopted', 'Information Technology', 'Solid Waste Fund',    'devices & seats',     51000),
+(3, 'adopted', 'Legal',           'Solid Waste Fund',           'hours logged',        18000),
+(3, 'adopted', 'City Manager',    'Solid Waste Fund',           'budget share',        30000),
+(3, 'adopted', 'City Clerk',      'Solid Waste Fund',           'agenda items',         9000),
+(3, 'adopted', 'Finance',         'Solid Waste Fund',           'transaction volume',  72000),
+(3, 'adopted', 'Human Resources', 'Grant-funded programs',      'FTEs supported',      22000),
+(3, 'adopted', 'Information Technology', 'Grant-funded programs', 'devices & seats',   34000),
+(3, 'adopted', 'Legal',           'Grant-funded programs',      'hours logged',        12000),
+(3, 'adopted', 'Finance',         'Grant-funded programs',      'transaction volume',  98000),
+(3, 'adopted', 'Finance',         'CRA districts',              'transaction volume',  28000),
+(3, 'adopted', 'Legal',           'CRA districts',              'hours logged',        15000),
+(3, 'adopted', 'City Manager',    'CRA districts',              'budget share',        18000),
+(4, 'proposed', 'Human Resources', 'Water & Sewer Utility Fund', 'FTEs supported',     124000),
+(4, 'proposed', 'Information Technology', 'Water & Sewer Utility Fund', 'devices & seats', 149000),
+(4, 'proposed', 'Legal',           'Water & Sewer Utility Fund', 'hours logged',        61000),
+(4, 'proposed', 'City Manager',    'Water & Sewer Utility Fund', 'budget share',        88000),
+(4, 'proposed', 'City Clerk',      'Water & Sewer Utility Fund', 'agenda items',        25000),
+(4, 'proposed', 'Finance',         'Water & Sewer Utility Fund', 'transaction volume', 196000),
+(4, 'proposed', 'Human Resources', 'Solid Waste Fund',           'FTEs supported',      48000),
+(4, 'proposed', 'Information Technology', 'Solid Waste Fund',    'devices & seats',     54000),
+(4, 'proposed', 'Legal',           'Solid Waste Fund',           'hours logged',        19000),
+(4, 'proposed', 'City Manager',    'Solid Waste Fund',           'budget share',        32000),
+(4, 'proposed', 'City Clerk',      'Solid Waste Fund',           'agenda items',         9500),
+(4, 'proposed', 'Finance',         'Solid Waste Fund',           'transaction volume',  76000),
+(4, 'proposed', 'Human Resources', 'Grant-funded programs',      'FTEs supported',      23000),
+(4, 'proposed', 'Information Technology', 'Grant-funded programs', 'devices & seats',   36000),
+(4, 'proposed', 'Legal',           'Grant-funded programs',      'hours logged',        13000),
+(4, 'proposed', 'Finance',         'Grant-funded programs',      'transaction volume', 103000),
+(4, 'proposed', 'Finance',         'CRA districts',              'transaction volume',  29500),
+(4, 'proposed', 'Legal',           'CRA districts',              'hours logged',        16000),
+(4, 'proposed', 'City Manager',    'CRA districts',              'budget share',        19000);
