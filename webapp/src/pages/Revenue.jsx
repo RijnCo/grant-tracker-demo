@@ -421,8 +421,7 @@ export default function Revenue() {
       </motion.div>
 
       {alerts.length > 0 && (
-        <motion.div className="card" custom={2} variants={stagger} initial="hidden" animate="show"
-                    style={{ borderLeft: '3px solid var(--critical)' }}>
+        <motion.div className="card" custom={2} variants={stagger} initial="hidden" animate="show">
           <div className="eyebrow">Automated alerts</div>
           <h2>Revenue pacing alerts</h2>
           <div className="c-sub">

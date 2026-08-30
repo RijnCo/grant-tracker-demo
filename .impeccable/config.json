@@ -1,0 +1,14 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "overused-font",
+        "value": "inter",
+        "createdAt": "2026-08-30T21:02:26.793Z",
+        "reason": "user chose shadcn/ui-style design system with bundled Inter Variable (established 2026-08-21, shipped on gh-pages demo)"
+      }
+    ]
+  }
+}
