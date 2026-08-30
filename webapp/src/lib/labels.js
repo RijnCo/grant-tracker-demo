@@ -51,7 +51,14 @@ export const CRA_FUNDING_TYPES = {
   other: 'Other',
 }
 
+export const REVENUE_FUND_TYPES = {
+  general: 'General Fund',
+  enterprise: 'Enterprise funds',
+  special_revenue: 'Special revenue & restricted',
+}
+
 export const stateAwardTypeLabel = (v) => STATE_AWARD_TYPES[v] || v || '—'
+export const revenueFundTypeLabel = (v) => REVENUE_FUND_TYPES[v] || v || '—'
 export const amendmentTypeLabel = (v) => AMENDMENT_TYPES[v] || v || '—'
 export const craTxnTypeLabel = (v) => CRA_TXN_TYPES[v] || v || '—'
 export const craCategoryLabel = (v) => CRA_CATEGORIES[v] || v || '—'

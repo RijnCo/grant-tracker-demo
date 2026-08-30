@@ -13,7 +13,7 @@ const TITLES = {
   '/': 'Overview', '/grants': 'Grants', '/expenditures': 'Expenditures',
   '/funds': 'Operating funds', '/cra': 'CRA districts', '/agencies': 'Agencies',
   '/directory': 'Directory', '/audit': 'Audit trail',
-  '/sefa': 'SEFA report', '/sesfa': 'SESFA report',
+  '/sefa': 'SEFA report', '/sesfa': 'SESFA report', '/revenue': 'Revenue tracker',
 }
 
 // pages where the global Federal/State scope actually filters what you see

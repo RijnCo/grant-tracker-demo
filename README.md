@@ -56,6 +56,31 @@ meetings, workshops, and other events held for each project — with the date,
 participants, and the **action taken** in response. A project's Yes/No
 engagement flag on reports derives from whether any engagement rows exist.
 
+### Revenue tracker (Treasurer dashboard)
+
+Every city revenue stream is mapped to the Florida Uniform Accounting System
+chart of accounts and grouped the way the municipal ledger is: **General
+Fund** (ad valorem, local option sales tax, franchise fees, utility taxes,
+permits, business tax receipts), **Enterprise funds** (water & sewer, solid
+waste, marina user fees), and **Special revenue & restricted** (half-cent
+sales tax, state revenue sharing, fuel tax, CRA tax increment, grant
+reimbursements). Each stream carries a budgeted amount per fiscal year —
+including the upcoming FY2027 — and a **seasonal collection curve**
+(`revenue_seasonality`): ad valorem lands Nov–Jan, utility fees peak in
+summer, business taxes renew in September.
+
+"Real time" means every number derives live from the `revenue_receipt`
+ledger the moment a deposit is recorded or a bank lockbox / clearinghouse
+**CSV file is imported** (`/api/revenue-import`, all-or-nothing batches). The
+dashboard shows top-line KPI cards (collected vs. budget target, run rate
+against the seasonal baseline), the monthly pacing chart (cumulative actual
+vs. dashed baseline), a treemap of contributions by stream, and a **variance
+early-warning table**. A stream that falls more than **10% behind its
+seasonal baseline** automatically writes a row to the append-only
+`revenue_alert` log — evaluated on every entry and import — and surfaces on
+the dashboard's alert panel (the local stand-in for an alert email; SMTP can
+be added when the app is packaged).
+
 ### Amendments (dates and money change all the time)
 
 Award dates and amounts are living values: a "3-year" award routinely runs 6,

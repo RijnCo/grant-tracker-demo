@@ -326,6 +326,51 @@ BEGIN
 END;
 
 -- ---------------------------------------------------------------------------
+-- Revenue tracker triggers
+-- ---------------------------------------------------------------------------
+
+-- Receipts are positive; corrections/refunds must be flagged as adjustments.
+CREATE TRIGGER trg_rev_receipt_amount_ins
+BEFORE INSERT ON revenue_receipt
+WHEN NEW.amount <= 0 AND NEW.is_adjustment = 0
+BEGIN
+    SELECT RAISE(ABORT, 'receipts must be positive; flag refunds/corrections as adjustments');
+END;
+
+-- The receipt date must fall inside the booked fiscal year.
+CREATE TRIGGER trg_rev_receipt_fy_ins
+BEFORE INSERT ON revenue_receipt
+WHEN NOT EXISTS (
+    SELECT 1 FROM fiscal_year fy
+    WHERE fy.fiscal_year_id = NEW.fiscal_year_id
+      AND NEW.receipt_date BETWEEN fy.start_date AND fy.end_date
+)
+BEGIN
+    SELECT RAISE(ABORT, 'receipt_date is outside the booked fiscal year');
+END;
+
+-- Budgets must be positive.
+CREATE TRIGGER trg_rev_budget_positive
+BEFORE INSERT ON revenue_budget
+WHEN NEW.budgeted_amount <= 0
+BEGIN
+    SELECT RAISE(ABORT, 'budgeted amount must be positive');
+END;
+
+-- The alert log is append-only.
+CREATE TRIGGER trg_rev_alert_no_update
+BEFORE UPDATE ON revenue_alert
+BEGIN
+    SELECT RAISE(ABORT, 'revenue alert log is append-only');
+END;
+
+CREATE TRIGGER trg_rev_alert_no_delete
+BEFORE DELETE ON revenue_alert
+BEGIN
+    SELECT RAISE(ABORT, 'revenue alert log is append-only');
+END;
+
+-- ---------------------------------------------------------------------------
 -- Reporting views
 -- ---------------------------------------------------------------------------
 
@@ -523,6 +568,36 @@ SELECT
          THEN 'Yes' ELSE 'No' END                        AS engagement_done
 FROM cra_project p
 JOIN cra_district d ON d.district_id = p.district_id;
+
+-- Revenue status: budget vs. actual per stream per fiscal year. The seasonal
+-- expected-to-date baseline is computed by the app (revenue_lib.py) because
+-- it depends on "as of" today; everything here derives from the ledger.
+CREATE VIEW v_revenue_status AS
+SELECT
+    s.stream_id,
+    s.account_code,
+    s.stream_name,
+    s.fund_type,
+    s.collector,
+    b.fiscal_year_id,
+    fy.fy_label,
+    b.budgeted_amount,
+    COALESCE((SELECT SUM(r.amount) FROM revenue_receipt r
+              WHERE r.stream_id = s.stream_id
+                AND r.fiscal_year_id = b.fiscal_year_id), 0) AS actual_amount,
+    COALESCE((SELECT SUM(r.amount) FROM revenue_receipt r
+              WHERE r.stream_id = s.stream_id
+                AND r.fiscal_year_id = b.fiscal_year_id), 0)
+      - b.budgeted_amount                                    AS variance_to_budget,
+    (SELECT COUNT(*) FROM revenue_receipt r
+     WHERE r.stream_id = s.stream_id
+       AND r.fiscal_year_id = b.fiscal_year_id)              AS receipt_count,
+    (SELECT MAX(r.receipt_date) FROM revenue_receipt r
+     WHERE r.stream_id = s.stream_id
+       AND r.fiscal_year_id = b.fiscal_year_id)              AS last_receipt_date
+FROM revenue_budget b
+JOIN revenue_stream s ON s.stream_id = b.stream_id
+JOIN fiscal_year fy   ON fy.fiscal_year_id = b.fiscal_year_id;
 
 -- Subrecipient payments (supports subrecipient monitoring, 2 CFR 200.332).
 CREATE VIEW v_subrecipient_payments AS

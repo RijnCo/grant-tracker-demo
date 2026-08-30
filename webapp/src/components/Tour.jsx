@@ -88,6 +88,14 @@ const STEPS = [
       + 'by each award’s GL account string, ready for the city’s ERP.',
   },
   {
+    target: 'nav-revenue',
+    title: 'Revenue tracker',
+    body: 'The Treasurer dashboard: every city revenue stream — property '
+      + 'taxes, utility fees, state-shared revenue — budgeted per fiscal year '
+      + 'and paced against a seasonal baseline. Streams that fall more than '
+      + '10% behind raise automated alerts.',
+  },
+  {
     target: 'nav-funds',
     title: 'Operating funds',
     body: 'A simple tracker for the general operating funds — adopted budgets, '

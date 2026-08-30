@@ -290,6 +290,72 @@ CREATE TABLE cra_transaction (
 );
 
 -- ---------------------------------------------------------------------------
+-- Revenue tracker (Treasurer dashboard) — city revenue streams mapped to the
+-- Florida Uniform Accounting System chart of accounts, budgeted per fiscal
+-- year, with a receipts ledger and seasonal collection baselines. "Real time"
+-- here means every number derives live from the ledger on each entry/import.
+-- ---------------------------------------------------------------------------
+
+CREATE TABLE revenue_stream (
+    stream_id    INTEGER PRIMARY KEY,
+    account_code TEXT NOT NULL UNIQUE,   -- FL Uniform Accounting System code
+    stream_name  TEXT NOT NULL,
+    fund_type    TEXT NOT NULL CHECK (fund_type IN
+                 ('general','enterprise','special_revenue')),
+    collector    TEXT,                   -- who remits: tax collector, FDOR, lockbox…
+    notes        TEXT
+);
+
+CREATE TABLE revenue_budget (
+    revenue_budget_id INTEGER PRIMARY KEY,
+    stream_id         INTEGER NOT NULL REFERENCES revenue_stream(stream_id),
+    fiscal_year_id    INTEGER NOT NULL REFERENCES fiscal_year(fiscal_year_id),
+    budgeted_amount   NUMERIC NOT NULL,
+    UNIQUE (stream_id, fiscal_year_id)
+);
+
+-- Seasonal collection curve: the share of the annual budget expected in each
+-- fiscal month (1 = October … 12 = September). Shares for a stream sum to 1;
+-- a stream with no rows is treated as uniform (1/12 per month). This is the
+-- baseline the variance warnings and alerts compare against.
+CREATE TABLE revenue_seasonality (
+    stream_id INTEGER NOT NULL REFERENCES revenue_stream(stream_id),
+    fy_month  INTEGER NOT NULL CHECK (fy_month BETWEEN 1 AND 12),
+    share     NUMERIC NOT NULL CHECK (share >= 0),
+    PRIMARY KEY (stream_id, fy_month)
+);
+
+-- The receipts ledger: one row per deposit / distribution / remittance.
+CREATE TABLE revenue_receipt (
+    receipt_id     INTEGER PRIMARY KEY,
+    stream_id      INTEGER NOT NULL REFERENCES revenue_stream(stream_id),
+    fiscal_year_id INTEGER NOT NULL REFERENCES fiscal_year(fiscal_year_id),
+    amount         NUMERIC NOT NULL,
+    receipt_date   DATE NOT NULL,
+    description    TEXT,
+    doc_reference  TEXT,
+    is_adjustment  INTEGER NOT NULL DEFAULT 0,  -- refunds/corrections may be negative
+    entered_by     TEXT,
+    entered_at     TEXT DEFAULT (datetime('now'))
+);
+
+-- Append-only alert log: written when a stream falls >10% behind its seasonal
+-- baseline (the local stand-in for the "alert email to the Treasurer").
+CREATE TABLE revenue_alert (
+    alert_id         INTEGER PRIMARY KEY,
+    stream_id        INTEGER NOT NULL REFERENCES revenue_stream(stream_id),
+    fiscal_year_id   INTEGER NOT NULL REFERENCES fiscal_year(fiscal_year_id),
+    alert_date       DATE NOT NULL,
+    alert_type       TEXT NOT NULL CHECK (alert_type IN
+                     ('behind_baseline','large_negative_adjustment')),
+    message          TEXT NOT NULL,
+    expected_to_date NUMERIC,
+    actual_to_date   NUMERIC,
+    variance_pct     NUMERIC,
+    created_at       TEXT DEFAULT (datetime('now'))
+);
+
+-- ---------------------------------------------------------------------------
 -- Paper-trail tables (2 CFR 200.303 internal controls / 200.334 records)
 -- ---------------------------------------------------------------------------
 
@@ -348,3 +414,7 @@ CREATE INDEX idx_cra_project_district   ON cra_project(district_id);
 CREATE INDEX idx_cra_funding_district   ON cra_funding_source(district_id);
 CREATE INDEX idx_cra_pfunding_project   ON cra_project_funding(project_id);
 CREATE INDEX idx_cra_engagement_project ON cra_engagement(project_id);
+CREATE INDEX idx_rev_receipt_stream     ON revenue_receipt(stream_id);
+CREATE INDEX idx_rev_receipt_fy         ON revenue_receipt(fiscal_year_id);
+CREATE INDEX idx_rev_budget_fy          ON revenue_budget(fiscal_year_id);
+CREATE INDEX idx_rev_alert_stream       ON revenue_alert(stream_id);

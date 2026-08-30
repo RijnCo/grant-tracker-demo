@@ -22,6 +22,7 @@ PBKDF2-HMAC-SHA256 (pcb_auth.py); sessions are random 256-bit tokens in an
 HttpOnly cookie, held in memory. In production this runs behind HTTPS, the
 application secrets move to Azure Key Vault, and identity comes from Entra ID.
 """
+import datetime
 import json
 import os
 import secrets
@@ -33,6 +34,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 from pcb_auth import verify_password
 from export_data import collect
+import revenue_lib
 
 DB = os.path.join(HERE, "grants.db")
 # serve the built React app if present; fall back to the legacy static page
@@ -275,6 +277,14 @@ class Handler(BaseHTTPRequestHandler):
             return self._add_cra_engagement(sess)
         if path == "/api/cra-project-funding":
             return self._add_cra_project_funding(sess)
+        if path == "/api/revenue-receipt":
+            return self._add_revenue_receipt(sess)
+        if path == "/api/revenue-stream":
+            return self._add_revenue_stream(sess)
+        if path == "/api/revenue-budget":
+            return self._set_revenue_budget(sess)
+        if path == "/api/revenue-import":
+            return self._import_revenue(sess)
         if path == "/api/document":
             return self._upload_document(sess)
         if path == "/api/document-link":
@@ -707,6 +717,167 @@ class Handler(BaseHTTPRequestHandler):
         finally:
             con.close()
 
+
+    # ---------- revenue tracker ----------
+
+    def _fy_for_date(self, con, receipt_date):
+        row = con.execute(
+            "SELECT fiscal_year_id FROM fiscal_year "
+            "WHERE ? BETWEEN start_date AND end_date", (receipt_date,)).fetchone()
+        return row[0] if row else None
+
+    def _insert_receipt(self, con, sess, b):
+        """Validate + insert one receipt dict; returns (receipt_id, stream_id,
+        fiscal_year_id) or raises ValueError with a user-facing message."""
+        stream_id = b.get("stream_id")
+        if not stream_id and b.get("account_code"):
+            row = con.execute("SELECT stream_id FROM revenue_stream "
+                              "WHERE account_code = ?",
+                              (str(b["account_code"]).strip(),)).fetchone()
+            if not row:
+                raise ValueError("unknown account code %r" % str(b["account_code"]))
+            stream_id = row[0]
+        try:
+            stream_id = int(stream_id)
+            amount = round(float(b["amount"]), 2)
+            receipt_date = str(b["receipt_date"])
+        except (KeyError, TypeError, ValueError):
+            raise ValueError("stream, amount, and receipt date are required")
+        if not con.execute("SELECT 1 FROM revenue_stream WHERE stream_id = ?",
+                           (stream_id,)).fetchone():
+            raise ValueError("unknown revenue stream")
+        fy_id = self._fy_for_date(con, receipt_date)
+        if not fy_id:
+            raise ValueError("no fiscal year covers %s" % receipt_date)
+        try:
+            cur = con.execute(
+                """INSERT INTO revenue_receipt
+                   (stream_id, fiscal_year_id, amount, receipt_date,
+                    description, doc_reference, is_adjustment, entered_by)
+                   VALUES (?,?,?,?,?,?,?,?)""",
+                (stream_id, fy_id, amount, receipt_date,
+                 str(b.get("description") or "")[:500] or None,
+                 str(b.get("doc_reference") or "")[:120] or None,
+                 1 if b.get("is_adjustment") else 0, sess["username"]))
+        except sqlite3.IntegrityError as e:
+            raise ValueError(str(e))
+        return cur.lastrowid, stream_id, fy_id
+
+    def _add_revenue_receipt(self, sess):
+        b = self._body()
+        con = db()
+        try:
+            try:
+                receipt_id, stream_id, fy_id = self._insert_receipt(con, sess, b)
+            except ValueError as e:
+                return self._json(400, {"error": str(e)})
+            today = datetime.date.today().isoformat()
+            alert = revenue_lib.evaluate_stream_alert(con, stream_id, fy_id, today)
+            con.commit()
+            name, ytd = con.execute(
+                "SELECT s.stream_name, COALESCE(SUM(r.amount), 0) "
+                "FROM revenue_stream s LEFT JOIN revenue_receipt r "
+                "  ON r.stream_id = s.stream_id AND r.fiscal_year_id = ? "
+                "WHERE s.stream_id = ?", (fy_id, stream_id)).fetchone()
+            return self._json(200, {"ok": True, "receipt_id": receipt_id,
+                                    "stream_name": name, "ytd": ytd,
+                                    "alert": alert})
+        finally:
+            con.close()
+
+    def _add_revenue_stream(self, sess):
+        b = self._body()
+        code = str(b.get("account_code") or "").strip()[:20]
+        name = str(b.get("stream_name") or "").strip()[:200]
+        fund_type = str(b.get("fund_type") or "")
+        if not code or not name:
+            return self._json(400, {"error": "account code and stream name are required"})
+        if fund_type not in ("general", "enterprise", "special_revenue"):
+            return self._json(400, {"error": "unknown fund type"})
+        con = db()
+        try:
+            try:
+                cur = con.execute(
+                    "INSERT INTO revenue_stream (account_code, stream_name, "
+                    "fund_type, collector, notes) VALUES (?,?,?,?,?)",
+                    (code, name, fund_type,
+                     str(b.get("collector") or "").strip()[:120] or None,
+                     str(b.get("notes") or "")[:500] or None))
+                stream_id = cur.lastrowid
+                if b.get("fiscal_year_id") and b.get("budgeted_amount"):
+                    con.execute(
+                        "INSERT INTO revenue_budget (stream_id, fiscal_year_id, "
+                        "budgeted_amount) VALUES (?,?,?)",
+                        (stream_id, int(b["fiscal_year_id"]),
+                         round(float(b["budgeted_amount"]), 2)))
+                con.commit()
+            except (sqlite3.IntegrityError, TypeError, ValueError) as e:
+                return self._json(400, {"error": str(e)})
+            return self._json(200, {"ok": True, "stream_id": stream_id,
+                                    "stream_name": name})
+        finally:
+            con.close()
+
+    def _set_revenue_budget(self, sess):
+        b = self._body()
+        try:
+            stream_id = int(b["stream_id"])
+            fy_id = int(b["fiscal_year_id"])
+            amount = round(float(b["budgeted_amount"]), 2)
+        except (KeyError, TypeError, ValueError):
+            return self._json(400, {"error": "stream, fiscal year, and amount are required"})
+        con = db()
+        try:
+            if not con.execute("SELECT 1 FROM revenue_stream WHERE stream_id = ?",
+                               (stream_id,)).fetchone():
+                return self._json(400, {"error": "unknown revenue stream"})
+            try:
+                con.execute(
+                    "INSERT INTO revenue_budget (stream_id, fiscal_year_id, "
+                    "budgeted_amount) VALUES (?,?,?) "
+                    "ON CONFLICT (stream_id, fiscal_year_id) "
+                    "DO UPDATE SET budgeted_amount = excluded.budgeted_amount",
+                    (stream_id, fy_id, amount))
+                con.commit()
+            except sqlite3.IntegrityError as e:
+                return self._json(400, {"error": str(e)})
+            return self._json(200, {"ok": True})
+        finally:
+            con.close()
+
+    def _import_revenue(self, sess):
+        """Bulk receipt import (bank lockbox / clearinghouse CSV parsed by the
+        browser). All-or-nothing: any bad row rolls the whole batch back."""
+        b = self._body()
+        items = b.get("rows")
+        if not isinstance(items, list) or not items:
+            return self._json(400, {"error": "rows[] is required"})
+        if len(items) > 2000:
+            return self._json(400, {"error": "at most 2000 rows per import"})
+        con = db()
+        try:
+            touched = set()
+            for i, item in enumerate(items):
+                if not isinstance(item, dict):
+                    return self._json(400, {"error": "row %d: not an object" % (i + 1)})
+                try:
+                    _, stream_id, fy_id = self._insert_receipt(con, sess, item)
+                    touched.add((stream_id, fy_id))
+                except ValueError as e:
+                    con.rollback()
+                    return self._json(400, {"error": "row %d: %s" % (i + 1, e),
+                                            "row": i + 1})
+            today = datetime.date.today().isoformat()
+            alerts = []
+            for stream_id, fy_id in sorted(touched):
+                a = revenue_lib.evaluate_stream_alert(con, stream_id, fy_id, today)
+                if a:
+                    alerts.append(a)
+            con.commit()
+            return self._json(200, {"ok": True, "inserted": len(items),
+                                    "streams": len(touched), "alerts": alerts})
+        finally:
+            con.close()
 
     def _add_named(self, sess, table, name_col, extras):
         """Create a simple reference row (subrecipient / department /

@@ -7,7 +7,9 @@ from file:// (and inside SharePoint) with no server and no CORS issues.
 import json
 import os
 import sqlite3
-from datetime import datetime
+from datetime import date, datetime
+
+import revenue_lib
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 DB = os.path.join(HERE, "grants.db")
@@ -220,6 +222,55 @@ def collect(con):
         LEFT JOIN fiscal_year fy
                ON t.transaction_date BETWEEN fy.start_date AND fy.end_date
         ORDER BY t.transaction_date DESC, t.cra_txn_id DESC""")
+
+    # --- Revenue tracker (Treasurer dashboard) ---
+    # Per-stream, per-FY status straight from the ledger, plus the seasonal
+    # expected-to-date baseline computed here (it depends on "as of" today).
+    today = date.today().isoformat()
+    data["revenue_status"] = rows(con, """
+        SELECT stream_id, account_code, stream_name, fund_type, collector,
+               fiscal_year_id, fy_label, budgeted_amount, actual_amount,
+               variance_to_budget, receipt_count, last_receipt_date
+        FROM v_revenue_status ORDER BY fy_label, fund_type, account_code""")
+    fys = {f["fiscal_year_id"]: f for f in data["fiscal_years"]}
+    shares_by_stream = {}
+    for r in data["revenue_status"]:
+        sid = r["stream_id"]
+        if sid not in shares_by_stream:
+            shares_by_stream[sid] = revenue_lib.month_shares(con, sid)
+        fy = fys[r["fiscal_year_id"]]
+        share = revenue_lib.expected_share_to_date(
+            shares_by_stream[sid], fy["start_date"], fy["end_date"], today)
+        expected = r["budgeted_amount"] * share
+        r["expected_to_date"] = round(expected, 2)
+        r["variance_to_baseline"] = round(r["actual_amount"] - expected, 2)
+        r["variance_to_baseline_pct"] = (
+            round((r["actual_amount"] - expected) / expected * 100.0, 1)
+            if expected > 0 else 0.0)
+        r["expected_share"] = round(share, 4)
+
+    data["revenue_seasonality"] = rows(con, """
+        SELECT stream_id, fy_month, share FROM revenue_seasonality
+        ORDER BY stream_id, fy_month""")
+
+    data["revenue_receipts"] = rows(con, """
+        SELECT r.receipt_id, r.stream_id, s.account_code, s.stream_name,
+               s.fund_type, r.fiscal_year_id, fy.fy_label, r.amount,
+               r.receipt_date, r.description, r.doc_reference,
+               r.is_adjustment, r.entered_by
+        FROM revenue_receipt r
+        JOIN revenue_stream s ON s.stream_id = r.stream_id
+        JOIN fiscal_year fy   ON fy.fiscal_year_id = r.fiscal_year_id
+        ORDER BY r.receipt_date DESC, r.receipt_id DESC""")
+
+    data["revenue_alerts"] = rows(con, """
+        SELECT a.alert_id, a.stream_id, s.account_code, s.stream_name,
+               s.fund_type, fy.fy_label, a.alert_date, a.alert_type,
+               a.message, a.expected_to_date, a.actual_to_date, a.variance_pct
+        FROM revenue_alert a
+        JOIN revenue_stream s ON s.stream_id = a.stream_id
+        JOIN fiscal_year fy   ON fy.fiscal_year_id = a.fiscal_year_id
+        ORDER BY a.alert_date DESC, a.alert_id DESC""")
 
     data["sefa_notes"] = rows(con, """
         SELECT fy.fy_label, n.note_number, n.note_title, n.note_text

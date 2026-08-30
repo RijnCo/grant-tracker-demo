@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
   LayoutDashboard, Landmark, Table2, Building2, Users, ShieldCheck, FileSpreadsheet,
-  ScrollText, Wallet, MapPin, ArrowRight,
+  ScrollText, Wallet, MapPin, ArrowRight, CircleDollarSign,
 } from 'lucide-react'
 import { useApp } from '../state/AppContext'
 import { fmtCompact } from '../lib/format'
@@ -17,6 +17,7 @@ const PAGES = [
   { label: 'SEFA · federal', to: '/sefa', icon: FileSpreadsheet, section: 'Audit & reports' },
   { label: 'SESFA · state', to: '/sesfa', icon: ScrollText, section: 'Audit & reports' },
   { label: 'Audit trail', to: '/audit', icon: ShieldCheck, section: 'Audit & reports' },
+  { label: 'Revenue tracker', to: '/revenue', icon: CircleDollarSign, section: 'City finance' },
   { label: 'Operating funds', to: '/funds', icon: Wallet, section: 'City finance' },
   { label: 'CRA districts', to: '/cra', icon: MapPin, section: 'City finance' },
   { label: 'Directory', to: '/directory', icon: Users, section: 'Reference' },

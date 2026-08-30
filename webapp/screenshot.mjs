@@ -35,6 +35,7 @@ const routes = [
   ['/sesfa', '_shot_sesfa.png'],
   ['/funds', '_shot_funds.png'],
   ['/cra', '_shot_cra.png'],
+  ['/revenue', '_shot_revenue.png'],
   ['/grants/13', '_shot_detail_state.png'],
 ]
 for (const [route, file] of routes) {

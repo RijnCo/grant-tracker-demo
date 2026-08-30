@@ -19,6 +19,7 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 from pcb_auth import hash_password, verify_password
+import revenue_lib
 
 DB = os.path.join(HERE, "grants.db")
 SQL_DIR = os.path.join(HERE, "sql")
@@ -411,6 +412,124 @@ def generate_cra_transactions(con):
     return inserted
 
 
+# Seasonal collection curves (relative weights, Oct..Sep; normalized on load).
+# Streams not listed collect uniformly (no revenue_seasonality rows).
+REVENUE_SEASONALITY = {
+    1:  [2, 24, 36, 14, 8, 5, 4, 3, 2, 1, 0.5, 0.5],        # ad valorem: Nov-Jan
+    2:  [7.6, 7.8, 8.6, 8.2, 7.4, 9.0, 9.4, 8.4, 8.4, 8.6, 8.6, 8.0],  # sales tax
+    4:  [8.5, 7.5, 7, 6.5, 6.5, 7, 7.5, 8.5, 9, 10.5, 11, 10.5],       # utility taxes: summer
+    6:  [6, 4, 3, 3, 3, 3, 4, 5, 6, 10, 21, 32],             # BTR renewals due Sep 30
+    7:  [7.5, 7, 6.5, 7, 8, 10, 10.5, 10, 9.5, 8.5, 8, 7.5], # permits: spring
+    8:  [8.5, 7.5, 7, 6.5, 6.5, 7, 7.5, 8.5, 9, 10.5, 11, 10.5],       # water: summer
+    10: [7, 6, 5, 4, 4, 5, 8, 10, 12, 13, 14, 12],           # marina: season
+    11: [7.6, 7.8, 8.6, 8.2, 7.4, 9.0, 9.4, 8.4, 8.4, 8.6, 8.6, 8.0],  # half-cent
+    14: [2, 24, 36, 14, 8, 5, 4, 3, 2, 1, 0.5, 0.5],         # TIF follows tax roll
+}
+
+# FY2026 pacing factors: two streams lag so the variance warnings and the
+# automated alerts have real signal; one runs hot as a positive example.
+REVENUE_FY26_PACE = {12: 0.84, 7: 0.87, 10: 1.06}
+
+REVENUE_DESCRIPTIONS = {
+    "County Tax Collector":      ["Tax collector ad valorem remittance",
+                                  "Delinquent tax certificate proceeds"],
+    "Florida DOR clearinghouse": ["FDOR monthly distribution (ACH)",
+                                  "FDOR clearinghouse settlement"],
+    "Utility billing":           ["Utility billing cycle batch",
+                                  "Public service tax remittance"],
+    "Utility billing / lockbox": ["Bank lockbox deposit batch",
+                                  "Utility billing cycle batch"],
+    "Utility franchisees":       ["Franchise fee remittance"],
+    "City Clerk":                ["Business tax receipt renewals"],
+    "Development Services":      ["Permit counter deposits",
+                                  "Plan review fee batch"],
+    "Marina office":             ["Slip rental and transient dockage",
+                                  "Fuel dock concession share"],
+    "City / County remittance":  ["Tax increment contribution deposit"],
+    "Grantor agencies":          ["Grant reimbursement drawdown",
+                                  "Advance liquidation"],
+}
+
+
+def add_months(d, n):
+    from datetime import date
+    y, m = d.year + (d.month - 1 + n) // 12, (d.month - 1 + n) % 12 + 1
+    return date(y, m, 1)
+
+
+def seed_revenue_seasonality(con):
+    for stream_id, weights in REVENUE_SEASONALITY.items():
+        total = float(sum(weights))
+        for i, w in enumerate(weights):
+            con.execute(
+                "INSERT INTO revenue_seasonality (stream_id, fy_month, share) "
+                "VALUES (?,?,?)", (stream_id, i + 1, round(w / total, 6)))
+    return len(REVENUE_SEASONALITY)
+
+
+def generate_revenue_receipts(con, as_of):
+    """Monthly deposits per stream: budget x seasonal share x noise, split
+    into 1-3 dated receipts, through the as_of date (FY2027 stays empty)."""
+    from calendar import monthrange
+    from datetime import date
+    rng = random.Random(23)
+    inserted = 0
+    budgets = con.execute(
+        "SELECT b.stream_id, b.fiscal_year_id, b.budgeted_amount, "
+        "       fy.start_date, s.collector "
+        "FROM revenue_budget b "
+        "JOIN fiscal_year fy ON fy.fiscal_year_id = b.fiscal_year_id "
+        "JOIN revenue_stream s ON s.stream_id = b.stream_id "
+        "WHERE b.fiscal_year_id IN (1, 2, 3) ORDER BY b.stream_id, b.fiscal_year_id"
+    ).fetchall()
+    for stream_id, fy_id, budget, fy_start, collector in budgets:
+        shares = revenue_lib.month_shares(con, stream_id)
+        pace = REVENUE_FY26_PACE.get(stream_id, 1.0) if fy_id == 3 else 1.0
+        start = date(*map(int, fy_start.split("-")))
+        descs = REVENUE_DESCRIPTIONS.get(collector, ["Revenue deposit"])
+        for m in range(12):
+            m_start = add_months(start, m)
+            if m_start > as_of:
+                break
+            days = monthrange(m_start.year, m_start.month)[1]
+            last_day = days
+            frac = 1.0
+            if (m_start.year, m_start.month) == (as_of.year, as_of.month):
+                last_day = as_of.day
+                frac = as_of.day / days
+            target = budget * shares[m] * pace * rng.uniform(0.92, 1.06) * frac
+            if target < 100:
+                continue
+            n = rng.randint(1, 3)
+            cuts = sorted(rng.uniform(0.2, 0.8) for _ in range(n - 1))
+            parts, prev = [], 0.0
+            for c in cuts + [1.0]:
+                parts.append(target * (c - prev))
+                prev = c
+            for part in parts:
+                day = rng.randint(1, last_day)
+                con.execute(
+                    "INSERT INTO revenue_receipt (stream_id, fiscal_year_id, "
+                    "amount, receipt_date, description, doc_reference, entered_by) "
+                    "VALUES (?,?,?,?,?,?,?)",
+                    (stream_id, fy_id, round(part, 2),
+                     date(m_start.year, m_start.month, day).isoformat(),
+                     rng.choice(descs), "RCV-%05d" % rng.randint(1, 99999),
+                     rng.choice(STAFF)))
+                inserted += 1
+    return inserted
+
+
+def sweep_revenue_alerts(con, as_of):
+    """Run the same alert evaluation app.py runs after each entry."""
+    alerts = 0
+    for (stream_id,) in con.execute(
+            "SELECT stream_id FROM revenue_budget WHERE fiscal_year_id = 3"):
+        if revenue_lib.evaluate_stream_alert(con, stream_id, 3, as_of):
+            alerts += 1
+    return alerts
+
+
 def demo_paper_trail(con):
     """One UPDATE and one DELETE so the audit log shows all three actions."""
     row = con.execute(
@@ -654,6 +773,55 @@ def verify(con):
           "code+category+manager+funding; engagement Yes/No consistent", ok_cra2,
           "%d districts, %d No-engagement projects" % (dist[0], yes_no[2] or 0))
 
+    # 11. Revenue tracker: budgets cover all 4 FYs, the upcoming FY is clean,
+    # the status view matches the ledger, controls hold, and every alert in
+    # the log reflects a stream genuinely >10% behind its seasonal baseline.
+    nb = con.execute("SELECT COUNT(*) FROM revenue_budget").fetchone()[0]
+    fy27 = con.execute("SELECT COUNT(*) FROM revenue_receipt "
+                       "WHERE fiscal_year_id = 4").fetchone()[0]
+    fy26 = con.execute(
+        "SELECT COUNT(*), SUM(actual_amount) FROM v_revenue_status "
+        "WHERE fy_label = 'FY2026'").fetchone()
+    drift = con.execute("""
+        SELECT COUNT(*) FROM v_revenue_status v
+        WHERE ROUND(v.actual_amount, 2) <> ROUND(
+            (SELECT COALESCE(SUM(r.amount), 0) FROM revenue_receipt r
+             WHERE r.stream_id = v.stream_id
+               AND r.fiscal_year_id = v.fiscal_year_id), 2)""").fetchone()[0]
+    ok_rev = (nb == 60 and fy27 == 0 and fy26[0] == 15
+              and (fy26[1] or 0) > 0 and drift == 0)
+    bad_shares = con.execute("""
+        SELECT COUNT(*) FROM (
+            SELECT stream_id, SUM(share) s FROM revenue_seasonality
+            GROUP BY stream_id HAVING ABS(s - 1.0) > 0.001)""").fetchone()[0]
+    ok_rev = ok_rev and bad_shares == 0
+    try:
+        con.execute("INSERT INTO revenue_receipt (stream_id, fiscal_year_id, "
+                    "amount, receipt_date) VALUES (1, 1, 5000, '2026-01-15')")
+        ok_rev = False
+    except sqlite3.IntegrityError as e:
+        ok_rev = ok_rev and "outside the booked fiscal year" in str(e)
+    try:
+        con.execute("INSERT INTO revenue_receipt (stream_id, fiscal_year_id, "
+                    "amount, receipt_date) VALUES (1, 3, -100, '2026-01-15')")
+        ok_rev = False
+    except sqlite3.IntegrityError as e:
+        ok_rev = ok_rev and "flag refunds" in str(e)
+    try:
+        con.execute("DELETE FROM revenue_alert")
+        ok_rev = False
+    except sqlite3.IntegrityError as e:
+        ok_rev = ok_rev and "append-only" in str(e)
+    n_alerts = con.execute("SELECT COUNT(*) FROM revenue_alert "
+                           "WHERE alert_type = 'behind_baseline'").fetchone()[0]
+    lying = con.execute("SELECT COUNT(*) FROM revenue_alert "
+                        "WHERE variance_pct > -10").fetchone()[0]
+    ok_rev = ok_rev and n_alerts >= 1 and lying == 0
+    check("revenue tracker: 60 budget rows, FY2027 clean, ledger-true view, "
+          "date/positivity/append-only controls, honest alerts", ok_rev,
+          "%d FY2026 streams, $%.0f collected, %d alerts"
+          % (fy26[0], fy26[1] or 0, n_alerts))
+
     return results
 
 
@@ -686,6 +854,13 @@ def main():
     print("generated %d operating-fund transactions" % nf)
     nc = generate_cra_transactions(con)
     print("generated %d CRA trust-fund transactions" % nc)
+    from datetime import date as _date
+    rev_as_of = _date(2026, 8, 20)
+    ns = seed_revenue_seasonality(con)
+    nr = generate_revenue_receipts(con, rev_as_of)
+    na2 = sweep_revenue_alerts(con, rev_as_of)
+    print("seeded %d seasonality curves; generated %d revenue receipts; "
+          "%d revenue alerts raised" % (ns, nr, na2))
     upd, dele = demo_paper_trail(con)
     print("paper-trail demo: updated expenditure %d, deleted expenditure %d" % (upd, dele))
     con.commit()
