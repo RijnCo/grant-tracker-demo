@@ -271,6 +271,10 @@ class Handler(BaseHTTPRequestHandler):
             return self._add_cra_project(sess)
         if path == "/api/cra-transaction":
             return self._add_cra_transaction(sess)
+        if path == "/api/cra-engagement":
+            return self._add_cra_engagement(sess)
+        if path == "/api/cra-project-funding":
+            return self._add_cra_project_funding(sess)
         if path == "/api/document":
             return self._upload_document(sess)
         if path == "/api/document-link":
@@ -569,20 +573,102 @@ class Handler(BaseHTTPRequestHandler):
         status = str(b.get("status") or "planned")
         if status not in ("planned", "underway", "complete"):
             return self._json(400, {"error": "unknown project status"})
+        category = str(b.get("category") or "other")
+        if category not in ("infrastructure", "streetscape", "housing",
+                            "business_assistance", "parks_public_space",
+                            "transportation", "planning_admin", "other"):
+            return self._json(400, {"error": "unknown project category"})
         con = db()
         try:
             if not con.execute("SELECT 1 FROM cra_district WHERE district_id = ?",
                                (district_id,)).fetchone():
                 return self._json(400, {"error": "unknown CRA district"})
-            cur = con.execute(
-                "INSERT INTO cra_project (district_id, project_name, status, budget_amount, "
-                "start_date, target_completion) VALUES (?,?,?,?,?,?)",
-                (district_id, name, status, budget,
-                 str(b.get("start_date") or "") or None,
-                 str(b.get("target_completion") or "") or None))
-            con.commit()
+            try:
+                cur = con.execute(
+                    "INSERT INTO cra_project (district_id, project_code, project_name, "
+                    "category, project_manager, status, budget_amount, "
+                    "start_date, target_completion) VALUES (?,?,?,?,?,?,?,?,?)",
+                    (district_id, str(b.get("project_code") or "").strip()[:40] or None,
+                     name, category,
+                     str(b.get("project_manager") or "").strip()[:120] or None, status,
+                     budget, str(b.get("start_date") or "") or None,
+                     str(b.get("target_completion") or "") or None))
+                con.commit()
+            except sqlite3.IntegrityError as e:
+                return self._json(400, {"error": str(e)})
             return self._json(200, {"ok": True, "project_id": cur.lastrowid,
                                     "project_name": name, "budget": budget})
+        finally:
+            con.close()
+
+    def _add_cra_engagement(self, sess):
+        b = self._body()
+        try:
+            project_id = int(b["project_id"])
+            etype = str(b["engagement_type"])
+            title = str(b["title"]).strip()[:200]
+        except (KeyError, TypeError, ValueError):
+            return self._json(400, {"error": "project, engagement type, and title are required"})
+        if etype not in ("survey", "public_meeting", "workshop", "open_house",
+                         "charrette", "other"):
+            return self._json(400, {"error": "unknown engagement type"})
+        if not title:
+            return self._json(400, {"error": "a title is required"})
+        participants = b.get("participants")
+        try:
+            participants = int(participants) if participants not in (None, "") else None
+        except (TypeError, ValueError):
+            return self._json(400, {"error": "participants must be a number"})
+        con = db()
+        try:
+            row = con.execute("SELECT project_name FROM cra_project WHERE project_id = ?",
+                              (project_id,)).fetchone()
+            if not row:
+                return self._json(400, {"error": "unknown CRA project"})
+            cur = con.execute(
+                """INSERT INTO cra_engagement
+                   (project_id, engagement_type, engagement_date, title,
+                    participants, summary, action_taken, entered_by)
+                   VALUES (?,?,?,?,?,?,?,?)""",
+                (project_id, etype, str(b.get("engagement_date") or "") or None,
+                 title, participants, str(b.get("summary") or "")[:1000] or None,
+                 str(b.get("action_taken") or "")[:1000] or None, sess["username"]))
+            con.commit()
+            return self._json(200, {"ok": True, "engagement_id": cur.lastrowid,
+                                    "project_name": row[0]})
+        finally:
+            con.close()
+
+    def _add_cra_project_funding(self, sess):
+        b = self._body()
+        try:
+            project_id = int(b["project_id"])
+            source_name = str(b["source_name"]).strip()[:200]
+            amount = round(float(b["amount"]), 2)
+        except (KeyError, TypeError, ValueError):
+            return self._json(400, {"error": "project, source name, and amount are required"})
+        source_type = str(b.get("source_type") or "other")
+        if source_type not in ("tax_increment", "county_contribution", "grant",
+                               "general_fund", "interest", "private_match", "other"):
+            return self._json(400, {"error": "unknown funding source type"})
+        if not source_name or amount <= 0:
+            return self._json(400, {"error": "funding source needs a name and a positive amount"})
+        con = db()
+        try:
+            row = con.execute("SELECT project_name FROM cra_project WHERE project_id = ?",
+                              (project_id,)).fetchone()
+            if not row:
+                return self._json(400, {"error": "unknown CRA project"})
+            try:
+                cur = con.execute(
+                    "INSERT INTO cra_project_funding (project_id, source_name, "
+                    "source_type, amount) VALUES (?,?,?,?)",
+                    (project_id, source_name, source_type, amount))
+                con.commit()
+            except sqlite3.IntegrityError as e:
+                return self._json(400, {"error": str(e)})
+            return self._json(200, {"ok": True, "project_funding_id": cur.lastrowid,
+                                    "project_name": row[0]})
         finally:
             con.close()
 

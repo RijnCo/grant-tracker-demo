@@ -37,11 +37,24 @@ tour replays from the ? button in the top bar.
 
 ### CRA tracker (Ch. 163 Part III, F.S.)
 
-Each Community Redevelopment Agency district has a tax-increment (TIF)
-redevelopment trust fund: increment deposits and other revenue flow in;
-project and administrative expenses draw it down. Projects carry an approved
-budget that a database trigger enforces — an expense that would overspend a
-project is rejected, and expenses must book to the project's own district.
+Four Community Redevelopment Agency districts — **Downtown, St. Andrews,
+Downtown North, and Millville** — each carry their tax base (baseline taxable
+value in the base year vs. current taxable value), the TIF revenue the
+increment generates, the trust fund's available budget, and the district's
+funding sources (`cra_funding_source`). Increment deposits and other revenue
+flow into the trust fund; project and administrative expenses draw it down.
+
+Projects carry a human-readable **project ID** (`project_code`), a
+**category**, a **project manager**, status, start/target dates, the approved
+budget, actual spend from the ledger, and their own **funding sources**
+(`cra_project_funding`, capped at the approved budget by a trigger). An
+expense that would overspend a project is rejected, and expenses must book to
+the project's own district.
+
+**Community engagement** (`cra_engagement`) records the surveys, public
+meetings, workshops, and other events held for each project — with the date,
+participants, and the **action taken** in response. A project's Yes/No
+engagement flag on reports derives from whether any engagement rows exist.
 
 ### Amendments (dates and money change all the time)
 

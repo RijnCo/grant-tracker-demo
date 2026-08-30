@@ -21,6 +21,39 @@ export const CRA_TXN_TYPES = {
   admin_expense: 'Admin expense',
 }
 
+export const CRA_CATEGORIES = {
+  infrastructure: 'Infrastructure',
+  streetscape: 'Streetscape',
+  housing: 'Housing',
+  business_assistance: 'Business assistance',
+  parks_public_space: 'Parks & public space',
+  transportation: 'Transportation',
+  planning_admin: 'Planning & admin',
+  other: 'Other',
+}
+
+export const CRA_ENGAGEMENT_TYPES = {
+  survey: 'Survey',
+  public_meeting: 'Public meeting',
+  workshop: 'Workshop',
+  open_house: 'Open house',
+  charrette: 'Design charrette',
+  other: 'Other',
+}
+
+export const CRA_FUNDING_TYPES = {
+  tax_increment: 'Tax increment (TIF)',
+  county_contribution: 'County contribution',
+  grant: 'Grant',
+  general_fund: 'General fund',
+  interest: 'Interest',
+  private_match: 'Private match',
+  other: 'Other',
+}
+
 export const stateAwardTypeLabel = (v) => STATE_AWARD_TYPES[v] || v || '—'
 export const amendmentTypeLabel = (v) => AMENDMENT_TYPES[v] || v || '—'
 export const craTxnTypeLabel = (v) => CRA_TXN_TYPES[v] || v || '—'
+export const craCategoryLabel = (v) => CRA_CATEGORIES[v] || v || '—'
+export const craEngagementTypeLabel = (v) => CRA_ENGAGEMENT_TYPES[v] || v || '—'
+export const craFundingTypeLabel = (v) => CRA_FUNDING_TYPES[v] || v || '—'

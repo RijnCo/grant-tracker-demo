@@ -204,22 +204,72 @@ CREATE TABLE fund_transaction (
 -- ---------------------------------------------------------------------------
 
 CREATE TABLE cra_district (
-    district_id      INTEGER PRIMARY KEY,
-    district_name    TEXT NOT NULL,
-    established_year INTEGER,
-    sunset_year      INTEGER,
-    notes            TEXT
+    district_id           INTEGER PRIMARY KEY,
+    district_name         TEXT NOT NULL,
+    established_year      INTEGER,
+    sunset_year           INTEGER,
+    base_year             INTEGER,   -- tax roll "frozen" for the increment (s. 163.387)
+    base_taxable_value    NUMERIC,   -- taxable value in the base year
+    current_taxable_value NUMERIC,   -- latest certified taxable value
+    notes                 TEXT
+);
+
+-- Where each district's redevelopment trust fund money comes from.
+CREATE TABLE cra_funding_source (
+    funding_source_id INTEGER PRIMARY KEY,
+    district_id       INTEGER NOT NULL REFERENCES cra_district(district_id),
+    source_name       TEXT NOT NULL,
+    source_type       TEXT NOT NULL CHECK (source_type IN
+                      ('tax_increment','county_contribution','grant',
+                       'general_fund','interest','private_match','other')),
+    annual_amount     NUMERIC,
+    notes             TEXT
 );
 
 CREATE TABLE cra_project (
     project_id        INTEGER PRIMARY KEY,
     district_id       INTEGER NOT NULL REFERENCES cra_district(district_id),
+    project_code      TEXT UNIQUE,       -- human-readable ID, e.g. CRA-DT-001
     project_name      TEXT NOT NULL,
+    category          TEXT NOT NULL DEFAULT 'other'
+                      CHECK (category IN ('infrastructure','streetscape','housing',
+                             'business_assistance','parks_public_space',
+                             'transportation','planning_admin','other')),
+    project_manager   TEXT,
     status            TEXT NOT NULL DEFAULT 'planned'
                       CHECK (status IN ('planned','underway','complete')),
     budget_amount     NUMERIC NOT NULL,
     start_date        DATE,
     target_completion DATE
+);
+
+-- How each project's approved budget is paid for (TIF, grants, matches…).
+CREATE TABLE cra_project_funding (
+    project_funding_id INTEGER PRIMARY KEY,
+    project_id         INTEGER NOT NULL REFERENCES cra_project(project_id),
+    source_name        TEXT NOT NULL,
+    source_type        TEXT NOT NULL CHECK (source_type IN
+                       ('tax_increment','county_contribution','grant',
+                        'general_fund','interest','private_match','other')),
+    amount             NUMERIC NOT NULL
+);
+
+-- Community engagement held for a project (surveys, public meetings…) and
+-- the action the CRA took in response. A project with no rows here has had
+-- no engagement ("No" on reports).
+CREATE TABLE cra_engagement (
+    engagement_id   INTEGER PRIMARY KEY,
+    project_id      INTEGER NOT NULL REFERENCES cra_project(project_id),
+    engagement_type TEXT NOT NULL CHECK (engagement_type IN
+                    ('survey','public_meeting','workshop','open_house',
+                     'charrette','other')),
+    engagement_date DATE,
+    title           TEXT NOT NULL,
+    participants    INTEGER,
+    summary         TEXT,
+    action_taken    TEXT,
+    entered_by      TEXT,
+    entered_at      TEXT DEFAULT (datetime('now'))
 );
 
 -- Trust-fund ledger: amounts are positive, txn_type carries the direction.
@@ -295,3 +345,6 @@ CREATE INDEX idx_fund_txn_fund          ON fund_transaction(fund_id);
 CREATE INDEX idx_cra_txn_district       ON cra_transaction(district_id);
 CREATE INDEX idx_cra_txn_project        ON cra_transaction(project_id);
 CREATE INDEX idx_cra_project_district   ON cra_project(district_id);
+CREATE INDEX idx_cra_funding_district   ON cra_funding_source(district_id);
+CREATE INDEX idx_cra_pfunding_project   ON cra_project_funding(project_id);
+CREATE INDEX idx_cra_engagement_project ON cra_engagement(project_id);

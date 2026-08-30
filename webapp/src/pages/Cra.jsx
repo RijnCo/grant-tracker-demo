@@ -1,9 +1,12 @@
 import { useMemo, useState } from 'react'
-import { Download, MapPin, Plus, ReceiptText } from 'lucide-react'
+import { Coins, Download, MapPin, Megaphone, Plus, ReceiptText } from 'lucide-react'
 import { useApp, useToast } from '../state/AppContext'
 import { api } from '../lib/api'
 import { downloadCsv, fmtCompact, fmtFull, pctOf } from '../lib/format'
-import { CRA_TXN_TYPES, craTxnTypeLabel } from '../lib/labels'
+import {
+  CRA_CATEGORIES, CRA_ENGAGEMENT_TYPES, CRA_FUNDING_TYPES, CRA_TXN_TYPES,
+  craCategoryLabel, craEngagementTypeLabel, craTxnTypeLabel,
+} from '../lib/labels'
 import DataTable from '../components/DataTable'
 import Modal from '../components/Modal'
 import UsageBar from '../components/UsageBar'
@@ -24,7 +27,10 @@ function ProjectModal({ open, onClose }) {
         method: 'POST',
         body: JSON.stringify({
           district_id: f.get('district_id'),
+          project_code: f.get('project_code'),
           project_name: f.get('project_name'),
+          category: f.get('category'),
+          project_manager: f.get('project_manager'),
           status: f.get('status'),
           budget_amount: f.get('budget_amount'),
           start_date: f.get('start_date'),
@@ -50,8 +56,24 @@ function ProjectModal({ open, onClose }) {
             <option key={d.district_id} value={d.district_id}>{d.district_name}</option>
           ))}
         </select>
+        <div className="row2">
+          <div>
+            <label htmlFor="cp-code">Project ID</label>
+            <input id="cp-code" name="project_code" placeholder="CRA-DT-004" />
+          </div>
+          <div>
+            <label htmlFor="cp-category">Category</label>
+            <select id="cp-category" name="category" defaultValue="infrastructure">
+              {Object.entries(CRA_CATEGORIES).map(([k, v]) => (
+                <option key={k} value={k}>{v}</option>
+              ))}
+            </select>
+          </div>
+        </div>
         <label htmlFor="cp-name">Project name</label>
         <input id="cp-name" name="project_name" required placeholder="Waterfront Boardwalk Repairs" />
+        <label htmlFor="cp-manager">Project manager</label>
+        <input id="cp-manager" name="project_manager" placeholder="Maria Garcia" />
         <div className="row2">
           <div>
             <label htmlFor="cp-budget">Approved budget ($)</label>
@@ -80,6 +102,160 @@ function ProjectModal({ open, onClose }) {
         <div className="actions">
           <button type="button" className="btn ghost" onClick={close}>Cancel</button>
           <button type="submit" className="btn primary">Add project</button>
+        </div>
+      </form>
+    </Modal>
+  )
+}
+
+function FundingModal({ open, onClose }) {
+  const { data, refresh, guard } = useApp()
+  const toast = useToast()
+  const [err, setErr] = useState('')
+  const close = () => { setErr(''); onClose() }
+  const submit = async (e) => {
+    e.preventDefault()
+    const f = new FormData(e.currentTarget)
+    setErr('')
+    try {
+      const r = await api('/api/cra-project-funding', {
+        method: 'POST',
+        body: JSON.stringify({
+          project_id: f.get('project_id'),
+          source_name: f.get('source_name'),
+          source_type: f.get('source_type'),
+          amount: f.get('amount'),
+        }),
+      })
+      toast(`Funding source added to "${r.project_name}".`)
+      close()
+      refresh()
+    } catch (ex) {
+      if (guard(ex)) close()
+      else setErr(ex.message)
+    }
+  }
+  return (
+    <Modal open={open} onClose={close}>
+      <form onSubmit={submit}>
+        <h3>Add project funding source</h3>
+        <div className="m-sub">
+          Identified sources may not exceed the approved project budget
+          (enforced by a database control).
+        </div>
+        <label htmlFor="cf-project">Project</label>
+        <select id="cf-project" name="project_id" required>
+          {(data.cra_projects || []).map((p) => (
+            <option key={p.project_id} value={p.project_id}>
+              {(p.project_code ? p.project_code + ' — ' : '') + p.project_name}
+            </option>
+          ))}
+        </select>
+        <label htmlFor="cf-name">Source name</label>
+        <input id="cf-name" name="source_name" required placeholder="Redevelopment trust fund (TIF)" />
+        <div className="row2">
+          <div>
+            <label htmlFor="cf-type">Source type</label>
+            <select id="cf-type" name="source_type" defaultValue="tax_increment">
+              {Object.entries(CRA_FUNDING_TYPES).map(([k, v]) => (
+                <option key={k} value={k}>{v}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label htmlFor="cf-amount">Amount ($)</label>
+            <input id="cf-amount" name="amount" type="number" step="0.01" min="0.01" required />
+          </div>
+        </div>
+        <div className="err">{err}</div>
+        <div className="actions">
+          <button type="button" className="btn ghost" onClick={close}>Cancel</button>
+          <button type="submit" className="btn primary">Add source</button>
+        </div>
+      </form>
+    </Modal>
+  )
+}
+
+function EngagementModal({ open, onClose }) {
+  const { data, refresh, guard } = useApp()
+  const toast = useToast()
+  const [err, setErr] = useState('')
+  const close = () => { setErr(''); onClose() }
+  const submit = async (e) => {
+    e.preventDefault()
+    const f = new FormData(e.currentTarget)
+    setErr('')
+    try {
+      const r = await api('/api/cra-engagement', {
+        method: 'POST',
+        body: JSON.stringify({
+          project_id: f.get('project_id'),
+          engagement_type: f.get('engagement_type'),
+          engagement_date: f.get('engagement_date'),
+          title: f.get('title'),
+          participants: f.get('participants'),
+          summary: f.get('summary'),
+          action_taken: f.get('action_taken'),
+        }),
+      })
+      toast(`Engagement logged for "${r.project_name}".`)
+      close()
+      refresh()
+    } catch (ex) {
+      if (guard(ex)) close()
+      else setErr(ex.message)
+    }
+  }
+  return (
+    <Modal open={open} onClose={close}>
+      <form onSubmit={submit}>
+        <h3>Log community engagement</h3>
+        <div className="m-sub">
+          Record the survey, meeting, or event held for a project and the
+          action the CRA took in response.
+        </div>
+        <label htmlFor="ce-project">Project</label>
+        <select id="ce-project" name="project_id" required>
+          {(data.cra_projects || []).map((p) => (
+            <option key={p.project_id} value={p.project_id}>
+              {(p.project_code ? p.project_code + ' — ' : '') + p.project_name}
+            </option>
+          ))}
+        </select>
+        <div className="row2">
+          <div>
+            <label htmlFor="ce-type">Engagement type</label>
+            <select id="ce-type" name="engagement_type" defaultValue="survey">
+              {Object.entries(CRA_ENGAGEMENT_TYPES).map(([k, v]) => (
+                <option key={k} value={k}>{v}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label htmlFor="ce-date">Date</label>
+            <input id="ce-date" name="engagement_date" type="date" />
+          </div>
+        </div>
+        <label htmlFor="ce-title">Title</label>
+        <input id="ce-title" name="title" required placeholder="Streetscape design survey" />
+        <div className="row2">
+          <div>
+            <label htmlFor="ce-participants">Participants</label>
+            <input id="ce-participants" name="participants" type="number" min="0" />
+          </div>
+          <div>
+            <label htmlFor="ce-summary">Summary (optional)</label>
+            <input id="ce-summary" name="summary" placeholder="What was asked / discussed" />
+          </div>
+        </div>
+        <label htmlFor="ce-action">Action taken</label>
+        <input id="ce-action" name="action_taken"
+               placeholder="What changed in the project because of this input" />
+        <div className="err">{err}</div>
+        <div className="actions">
+          <button type="button" className="btn ghost" onClick={close}>Cancel</button>
+          <button type="submit" className="btn primary">Log engagement</button>
         </div>
       </form>
     </Modal>
@@ -178,6 +354,18 @@ function CraTxnModal({ open, onClose }) {
   )
 }
 
+function DistrictStat({ label, value, sub }) {
+  return (
+    <div style={{ minWidth: 0 }}>
+      <div className="c-sub" style={{ marginBottom: 2 }}>{label}</div>
+      <div style={{ fontSize: 15.5, fontWeight: 650, fontVariantNumeric: 'tabular-nums' }}>
+        {value}
+      </div>
+      {sub && <div className="cell-sub">{sub}</div>}
+    </div>
+  )
+}
+
 /** Community Redevelopment Agency tracker (Ch. 163 Part III, F.S.). */
 export default function Cra() {
   const { data, fy, canWrite } = useApp()
@@ -185,9 +373,13 @@ export default function Cra() {
   const [districtId, setDistrictId] = useState('ALL')
   const [projOpen, setProjOpen] = useState(false)
   const [txnOpen, setTxnOpen] = useState(false)
+  const [engOpen, setEngOpen] = useState(false)
+  const [fundOpen, setFundOpen] = useState(false)
 
   const districts = data.cra_districts || []
   const projects = data.cra_projects || []
+  const fundingSources = data.cra_funding_sources || []
+  const engagements = data.cra_engagements || []
 
   const txns = useMemo(() => {
     let r = data.cra_transactions || []
@@ -214,8 +406,9 @@ export default function Cra() {
           <div className="eyebrow">Ch. 163 Part III, Florida Statutes</div>
           <div className="hero-value" style={{ fontSize: 28 }}>Community Redevelopment</div>
           <div className="hero-sub">
-            {districts.length} districts · {fmtCompact(totBalance)} held across the
-            tax-increment trust funds · {projects.length} projects
+            {districts.length} districts · {fmtCompact(totBalance)} available across the
+            tax-increment trust funds · {projects.length} projects ·{' '}
+            {engagements.length} engagement events
           </div>
         </div>
         <div style={{ flex: 1 }} />
@@ -234,6 +427,7 @@ export default function Cra() {
       <div className="grid">
         {districts.map((d) => {
           const dProjects = projects.filter((p) => p.district_id === d.district_id)
+          const dSources = fundingSources.filter((f) => f.district_id === d.district_id)
           return (
             <div className="card span-6" key={d.district_id}>
               <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
@@ -250,10 +444,38 @@ export default function Cra() {
                     {fmtFull(d.trust_balance)}
                   </div>
                   <div className="c-sub" style={{ marginBottom: 0 }}>
-                    trust fund · {fmtCompact(d.total_revenue)} in / {fmtCompact(d.total_spent)} out
+                    available budget · {fmtCompact(d.total_revenue)} in / {fmtCompact(d.total_spent)} out
                   </div>
                 </div>
               </div>
+
+              <div style={{
+                display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12,
+                marginTop: 12, padding: '10px 12px',
+                border: '1px solid var(--grid)', borderRadius: 10,
+              }}>
+                <DistrictStat label={`Baseline value (${d.base_year})`}
+                              value={fmtCompact(d.base_taxable_value)} />
+                <DistrictStat label="Current taxable value"
+                              value={fmtCompact(d.current_taxable_value)}
+                              sub={`+${fmtCompact(d.increment_value)} increment`} />
+                <DistrictStat label="TIF revenue generated" value={fmtCompact(d.tif_revenue)} />
+                <DistrictStat label="Available budget" value={fmtCompact(d.trust_balance)} />
+              </div>
+
+              {dSources.length > 0 && (
+                <div className="c-sub" style={{ marginTop: 10, marginBottom: 0 }}>
+                  <Coins style={{ width: 13, height: 13, verticalAlign: '-2px', marginRight: 5 }} />
+                  Funded by {dSources.map((f, i) => (
+                    <span key={f.funding_source_id}>
+                      {i > 0 && ' · '}
+                      {f.source_name}
+                      {f.annual_amount ? ` (${fmtCompact(f.annual_amount)}/yr)` : ''}
+                    </span>
+                  ))}
+                </div>
+              )}
+
               <div style={{ marginTop: 10 }}>
                 {dProjects.map((p) => {
                   const pct = pctOf(p.spent, p.budget_amount)
@@ -263,7 +485,7 @@ export default function Cra() {
                         <span style={{ fontSize: 13, fontWeight: 550 }}>
                           {p.project_name}
                           <span className="cell-sub" style={{ display: 'inline', marginLeft: 8 }}>
-                            {STATUS_LABEL[p.status]}
+                            {craCategoryLabel(p.category)} · {STATUS_LABEL[p.status]}
                           </span>
                         </span>
                         <span style={{ fontSize: 12.5, color: 'var(--ink-2)', whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }}>
@@ -283,13 +505,34 @@ export default function Cra() {
       </div>
 
       <div className="card">
-        <div className="eyebrow">Approved projects</div>
-        <h2>Project budgets</h2>
-        <div className="c-sub">Spending is capped at the approved budget by a database control</div>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, flexWrap: 'wrap' }}>
+          <div>
+            <div className="eyebrow">Approved projects</div>
+            <h2>Project budgets</h2>
+            <div className="c-sub">Spending is capped at the approved budget by a database control</div>
+          </div>
+          <div style={{ flex: 1 }} />
+          {canWrite && (
+            <button className="btn small" onClick={() => setFundOpen(true)}>
+              <Coins /> Add funding source
+            </button>
+          )}
+        </div>
         <DataTable
           columns={[
-            { key: 'project_name', label: 'Project' },
+            {
+              key: 'project_name', label: 'Project',
+              render: (p) => (
+                <>
+                  {p.project_name}
+                  <div className="cell-sub">
+                    {p.project_code || '—'} · PM {p.project_manager || '—'}
+                  </div>
+                </>
+              ),
+            },
             { key: 'district_name', label: 'District' },
+            { key: 'category', label: 'Category', render: (p) => craCategoryLabel(p.category) },
             { key: 'status', label: 'Status', render: (p) => STATUS_LABEL[p.status] },
             {
               key: 'window', label: 'Schedule', sortValue: (p) => p.start_date || '',
@@ -308,10 +551,88 @@ export default function Cra() {
               sortValue: (p) => pctOf(p.spent, p.budget_amount),
               render: (p) => <UsageBar pct={pctOf(p.spent, p.budget_amount)} />,
             },
+            {
+              key: 'funding_sources', label: 'Funding sources',
+              render: (p) => (
+                <span style={{ fontSize: 12.5, color: 'var(--ink-2)' }}>
+                  {p.funding_sources || '—'}
+                </span>
+              ),
+            },
+            {
+              key: 'engagement_done', label: 'Engagement',
+              sortValue: (p) => (p.engagement_done === 'Yes' ? p.engagement_count : -1),
+              render: (p) => p.engagement_done === 'Yes'
+                ? <span style={{ fontWeight: 600 }}>Yes ({p.engagement_count})</span>
+                : <span style={{ color: 'var(--ink-3)' }}>No</span>,
+            },
           ]}
           rows={projects}
           rowKey={(p) => p.project_id}
           initialSort={{ key: 'budget_amount', dir: -1 }}
+        />
+      </div>
+
+      <div className="card">
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 12, flexWrap: 'wrap' }}>
+          <div>
+            <div className="eyebrow">Public participation</div>
+            <h2>Community engagement</h2>
+            <div className="c-sub" style={{ marginBottom: 0 }}>
+              Surveys, meetings, and events held per project — and the action taken in response
+            </div>
+          </div>
+          <div style={{ flex: 1 }} />
+          {canWrite && (
+            <button className="btn small" onClick={() => setEngOpen(true)}>
+              <Megaphone /> Log engagement
+            </button>
+          )}
+          <button className="btn small" onClick={() =>
+            downloadCsv(
+              'cra-community-engagement.csv',
+              ['Date', 'District', 'Project ID', 'Project', 'Type', 'Title',
+               'Participants', 'Summary', 'Action taken'],
+              engagements.map((g) => [
+                g.engagement_date || '', g.district_name, g.project_code || '',
+                g.project_name, craEngagementTypeLabel(g.engagement_type), g.title,
+                g.participants ?? '', g.summary || '', g.action_taken || '',
+              ]),
+            )}>
+            <Download /> Export CSV
+          </button>
+        </div>
+        <DataTable
+          columns={[
+            { key: 'engagement_date', label: 'Date', render: (g) => g.engagement_date || '—' },
+            { key: 'district_name', label: 'District' },
+            {
+              key: 'project_name', label: 'Project',
+              render: (g) => (
+                <>
+                  {g.project_name}
+                  <div className="cell-sub">{g.project_code || '—'}</div>
+                </>
+              ),
+            },
+            { key: 'engagement_type', label: 'Type', render: (g) => craEngagementTypeLabel(g.engagement_type) },
+            { key: 'title', label: 'Event' },
+            {
+              key: 'participants', label: 'Participants', numeric: true,
+              render: (g) => (g.participants == null ? '—' : g.participants),
+            },
+            {
+              key: 'action_taken', label: 'Action taken',
+              render: (g) => (
+                <span style={{ fontSize: 12.5, color: 'var(--ink-2)' }}>
+                  {g.action_taken || '—'}
+                </span>
+              ),
+            },
+          ]}
+          rows={engagements}
+          rowKey={(g) => g.engagement_id}
+          initialSort={{ key: 'engagement_date', dir: -1 }}
         />
       </div>
 
@@ -374,6 +695,8 @@ export default function Cra() {
       </div>
 
       <ProjectModal open={projOpen} onClose={() => setProjOpen(false)} />
+      <FundingModal open={fundOpen} onClose={() => setFundOpen(false)} />
+      <EngagementModal open={engOpen} onClose={() => setEngOpen(false)} />
       <CraTxnModal open={txnOpen} onClose={() => setTxnOpen(false)} />
     </div>
   )

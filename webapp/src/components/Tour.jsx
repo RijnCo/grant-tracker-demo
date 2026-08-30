@@ -97,8 +97,9 @@ const STEPS = [
     target: 'nav-cra',
     title: 'CRA districts',
     body: 'Community Redevelopment Agency tracking (Ch. 163, F.S.): each '
-      + 'district’s tax-increment trust fund, its approved projects, and '
-      + 'spending against project budgets.',
+      + 'district’s tax base and TIF revenue, its funding sources, approved '
+      + 'projects with budgets and spending, and the community engagement '
+      + 'held for each project.',
   },
   {
     target: 'nav-directory',

@@ -120,16 +120,104 @@ INSERT INTO operating_fund (fund_id, fund_code, fund_name, fiscal_year_id, budge
 (6, '401', 'Water & Sewer Utility Fund', 2, 21500000, 'Enterprise fund — rates and charges for services');
 
 -- Community Redevelopment Agency districts (Ch. 163 Part III, F.S.)
-INSERT INTO cra_district (district_id, district_name, established_year, sunset_year, notes) VALUES
-(1, 'Downtown CRA',      1998, 2038, 'Core commercial district — streetscapes, facades, parking'),
-(2, 'Osprey Point CRA',  2004, 2044, 'Neighborhood revitalization — housing rehab and gateways');
+-- Baseline = taxable value frozen in the base year; the increment above it
+-- generates the TIF revenue deposited to each district's trust fund.
+INSERT INTO cra_district (district_id, district_name, established_year, sunset_year,
+                          base_year, base_taxable_value, current_taxable_value, notes) VALUES
+(1, 'Downtown',       1984, 2039, 1984, 38500000, 112400000, 'Core commercial district — streetscapes, facades, marina'),
+(2, 'St. Andrews',    1989, 2044, 1989, 21700000,  64800000, 'Historic waterfront village — corridor and public realm'),
+(3, 'Downtown North', 1995, 2050, 1995, 17300000,  41200000, 'Neighborhood revitalization — housing and gateway corridors'),
+(4, 'Millville',      2001, 2051, 2001, 12600000,  27900000, 'Industrial-heritage neighborhood — housing rehab and waterfront park');
 
-INSERT INTO cra_project (project_id, district_id, project_name, status, budget_amount, start_date, target_completion) VALUES
-(1, 1, 'Harmon Avenue Streetscape Phase II',    'underway', 1800000, '2024-04-01', '2026-12-31'),
-(2, 1, 'Commercial Facade Grant Program',       'underway',  350000, '2023-10-01', '2027-09-30'),
-(3, 1, 'Marina District Parking Improvements',  'planned',   900000, '2026-10-01', '2028-06-30'),
-(4, 2, 'Osprey Point Housing Rehabilitation',   'underway', 1200000, '2024-01-15', '2027-03-31'),
-(5, 2, 'Gateway Signage & Corridor Lighting',   'complete',  240000, '2023-11-01', '2025-02-28');
+-- District trust-fund funding sources (per adopted CRA budget)
+INSERT INTO cra_funding_source (district_id, source_name, source_type, annual_amount, notes) VALUES
+(1, 'City tax increment contribution',            'tax_increment',       330000, '95% of city millage on the increment'),
+(1, 'County tax increment contribution',          'county_contribution', 300000, '95% of county millage on the increment'),
+(1, 'Downtown parking revenue transfer',          'general_fund',         60000, NULL),
+(1, 'Trust fund interest earnings',               'interest',             12000, NULL),
+(2, 'City tax increment contribution',            'tax_increment',       185000, '95% of city millage on the increment'),
+(2, 'County tax increment contribution',          'county_contribution', 170000, '95% of county millage on the increment'),
+(2, 'CDBG pass-through — facade & public realm',  'grant',                75000, NULL),
+(2, 'Trust fund interest earnings',               'interest',              8000, NULL),
+(3, 'City tax increment contribution',            'tax_increment',       108000, '95% of city millage on the increment'),
+(3, 'County tax increment contribution',          'county_contribution',  98000, '95% of county millage on the increment'),
+(3, 'CDBG entitlement pass-through — housing',    'grant',                90000, NULL),
+(3, 'Trust fund interest earnings',               'interest',              5000, NULL),
+(4, 'City tax increment contribution',            'tax_increment',        68000, '95% of city millage on the increment'),
+(4, 'County tax increment contribution',          'county_contribution',  62000, '95% of county millage on the increment'),
+(4, 'FRDAP state grant — waterfront park',        'grant',                50000, NULL),
+(4, 'Trust fund interest earnings',               'interest',              3500, NULL);
+
+INSERT INTO cra_project (project_id, district_id, project_code, project_name, category,
+                         project_manager, status, budget_amount, start_date, target_completion) VALUES
+(1,  1, 'CRA-DT-001', 'Harmon Avenue Streetscape Phase II',       'streetscape',         'Maria Garcia',    'underway', 1400000, '2024-04-01', '2026-12-31'),
+(2,  1, 'CRA-DT-002', 'Commercial Facade Grant Program',          'business_assistance', 'Dana Williams',   'underway',  350000, '2023-10-01', '2027-09-30'),
+(3,  1, 'CRA-DT-003', 'Marina District Parking Improvements',     'infrastructure',      'James Chen',      'planned',   900000, '2026-10-01', '2028-06-30'),
+(4,  2, 'CRA-SA-001', 'Waterfront Pavilion & Pier Repairs',       'parks_public_space',  'Rachel Thompson', 'underway',  650000, '2024-06-01', '2026-09-30'),
+(5,  2, 'CRA-SA-002', 'Bayview Avenue Lighting & Crosswalks',     'streetscape',         'Maria Garcia',    'complete',  240000, '2023-11-01', '2025-02-28'),
+(6,  2, 'CRA-SA-003', 'Small Business Rent & Buildout Assistance','business_assistance', 'Kiran Patel',     'underway',  180000, '2025-01-15', '2027-12-31'),
+(7,  3, 'CRA-DN-001', 'Downtown North Housing Rehabilitation',    'housing',             'Dana Williams',   'underway',  450000, '2024-01-15', '2027-03-31'),
+(8,  3, 'CRA-DN-002', 'Gateway Signage & Corridor Landscaping',   'streetscape',         'James Chen',      'complete',  150000, '2023-11-01', '2025-05-31'),
+(9,  3, 'CRA-DN-003', 'Neighborhood Park Splash Pad',             'parks_public_space',  'Rachel Thompson', 'planned',   220000, '2026-11-01', '2027-08-31'),
+(10, 4, 'CRA-MV-001', 'Millville Waterfront Park Improvements',   'parks_public_space',  'Kiran Patel',     'underway',  320000, '2024-09-01', '2026-12-31'),
+(11, 4, 'CRA-MV-002', 'Owner-Occupied Housing Repair Program',    'housing',             'Dana Williams',   'underway',  200000, '2024-10-01', '2027-09-30');
+
+-- How each approved project budget is funded (capped at the budget by trigger)
+INSERT INTO cra_project_funding (project_id, source_name, source_type, amount) VALUES
+(1,  'Redevelopment trust fund (TIF)',            'tax_increment', 1000000),
+(1,  'FDOT transportation alternatives grant',    'grant',          400000),
+(2,  'Redevelopment trust fund (TIF)',            'tax_increment',  350000),
+(3,  'Redevelopment trust fund (TIF)',            'tax_increment',  650000),
+(3,  'Downtown parking revenue transfer',         'general_fund',   250000),
+(4,  'Redevelopment trust fund (TIF)',            'tax_increment',  450000),
+(4,  'Tourist development council grant',         'grant',          200000),
+(5,  'Redevelopment trust fund (TIF)',            'tax_increment',  240000),
+(6,  'Redevelopment trust fund (TIF)',            'tax_increment',  130000),
+(6,  'Participating landlord match',              'private_match',   50000),
+(7,  'Redevelopment trust fund (TIF)',            'tax_increment',  270000),
+(7,  'CDBG entitlement pass-through',             'grant',          180000),
+(8,  'Redevelopment trust fund (TIF)',            'tax_increment',  150000),
+(9,  'Redevelopment trust fund (TIF)',            'tax_increment',  160000),
+(9,  'General fund parks match',                  'general_fund',    60000),
+(10, 'Redevelopment trust fund (TIF)',            'tax_increment',  220000),
+(10, 'FRDAP state grant',                         'grant',          100000),
+(11, 'Redevelopment trust fund (TIF)',            'tax_increment',  150000),
+(11, 'SHIP state housing funds',                  'grant',           50000);
+
+-- Community engagement held per project and the action taken in response.
+-- Projects 2 and 8 intentionally have no rows (engagement_done = 'No').
+INSERT INTO cra_engagement (project_id, engagement_type, engagement_date, title,
+                            participants, summary, action_taken, entered_by) VALUES
+(1,  'survey',         '2024-02-10', 'Downtown streetscape design survey',        412,
+     'Online + paper survey on lane widths, trees, parking, and sidewalk cafes.',
+     'Added mid-block crossings and doubled shade-tree count in the 60% design.', 'mgarcia'),
+(1,  'public_meeting', '2024-03-05', 'Streetscape design open house',              85,
+     'Boards and Q&A at City Hall on the preferred concept.',
+     'Parking layout revised to keep 22 on-street spaces during construction.',   'mgarcia'),
+(3,  'public_meeting', '2026-05-14', 'Marina parking public workshop',             47,
+     'Options workshop: surface lots vs. parking structure.',
+     'Garage option deferred; phased surface-lot plan adopted by the CRA board.', 'jchen'),
+(4,  'charrette',      '2024-04-20', 'Waterfront pavilion design charrette',       63,
+     'Hands-on design session with residents and charter captains.',
+     'Pier railing height revised and dedicated fishing stations added to plans.','rthompson'),
+(5,  'survey',         '2023-09-12', 'Corridor lighting priorities survey',       188,
+     'Residents ranked lighting, crosswalks, and landscaping priorities.',
+     'Warm-white fixtures selected; two additional crosswalks added to scope.',   'mgarcia'),
+(6,  'workshop',       '2025-02-06', 'Small business assistance workshop',         34,
+     'Walk-through of the rent/buildout program with corridor merchants.',
+     'Application simplified to two pages; monthly rent cap raised.',             'kpatel'),
+(7,  'survey',         '2024-01-30', 'Housing conditions & needs survey',         265,
+     'Door-to-door and mail survey of owner-occupied homes in the district.',
+     'Roof and HVAC repairs prioritized in the program guidelines.',              'dwilliams'),
+(9,  'survey',         '2026-06-15', 'Neighborhood park amenities survey',        156,
+     'Ranked-choice survey of park amenities for the new pocket park.',
+     'Splash pad chosen over skate spot; shade sails added to the design.',       'rthompson'),
+(10, 'public_meeting', '2024-08-22', 'Waterfront park community meeting',          58,
+     'Concept review at the community center; boaters and anglers attended.',
+     'Kayak launch added; boat-trailer parking retained in the final plan.',      'kpatel'),
+(11, 'survey',         '2024-11-05', 'Owner-occupied repair interest survey',      97,
+     'Interest and income pre-screening survey for the repair program.',
+     'Income limit set at 120% AMI; waitlist lottery adopted for fairness.',      'dwilliams');
 
 -- SEFA notes (2 CFR 200.510(b)(6))
 INSERT INTO sefa_note (fiscal_year_id, note_number, note_title, note_text) VALUES

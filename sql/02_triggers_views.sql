@@ -314,6 +314,17 @@ BEGIN
     SELECT RAISE(ABORT, 'expense would exceed the approved project budget');
 END;
 
+-- Identified funding sources may not exceed the approved project budget.
+CREATE TRIGGER trg_cra_project_funding_cap
+BEFORE INSERT ON cra_project_funding
+WHEN (SELECT COALESCE(SUM(f.amount), 0) FROM cra_project_funding f
+      WHERE f.project_id = NEW.project_id)
+     + NEW.amount
+     > (SELECT p.budget_amount FROM cra_project p WHERE p.project_id = NEW.project_id)
+BEGIN
+    SELECT RAISE(ABORT, 'funding sources would exceed the approved project budget');
+END;
+
 -- ---------------------------------------------------------------------------
 -- Reporting views
 -- ---------------------------------------------------------------------------
@@ -450,14 +461,21 @@ JOIN fiscal_year fy ON fy.fiscal_year_id = f.fiscal_year_id
 LEFT JOIN fund_transaction t ON t.fund_id = f.fund_id
 GROUP BY f.fund_id;
 
--- CRA district status: TIF trust fund in/out and balance.
+-- CRA district status: tax base, TIF revenue, trust fund in/out and the
+-- available budget (trust fund balance).
 CREATE VIEW v_cra_district_status AS
 SELECT
     d.district_id,
     d.district_name,
     d.established_year,
     d.sunset_year,
+    d.base_year,
+    d.base_taxable_value,
+    d.current_taxable_value,
+    d.current_taxable_value - d.base_taxable_value AS increment_value,
     d.notes,
+    COALESCE(SUM(CASE WHEN t.txn_type = 'tif_increment'
+                      THEN t.amount END), 0)  AS tif_revenue,
     COALESCE(SUM(CASE WHEN t.txn_type IN ('tif_increment','other_revenue')
                       THEN t.amount END), 0)  AS total_revenue,
     COALESCE(SUM(CASE WHEN t.txn_type IN ('project_expense','admin_expense')
@@ -467,29 +485,44 @@ SELECT
       - COALESCE(SUM(CASE WHEN t.txn_type IN ('project_expense','admin_expense')
                           THEN t.amount END), 0) AS trust_balance,
     (SELECT COUNT(*) FROM cra_project p
-     WHERE p.district_id = d.district_id)     AS project_count
+     WHERE p.district_id = d.district_id)     AS project_count,
+    (SELECT GROUP_CONCAT(fs.source_name, '; ') FROM cra_funding_source fs
+     WHERE fs.district_id = d.district_id)    AS funding_sources
 FROM cra_district d
 LEFT JOIN cra_transaction t ON t.district_id = d.district_id
 GROUP BY d.district_id;
 
--- CRA project status: approved budget vs. spent.
+-- CRA project status: approved budget vs. spent, funding sources, and
+-- whether community engagement was held (subqueries avoid join fan-out).
 CREATE VIEW v_cra_project_status AS
 SELECT
     p.project_id,
+    p.project_code,
     p.district_id,
     d.district_name,
     p.project_name,
+    p.category,
+    p.project_manager,
     p.status,
     p.budget_amount,
     p.start_date,
     p.target_completion,
-    COALESCE(SUM(t.amount), 0)                    AS spent,
-    p.budget_amount - COALESCE(SUM(t.amount), 0)  AS remaining
+    COALESCE((SELECT SUM(t.amount) FROM cra_transaction t
+              WHERE t.project_id = p.project_id
+                AND t.txn_type = 'project_expense'), 0)  AS spent,
+    p.budget_amount
+      - COALESCE((SELECT SUM(t.amount) FROM cra_transaction t
+                  WHERE t.project_id = p.project_id
+                    AND t.txn_type = 'project_expense'), 0) AS remaining,
+    (SELECT GROUP_CONCAT(f.source_name, '; ') FROM cra_project_funding f
+     WHERE f.project_id = p.project_id)                  AS funding_sources,
+    (SELECT COUNT(*) FROM cra_engagement g
+     WHERE g.project_id = p.project_id)                  AS engagement_count,
+    CASE WHEN EXISTS (SELECT 1 FROM cra_engagement g
+                      WHERE g.project_id = p.project_id)
+         THEN 'Yes' ELSE 'No' END                        AS engagement_done
 FROM cra_project p
-JOIN cra_district d ON d.district_id = p.district_id
-LEFT JOIN cra_transaction t
-       ON t.project_id = p.project_id AND t.txn_type = 'project_expense'
-GROUP BY p.project_id;
+JOIN cra_district d ON d.district_id = p.district_id;
 
 -- Subrecipient payments (supports subrecipient monitoring, 2 CFR 200.332).
 CREATE VIEW v_subrecipient_payments AS

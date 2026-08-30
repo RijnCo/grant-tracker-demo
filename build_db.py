@@ -346,11 +346,25 @@ CRA_EXPENSES = [
 
 
 def generate_cra_transactions(con):
-    """CRA trust-fund ledger: annual TIF increment in, project spending out."""
+    """CRA trust-fund ledger: annual TIF increment in, project spending out.
+    TIF ranges approximate (current - base taxable value) x ~9 combined mills
+    x 95%, per district. A carry-forward deposit keeps balances realistic
+    (the districts predate the three ledgered fiscal years)."""
     rng = random.Random(11)
     from datetime import date, timedelta
-    tif_base = {1: (950000, 1250000), 2: (480000, 650000)}
+    tif_base = {1: (600000, 700000), 2: (340000, 410000),
+                3: (185000, 225000), 4: (115000, 145000)}
+    carry_forward = {1: 1400000, 2: 900000, 3: 520000, 4: 360000}
     inserted = 0
+    for district_id, amount in carry_forward.items():
+        con.execute(
+            "INSERT INTO cra_transaction (district_id, txn_type, amount, "
+            "transaction_date, description, doc_reference, entered_by) "
+            "VALUES (?,?,?,?,?,?,?)",
+            (district_id, "other_revenue", amount, "2023-10-01",
+             "Trust fund balance carried forward (pre-FY2024)",
+             "CF-2024-%d" % district_id, "system"))
+        inserted += 1
     for district_id, (lo, hi) in tif_base.items():
         for fy in (1, 2, 3):
             # increment revenue lands early in the fiscal year (tax roll)
@@ -368,7 +382,7 @@ def generate_cra_transactions(con):
             con.execute(
                 "INSERT INTO cra_transaction (district_id, txn_type, amount, "
                 "transaction_date, description, entered_by) VALUES (?,?,?,?,?,?)",
-                (district_id, "admin_expense", round(rng.uniform(15000, 40000), 2),
+                (district_id, "admin_expense", round(rng.uniform(0.025, 0.06) * hi, 2),
                  adm_date, "CRA administration allocation", rng.choice(STAFF)))
             inserted += 1
     projects = con.execute(
@@ -599,6 +613,46 @@ def verify(con):
         ok_cra = ok_cra and "different CRA district" in str(e)
     check("CRA trust funds ledgered; budget cap + district match enforced", ok_cra,
           "%d districts" % cra[0])
+
+    # 10. CRA reporting fields: the four districts with tax base + TIF revenue
+    # + positive available budget + funding sources; projects carry code,
+    # category, manager, funding sources; engagement Yes/No derives correctly.
+    dist = con.execute("""
+        SELECT COUNT(*),
+               SUM(CASE WHEN base_taxable_value > 0
+                         AND current_taxable_value > base_taxable_value
+                         AND tif_revenue > 0
+                         AND trust_balance >= 0
+                         AND funding_sources IS NOT NULL THEN 1 ELSE 0 END)
+        FROM v_cra_district_status
+        WHERE district_name IN ('Downtown','St. Andrews','Downtown North','Millville')
+        """).fetchone()
+    ok_cra2 = dist[0] == 4 and dist[1] == 4
+    bad_proj = con.execute("""
+        SELECT COUNT(*) FROM v_cra_project_status
+        WHERE project_code IS NULL OR category IS NULL
+           OR project_manager IS NULL OR funding_sources IS NULL""").fetchone()[0]
+    ok_cra2 = ok_cra2 and bad_proj == 0
+    yes_no = con.execute("""
+        SELECT SUM(CASE WHEN engagement_done = 'Yes' AND engagement_count > 0 THEN 1
+                        WHEN engagement_done = 'No'  AND engagement_count = 0 THEN 1
+                        ELSE 0 END), COUNT(*),
+               SUM(engagement_done = 'No')
+        FROM v_cra_project_status""").fetchone()
+    ok_cra2 = ok_cra2 and yes_no[0] == yes_no[1] and (yes_no[2] or 0) >= 1
+    no_action = con.execute(
+        "SELECT COUNT(*) FROM cra_engagement WHERE action_taken IS NULL "
+        "OR action_taken = ''").fetchone()[0]
+    ok_cra2 = ok_cra2 and no_action == 0
+    try:
+        con.execute("INSERT INTO cra_project_funding (project_id, source_name, "
+                    "source_type, amount) VALUES (1, 'test', 'other', 99999999)")
+        ok_cra2 = False
+    except sqlite3.IntegrityError as e:
+        ok_cra2 = ok_cra2 and "funding sources would exceed" in str(e)
+    check("CRA districts carry tax base/TIF/funding; projects carry "
+          "code+category+manager+funding; engagement Yes/No consistent", ok_cra2,
+          "%d districts, %d No-engagement projects" % (dist[0], yes_no[2] or 0))
 
     return results
 

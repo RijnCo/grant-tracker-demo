@@ -173,14 +173,42 @@ def collect(con):
         ORDER BY t.transaction_date DESC, t.fund_txn_id DESC""")
 
     data["cra_districts"] = rows(con, """
-        SELECT district_id, district_name, established_year, sunset_year, notes,
-               total_revenue, total_spent, trust_balance, project_count
+        SELECT district_id, district_name, established_year, sunset_year,
+               base_year, base_taxable_value, current_taxable_value,
+               increment_value, notes, tif_revenue, total_revenue, total_spent,
+               trust_balance, project_count, funding_sources
         FROM v_cra_district_status ORDER BY district_name""")
 
+    data["cra_funding_sources"] = rows(con, """
+        SELECT fs.funding_source_id, fs.district_id, d.district_name,
+               fs.source_name, fs.source_type, fs.annual_amount, fs.notes
+        FROM cra_funding_source fs
+        JOIN cra_district d ON d.district_id = fs.district_id
+        ORDER BY d.district_name, fs.annual_amount DESC""")
+
     data["cra_projects"] = rows(con, """
-        SELECT project_id, district_id, district_name, project_name, status,
-               budget_amount, start_date, target_completion, spent, remaining
+        SELECT project_id, project_code, district_id, district_name,
+               project_name, category, project_manager, status, budget_amount,
+               start_date, target_completion, spent, remaining,
+               funding_sources, engagement_count, engagement_done
         FROM v_cra_project_status ORDER BY budget_amount DESC""")
+
+    data["cra_project_funding"] = rows(con, """
+        SELECT f.project_funding_id, f.project_id, p.project_name,
+               p.district_id, f.source_name, f.source_type, f.amount
+        FROM cra_project_funding f
+        JOIN cra_project p ON p.project_id = f.project_id
+        ORDER BY f.project_id, f.amount DESC""")
+
+    data["cra_engagements"] = rows(con, """
+        SELECT g.engagement_id, g.project_id, p.project_code, p.project_name,
+               p.district_id, d.district_name, g.engagement_type,
+               g.engagement_date, g.title, g.participants, g.summary,
+               g.action_taken, g.entered_by
+        FROM cra_engagement g
+        JOIN cra_project p ON p.project_id = g.project_id
+        JOIN cra_district d ON d.district_id = p.district_id
+        ORDER BY g.engagement_date DESC, g.engagement_id DESC""")
 
     data["cra_transactions"] = rows(con, """
         SELECT t.cra_txn_id, t.district_id, d.district_name, t.project_id,
