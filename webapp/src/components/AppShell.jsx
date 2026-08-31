@@ -98,7 +98,7 @@ export default function AppShell() {
             <div className="f-name">{user?.display_name}</div>
             <div className="f-role">{user?.role?.replace('_', ' ')}</div>
           </div>
-          {!DEMO && (
+          {!DEMO && !data?.auth_disabled && (
             <button className="btn ghost icon small" title="Sign out" onClick={logout}>
               <LogOut />
             </button>

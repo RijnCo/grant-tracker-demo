@@ -7462,7 +7462,14 @@ window.GRANT_DATA = {
    "award_name": "Northshore Water Main Replacement (DWSRF Loan)"
   }
  ],
- "login_audit": [],
+ "login_audit": [
+  {
+   "login_audit_id": 1,
+   "username": "alopez",
+   "success": 1,
+   "attempted_at": "2026-08-31 04:59:19"
+  }
+ ],
  "subrecipient_list": [
   {
    "subrecipient_id": 4,
@@ -11202,10 +11209,10 @@ window.GRANT_DATA = {
    "variance_to_budget": -2066247.8999999985,
    "receipt_count": 25,
    "last_receipt_date": "2026-08-20",
-   "expected_to_date": 12926048.39,
-   "variance_to_baseline": -492296.29,
-   "variance_to_baseline_pct": -3.8,
-   "expected_share": 0.8915
+   "expected_to_date": 12977500.0,
+   "variance_to_baseline": -543747.9,
+   "variance_to_baseline_pct": -4.2,
+   "expected_share": 0.895
   },
   {
    "stream_id": 9,
@@ -11220,10 +11227,10 @@ window.GRANT_DATA = {
    "variance_to_budget": -672216.5399999982,
    "receipt_count": 19,
    "last_receipt_date": "2026-08-11",
-   "expected_to_date": 5118279.57,
-   "variance_to_baseline": -190496.11,
-   "variance_to_baseline_pct": -3.7,
-   "expected_share": 0.914
+   "expected_to_date": 5133333.33,
+   "variance_to_baseline": -205549.87,
+   "variance_to_baseline_pct": -4.0,
+   "expected_share": 0.9167
   },
   {
    "stream_id": 10,
@@ -11238,10 +11245,10 @@ window.GRANT_DATA = {
    "variance_to_budget": -148015.93999999994,
    "receipt_count": 25,
    "last_receipt_date": "2026-08-18",
-   "expected_to_date": 963032.26,
-   "variance_to_baseline": -11048.2,
-   "variance_to_baseline_pct": -1.1,
-   "expected_share": 0.8755
+   "expected_to_date": 968000.0,
+   "variance_to_baseline": -16015.94,
+   "variance_to_baseline_pct": -1.7,
+   "expected_share": 0.88
   },
   {
    "stream_id": 1,
@@ -11256,10 +11263,10 @@ window.GRANT_DATA = {
    "variance_to_budget": 255497.8200000003,
    "receipt_count": 20,
    "last_receipt_date": "2026-08-09",
-   "expected_to_date": 20891612.9,
-   "variance_to_baseline": 363884.92,
+   "expected_to_date": 20895000.0,
+   "variance_to_baseline": 360497.82,
    "variance_to_baseline_pct": 1.7,
-   "expected_share": 0.9948
+   "expected_share": 0.995
   },
   {
    "stream_id": 2,
@@ -11274,10 +11281,10 @@ window.GRANT_DATA = {
    "variance_to_budget": -603174.3599999985,
    "receipt_count": 20,
    "last_receipt_date": "2026-08-19",
-   "expected_to_date": 5319909.68,
-   "variance_to_baseline": -123084.04,
-   "variance_to_baseline_pct": -2.3,
-   "expected_share": 0.9172
+   "expected_to_date": 5336000.0,
+   "variance_to_baseline": -139174.36,
+   "variance_to_baseline_pct": -2.6,
+   "expected_share": 0.92
   },
   {
    "stream_id": 3,
@@ -11292,10 +11299,10 @@ window.GRANT_DATA = {
    "variance_to_budget": -342335.6699999999,
    "receipt_count": 22,
    "last_receipt_date": "2026-08-20",
-   "expected_to_date": 2376344.09,
-   "variance_to_baseline": -118679.76,
-   "variance_to_baseline_pct": -5.0,
-   "expected_share": 0.914
+   "expected_to_date": 2383333.33,
+   "variance_to_baseline": -125669.0,
+   "variance_to_baseline_pct": -5.3,
+   "expected_share": 0.9167
   },
   {
    "stream_id": 4,
@@ -11310,10 +11317,10 @@ window.GRANT_DATA = {
    "variance_to_budget": -734323.8899999992,
    "receipt_count": 19,
    "last_receipt_date": "2026-08-09",
-   "expected_to_date": 4100677.42,
-   "variance_to_baseline": -235001.31,
-   "variance_to_baseline_pct": -5.7,
-   "expected_share": 0.8915
+   "expected_to_date": 4117000.0,
+   "variance_to_baseline": -251323.89,
+   "variance_to_baseline_pct": -6.1,
+   "expected_share": 0.895
   },
   {
    "stream_id": 5,
@@ -11328,10 +11335,10 @@ window.GRANT_DATA = {
    "variance_to_budget": -241838.2100000002,
    "receipt_count": 26,
    "last_receipt_date": "2026-08-02",
-   "expected_to_date": 1736559.14,
-   "variance_to_baseline": -78397.35,
-   "variance_to_baseline_pct": -4.5,
-   "expected_share": 0.914
+   "expected_to_date": 1741666.67,
+   "variance_to_baseline": -83504.88,
+   "variance_to_baseline_pct": -4.8,
+   "expected_share": 0.9167
   },
   {
    "stream_id": 6,
@@ -11346,10 +11353,10 @@ window.GRANT_DATA = {
    "variance_to_budget": -256313.24,
    "receipt_count": 21,
    "last_receipt_date": "2026-08-07",
-   "expected_to_date": 437596.77,
-   "variance_to_baseline": -43910.01,
-   "variance_to_baseline_pct": -10.0,
-   "expected_share": 0.6732
+   "expected_to_date": 442000.0,
+   "variance_to_baseline": -48313.24,
+   "variance_to_baseline_pct": -10.9,
+   "expected_share": 0.68
   },
   {
    "stream_id": 7,
@@ -11364,10 +11371,10 @@ window.GRANT_DATA = {
    "variance_to_budget": -619454.2800000003,
    "receipt_count": 26,
    "last_receipt_date": "2026-08-19",
-   "expected_to_date": 2582774.19,
-   "variance_to_baseline": -402228.47,
-   "variance_to_baseline_pct": -15.6,
-   "expected_share": 0.9224
+   "expected_to_date": 2590000.0,
+   "variance_to_baseline": -409454.28,
+   "variance_to_baseline_pct": -15.8,
+   "expected_share": 0.925
   },
   {
    "stream_id": 13,
@@ -11382,10 +11389,10 @@ window.GRANT_DATA = {
    "variance_to_budget": -187066.93000000063,
    "receipt_count": 24,
    "last_receipt_date": "2026-08-17",
-   "expected_to_date": 1462365.59,
-   "variance_to_baseline": -49432.52,
-   "variance_to_baseline_pct": -3.4,
-   "expected_share": 0.914
+   "expected_to_date": 1466666.67,
+   "variance_to_baseline": -53733.6,
+   "variance_to_baseline_pct": -3.7,
+   "expected_share": 0.9167
   },
   {
    "stream_id": 15,
@@ -11400,10 +11407,10 @@ window.GRANT_DATA = {
    "variance_to_budget": -1128796.2300000004,
    "receipt_count": 23,
    "last_receipt_date": "2026-08-16",
-   "expected_to_date": 7494623.66,
-   "variance_to_baseline": -423419.89,
-   "variance_to_baseline_pct": -5.6,
-   "expected_share": 0.914
+   "expected_to_date": 7516666.67,
+   "variance_to_baseline": -445462.9,
+   "variance_to_baseline_pct": -5.9,
+   "expected_share": 0.9167
   },
   {
    "stream_id": 12,
@@ -11418,10 +11425,10 @@ window.GRANT_DATA = {
    "variance_to_budget": -577849.28,
    "receipt_count": 18,
    "last_receipt_date": "2026-08-15",
-   "expected_to_date": 2102150.54,
-   "variance_to_baseline": -379999.82,
-   "variance_to_baseline_pct": -18.1,
-   "expected_share": 0.914
+   "expected_to_date": 2108333.33,
+   "variance_to_baseline": -386182.61,
+   "variance_to_baseline_pct": -18.3,
+   "expected_share": 0.9167
   },
   {
    "stream_id": 11,
@@ -11436,10 +11443,10 @@ window.GRANT_DATA = {
    "variance_to_budget": -569227.6099999994,
    "receipt_count": 16,
    "last_receipt_date": "2026-08-12",
-   "expected_to_date": 4494406.45,
-   "variance_to_baseline": -163634.06,
-   "variance_to_baseline_pct": -3.6,
-   "expected_share": 0.9172
+   "expected_to_date": 4508000.0,
+   "variance_to_baseline": -177227.61,
+   "variance_to_baseline_pct": -3.9,
+   "expected_share": 0.92
   },
   {
    "stream_id": 14,
@@ -11454,10 +11461,10 @@ window.GRANT_DATA = {
    "variance_to_budget": -37307.70999999996,
    "receipt_count": 21,
    "last_receipt_date": "2026-08-18",
-   "expected_to_date": 1333083.87,
-   "variance_to_baseline": -30391.58,
+   "expected_to_date": 1333300.0,
+   "variance_to_baseline": -30607.71,
    "variance_to_baseline_pct": -2.3,
-   "expected_share": 0.9948
+   "expected_share": 0.995
   },
   {
    "stream_id": 8,
@@ -29102,5 +29109,5 @@ window.GRANT_DATA = {
    "note_text": "The Clean Water State Revolving Fund loan (ALN 66.458) balance outstanding at September 30, 2026 was $4,900,000. Loan balances are reported in the loan_balance table by fiscal year as required by 2 CFR 200.510(b)(5)."
   }
  ],
- "generated_at": "2026-08-30 22:57"
+ "generated_at": "2026-08-31 01:07"
 };

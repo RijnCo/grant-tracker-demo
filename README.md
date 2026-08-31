@@ -140,10 +140,15 @@ legislative appropriation, state grant agreement, or state revolving fund.
 The New-award form has a Federal/State toggle; state expenditures appear only
 on the SESFA and federal ones only on the SEFA.
 
-Demo accounts: `alopez / Sunshine!2026` (grant manager, can enter data) ·
+**Sign-in is currently switched off** — the app opens straight to the
+dashboard as a standing "Local User" with write access. The whole auth stack
+is still present and working (see "Authentication" below); flip
+`REQUIRE_LOGIN = True` in `app.py`, or set `PC_OPS_REQUIRE_LOGIN=1`, to bring
+the login screen back. With it on, the demo database has three accounts:
+`alopez / Sunshine!2026` (grant manager, can enter data) ·
 `jrivera / SandDollar!26` (finance admin) · `viewer / Welcome!2026` (read-only).
 
-Sign in, click **+ Record expenditure** or **+ New grant award** — grant
+Click **+ Record expenditure** or **+ New grant award** — grant
 balances update immediately (a $200,000 grant with $100,000 spent shows
 $100,000 remaining), and every entry lands in the append-only audit trail.
 Add `?theme=light` or `?theme=dark` to the URL to force a mode for demos.
@@ -185,6 +190,11 @@ python export_data.py   # refresh the static data.js after any data change
 ```
 
 ## Authentication (demo vs. production)
+
+**Currently disabled** by `REQUIRE_LOGIN = False` in `app.py` (override with
+`PC_OPS_REQUIRE_LOGIN=1`). Nothing below has been removed — the flag just
+hands every request a standing local operator so no password is needed. The
+rest of this section describes what happens when it is switched back on.
 
 Passwords are stored as per-user-salted PBKDF2-HMAC-SHA256 hashes (never
 plaintext); verification is constant-time; every login attempt (success or

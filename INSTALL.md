@@ -16,8 +16,8 @@ lives in a single local SQLite file — nothing leaves your computer.
 2. Put it in a folder you control (e.g. `Documents\CityOperations\`).
 3. Double-click it. A console window opens (leave it open — that's the
    server) and your browser opens the app.
-4. First run only: the app starts **blank** and asks you to create the
-   administrator account. Pick a username and a password of 8+ characters.
+4. It opens straight to the dashboard — **there is no login right now**
+   (see "Sign-in is currently off" below). The database starts **blank**.
 5. Start entering data: revenue streams and budgets on **Revenue tracker**,
    billing tickets on **Utility billing**, awards under **Grants**, districts
    on **CRA districts**, and so on.
@@ -83,9 +83,15 @@ make_exe.bat            # installs PyInstaller and produces dist\PanamaCityOpera
   database (schema, validation triggers, append-only audit logs, fiscal-year
   calendar, first-run admin setup). `build_db.py` creates the demo database
   full of fictional data and demo logins — useful for training.
-- **Users & roles:** the first account is a `finance_admin` (full write
-  access). Additional users are added directly in the `app_user` table for
-  now (see `pcb_auth.py` for the password hashing helper).
+- **Sign-in is currently off.** The app opens straight to the dashboard as a
+  standing "Local User" with full write access. Everything that implements
+  authentication is still in place and still works — the `app_user` table,
+  PBKDF2 password hashing (`pcb_auth.py`), the append-only `login_audit`,
+  server-side sessions, the login screen, and the first-run administrator
+  setup. Turning it back on is a one-line change: set `REQUIRE_LOGIN = True`
+  in `app.py`, or start the app with the environment variable
+  `PC_OPS_REQUIRE_LOGIN=1`. On a blank database the first visitor is then
+  asked to create the administrator account.
 - **Backups:** copy `grants.db` (and the `uploads/` folder if you attach
   PDFs). That's the entire system state.
 - **Security scope:** the server binds to `127.0.0.1` only — it is a

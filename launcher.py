@@ -6,8 +6,10 @@ Double-click behavior:
      location is not writable (e.g. Program Files), it falls back to
      %LOCALAPPDATA%\\PanamaCityOperations.
   2. Creates a blank database on first run (schema + controls, no data).
-  3. Picks a free port, starts the server, and opens the browser — the first
-     visitor is asked to create the administrator account.
+  3. Picks a free port, starts the server, and opens the browser.
+
+Sign-in is switched off for now (see app.py REQUIRE_LOGIN), so the app opens
+straight to the dashboard.
 """
 import os
 import socket
@@ -68,8 +70,8 @@ def main():
     print("  Data folder : %s" % data_dir)
     print("  Address     : %s" % url)
     if first_run:
-        print("  First run   : blank database created - the browser will ask")
-        print("                you to create the administrator account.")
+        print("  First run   : blank database created - start entering data.")
+    print("  Sign-in     : off (opens straight to the dashboard)")
     print("  Leave this window open while you work. Close it (or press")
     print("  Ctrl+C) to stop the server. Back up by copying grants.db.")
     print("=" * 62)

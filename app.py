@@ -52,6 +52,24 @@ MAX_PDF_BYTES = 10 * 1024 * 1024
 PORT = int(os.environ.get("PC_OPS_PORT", "8765"))
 WRITER_ROLES = ("grant_manager", "finance_admin")
 
+# ---------------------------------------------------------------------------
+# Sign-in is switched OFF for now.
+#
+# Nothing that implements it has been removed: the app_user table, the PBKDF2
+# hashing in pcb_auth.py, the append-only login_audit, server-side sessions,
+# the login screen, and the first-run administrator setup are all still here
+# and still work. This flag simply hands every request a standing local
+# operator, so the app opens straight to the dashboard with no password.
+#
+# To turn authentication back on, either set REQUIRE_LOGIN = True below or
+# start the app with PC_OPS_REQUIRE_LOGIN=1. No other change is needed.
+# ---------------------------------------------------------------------------
+REQUIRE_LOGIN = os.environ.get("PC_OPS_REQUIRE_LOGIN", "") in ("1", "true", "yes")
+
+# who the app acts as while sign-in is off (finance_admin = full write access)
+LOCAL_USER = {"username": "local", "display_name": "Local User",
+              "role": "finance_admin"}
+
 SESSIONS = {}  # token -> {username, display_name, role} (cache over app_session)
 
 
@@ -110,6 +128,8 @@ class Handler(BaseHTTPRequestHandler):
             return {}
 
     def _session(self):
+        if not REQUIRE_LOGIN:
+            return dict(LOCAL_USER)
         cookie = self.headers.get("Cookie", "")
         for part in cookie.split(";"):
             k, _, v = part.strip().partition("=")
@@ -186,6 +206,10 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/api/setup-status":
             # unauthenticated: the login screen asks whether this is a fresh
             # install (no users yet) so it can offer the first-run setup form
+            if not REQUIRE_LOGIN:
+                return self._json(200, {"needs_setup": False,
+                                        "demo_accounts": False,
+                                        "auth_disabled": True})
             con = db()
             try:
                 users = con.execute("SELECT COUNT(*) FROM app_user").fetchone()[0]
@@ -202,6 +226,8 @@ class Handler(BaseHTTPRequestHandler):
             try:
                 data = collect(con)
                 data["user"] = sess
+                # lets the UI hide sign-out while sign-in is switched off
+                data["auth_disabled"] = not REQUIRE_LOGIN
                 return self._json(200, data)
             finally:
                 con.close()
@@ -1336,6 +1362,11 @@ def main():
     init_sessions()
     server = ThreadingHTTPServer(("127.0.0.1", PORT), Handler)
     print("Panama City - City Operations: http://localhost:%d" % PORT)
+    if not REQUIRE_LOGIN:
+        print("sign-in is off - opens straight to the dashboard "
+              "(set PC_OPS_REQUIRE_LOGIN=1 to turn it back on)")
+        server.serve_forever()
+        return
     con = db()
     try:
         users = con.execute("SELECT COUNT(*) FROM app_user").fetchone()[0]

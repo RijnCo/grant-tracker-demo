@@ -69,9 +69,10 @@ def main():
         sys.exit(1)
     fys = ", ".join(f[1] for f in fiscal_years())
     print("Blank database created:", db_path)
-    print("Entity: %s  ·  fiscal years %s" % (CITY, fys))
+    print("Entity: %s  -  fiscal years %s" % (CITY, fys))
     print("Start the app (python app.py or the executable) and open it in a")
-    print("browser — it will ask you to create the administrator account.")
+    print("browser. Sign-in is currently switched off, so it opens straight")
+    print("to the dashboard.")
 
 
 if __name__ == "__main__":
