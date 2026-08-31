@@ -19,7 +19,7 @@ INSERT INTO pass_through_entity (pass_through_id, pass_through_name, pass_throug
 -- subrecipient (4 rows)
 INSERT INTO subrecipient (subrecipient_id, subrecipient_name, subrecipient_uei) OVERRIDING SYSTEM VALUE VALUES (1, 'Panhandle Housing Coalition', 'SUB1UEI00001');
 INSERT INTO subrecipient (subrecipient_id, subrecipient_name, subrecipient_uei) OVERRIDING SYSTEM VALUE VALUES (2, 'Gulf Coast Community Action Agency', 'SUB2UEI00002');
-INSERT INTO subrecipient (subrecipient_id, subrecipient_name, subrecipient_uei) OVERRIDING SYSTEM VALUE VALUES (3, 'Friends of Pelican Shores Parks', 'SUB3UEI00003');
+INSERT INTO subrecipient (subrecipient_id, subrecipient_name, subrecipient_uei) OVERRIDING SYSTEM VALUE VALUES (3, 'Friends of Panama City Parks', 'SUB3UEI00003');
 INSERT INTO subrecipient (subrecipient_id, subrecipient_name, subrecipient_uei) OVERRIDING SYSTEM VALUE VALUES (4, 'Emerald Coast Mobility Partners', 'SUB4UEI00004');
 
 -- department (6 rows)
@@ -58,7 +58,7 @@ INSERT INTO award (award_id, fain_or_ptin, identifier_type, award_name, program_
 INSERT INTO award (award_id, fain_or_ptin, identifier_type, award_name, program_id, pass_through_id, is_direct, original_award_amount, award_period_start, award_period_end, internal_gl_string, award_type, de_minimis_elected, indirect_cost_rate) OVERRIDING SYSTEM VALUE VALUES (10, 'FDOT-SR2S-26-042', 'PASS_THROUGH', 'Safe Routes to School Sidewalks', 1, 1, FALSE, 650000, '2025-10-01', '2027-09-30', '101-4300-55115', 'grant', TRUE, NULL);
 
 -- entity_profile (1 rows)
-INSERT INTO entity_profile (entity_id, auditee_name, auditee_uei, auditee_ein, fiscal_year_end, basis_of_accounting) VALUES (1, 'City of Pelican Shores, Florida', 'DEMO1UEI2345', '59-1234567', '09-30', 'MODIFIED_ACCRUAL');
+INSERT INTO entity_profile (entity_id, auditee_name, auditee_uei, auditee_ein, fiscal_year_end, basis_of_accounting) VALUES (1, 'City of Panama City, Florida', 'DEMO1UEI2345', '59-1234567', '09-30', 'MODIFIED_ACCRUAL');
 
 -- loan_balance (3 rows)
 INSERT INTO loan_balance (loan_balance_id, award_id, fiscal_year_id, outstanding_balance) OVERRIDING SYSTEM VALUE VALUES (1, 8, 1, 1800000);
@@ -66,7 +66,7 @@ INSERT INTO loan_balance (loan_balance_id, award_id, fiscal_year_id, outstanding
 INSERT INTO loan_balance (loan_balance_id, award_id, fiscal_year_id, outstanding_balance) OVERRIDING SYSTEM VALUE VALUES (3, 8, 3, 4900000);
 
 -- sefa_note (3 rows)
-INSERT INTO sefa_note (note_id, fiscal_year_id, note_number, note_title, note_text) OVERRIDING SYSTEM VALUE VALUES (1, 3, 1, 'Basis of Presentation', 'The accompanying Schedule of Expenditures of Federal Awards includes the federal award activity of the City of Pelican Shores, Florida under programs of the federal government for the year ended September 30, 2026, presented on the modified accrual basis of accounting in accordance with 2 CFR Part 200, Uniform Guidance.');
+INSERT INTO sefa_note (note_id, fiscal_year_id, note_number, note_title, note_text) OVERRIDING SYSTEM VALUE VALUES (1, 3, 1, 'Basis of Presentation', 'The accompanying Schedule of Expenditures of Federal Awards includes the federal award activity of the City of Panama City, Florida under programs of the federal government for the year ended September 30, 2026, presented on the modified accrual basis of accounting in accordance with 2 CFR Part 200, Uniform Guidance.');
 INSERT INTO sefa_note (note_id, fiscal_year_id, note_number, note_title, note_text) OVERRIDING SYSTEM VALUE VALUES (2, 3, 2, 'Indirect Cost Rate', 'For awards flagged de_minimis_elected, the City has elected to use the 10 percent de minimis indirect cost rate allowed under 2 CFR 200.414(f). Other awards use the negotiated indirect cost rate shown on the award record.');
 INSERT INTO sefa_note (note_id, fiscal_year_id, note_number, note_title, note_text) OVERRIDING SYSTEM VALUE VALUES (3, 3, 3, 'Loan Programs', 'The Clean Water State Revolving Fund loan (ALN 66.458) balance outstanding at September 30, 2026 was $4,900,000. Loan balances are reported in the loan_balance table by fiscal year as required by 2 CFR 200.510(b)(5).');
 

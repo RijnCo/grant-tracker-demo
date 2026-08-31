@@ -176,7 +176,7 @@ def seed_documents(con):
     samples = [
         (1, "Award_Letter_FDOT-AR-2024-117.pdf", "award_letter",
          "Notice of Federal Award", [
-             "Recipient: City of Pelican Shores, Florida",
+             "Recipient: City of Panama City, Florida",
              "Award: Seagrass Avenue Corridor Reconstruction",
              "Pass-through: Florida Department of Transportation",
              "ALN 20.205 - Highway Planning and Construction",
@@ -185,14 +185,14 @@ def seed_documents(con):
              "", "This is a generated demo document."]),
         (9, "FEMA_Obligation_Letter_4734-DR-FL.pdf", "award_letter",
          "FEMA Obligation Letter", [
-             "Recipient: City of Pelican Shores, Florida",
+             "Recipient: City of Panama City, Florida",
              "Disaster: FEMA-4734-DR-FL",
              "Program: Public Assistance (ALN 97.036)",
              "Obligated amount: $5,200,000.00",
              "", "This is a generated demo document."]),
         (6, "CDBG_Grant_Agreement_B-24-MC-12-0021.pdf", "award_letter",
          "CDBG Grant Agreement", [
-             "Recipient: City of Pelican Shores, Florida",
+             "Recipient: City of Panama City, Florida",
              "Award: Osprey Point Neighborhood Revitalization",
              "ALN 14.218 - CDBG Entitlement Grants",
              "Original award amount: $3,100,000.00",
@@ -201,7 +201,7 @@ def seed_documents(con):
     samples += [
         (11, "TRIP_Agreement_441509-1.pdf", "award_letter",
          "FDOT TRIP Grant Agreement", [
-             "Recipient: City of Pelican Shores, Florida",
+             "Recipient: City of Panama City, Florida",
              "Project: Coastal Parkway Corridor TRIP Improvements",
              "CSFA 55.026 - Transportation Regional Incentive Program",
              "Agreement amount: $2,400,000.00",
@@ -209,7 +209,7 @@ def seed_documents(con):
              "", "This is a generated demo document."]),
         (14, "GAA_Line_Item_1234A_Award.pdf", "award_letter",
          "Legislative Appropriation Award", [
-             "Recipient: City of Pelican Shores, Florida",
+             "Recipient: City of Panama City, Florida",
              "Project: Downtown Marina Seawall Repair",
              "GAA 2025-26 Specific Appropriation Line Item 1234A",
              "Appropriated amount: $1,500,000.00",
@@ -559,7 +559,7 @@ BILLING_TICKETS = [
      341.90, 128.75, 30400, 19100, 'gal', 'mgarcia', 'medium',
      '2026-06-02', '2026-06-23', None,
      'resolved', ('credit', 128.75, 'ADJ-77419', 'JE-2026-0544', 'dwilliams', 'supervisor', '2026-06-17')),
-    ('UB-2026-005', 'water', 'underbilling', 'customer', 'Pelican Shores Storage LLC',
+    ('UB-2026-005', 'water', 'underbilling', 'customer', 'Panama City Storage LLC',
      '(850) 555-0101', '1500 Millville Ave', '04-140212-03',
      96.10, 481.50, 8200, 41500, 'gal', 'jchen', 'medium',
      '2026-06-09', '2026-07-07', 'Meter multiplier set wrong since March.',

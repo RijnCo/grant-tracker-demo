@@ -1,15 +1,24 @@
-# Grant Application — City of Pelican Shores Award Expenditure Tracking
+# Grant Application — City of Panama City Award Expenditure Tracking
 
 SQLite database + login-protected web app for tracking **federal and Florida
 state** award expenditures, producing both the Schedule of Expenditures of
 Federal Awards (**SEFA**, 2 CFR 200.510) and the Schedule of Expenditures of
 State Financial Assistance (**SESFA**, Florida Single Audit Act — s. 215.97,
 F.S.), plus a basic tracker for general operating funds.
-Themed for the City of Pelican Shores, Florida (Oct 1–Sep 30 fiscal year).
+Themed for the City of Panama City, Florida (Oct 1–Sep 30 fiscal year).
 
 ## Quick start
 
+**Easiest:** download `PanamaCityOperations.exe` from the Releases page and
+double-click it — no installs, starts blank, walks you through creating the
+administrator account. Full details (including running from source and
+building the exe) are in **[INSTALL.md](INSTALL.md)**.
+
+From source:
+
 ```
+python init_db.py       # blank, production-ready database (first-run admin setup)
+python build_db.py      # …or a database full of demo data instead
 python app.py           # then open http://localhost:8765
 ```
 

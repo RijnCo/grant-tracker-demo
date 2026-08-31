@@ -1,6 +1,8 @@
-"""Grant tracker demo server — City of Pelican Shores, Florida.
+"""City Operations server — City of Panama City, Florida.
 
 Run:  python app.py     then open http://localhost:8765
+(or double-click the packaged executable, which starts blank and walks the
+first user through creating an administrator account in the browser).
 
 Standard library only (Python 3.7+). Serves the frontend and a JSON API:
   POST /api/login        {username, password} -> session cookie
@@ -32,17 +34,22 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-from pcb_auth import verify_password
+from pcb_auth import hash_password, verify_password
 from export_data import collect
 import revenue_lib
 
-DB = os.path.join(HERE, "grants.db")
+# When frozen into an executable, bundled read-only resources (the built
+# frontend, sql/) are unpacked to sys._MEIPASS; the database and uploads live
+# in a writable data directory (set by launcher.py, next to the .exe).
+RESOURCES = getattr(sys, "_MEIPASS", HERE)
+DATA_DIR = os.environ.get("PC_OPS_DATA_DIR", HERE)
+DB = os.path.join(DATA_DIR, "grants.db")
 # serve the built React app if present; fall back to the legacy static page
-WEBAPP_DIST = os.path.join(HERE, "webapp", "dist")
-FRONTEND = WEBAPP_DIST if os.path.isdir(WEBAPP_DIST) else os.path.join(HERE, "frontend")
-UPLOADS = os.path.join(HERE, "uploads")
+WEBAPP_DIST = os.path.join(RESOURCES, "webapp", "dist")
+FRONTEND = WEBAPP_DIST if os.path.isdir(WEBAPP_DIST) else os.path.join(RESOURCES, "frontend")
+UPLOADS = os.path.join(DATA_DIR, "uploads")
 MAX_PDF_BYTES = 10 * 1024 * 1024
-PORT = 8765
+PORT = int(os.environ.get("PC_OPS_PORT", "8765"))
 WRITER_ROLES = ("grant_manager", "finance_admin")
 
 SESSIONS = {}  # token -> {username, display_name, role} (cache over app_session)
@@ -51,6 +58,9 @@ SESSIONS = {}  # token -> {username, display_name, role} (cache over app_session
 def db():
     con = sqlite3.connect(DB)
     con.execute("PRAGMA foreign_keys = ON")
+    # short waits instead of immediate 'database is locked' errors under the
+    # threaded server; WAL (set at database creation) keeps readers unblocked
+    con.execute("PRAGMA busy_timeout = 5000")
     return con
 
 
@@ -148,6 +158,9 @@ class Handler(BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header("Content-Type", ctype + "; charset=utf-8")
         self.send_header("Content-Length", str(len(body)))
+        if "/assets/" in path:
+            # Vite fingerprints asset filenames, so they are safe to cache hard
+            self.send_header("Cache-Control", "public, max-age=31536000, immutable")
         self.end_headers()
         self.wfile.write(body)
 
@@ -170,6 +183,17 @@ class Handler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(body)
             return
+        if path == "/api/setup-status":
+            # unauthenticated: the login screen asks whether this is a fresh
+            # install (no users yet) so it can offer the first-run setup form
+            con = db()
+            try:
+                users = con.execute("SELECT COUNT(*) FROM app_user").fetchone()[0]
+                demo = con.execute("SELECT 1 FROM app_user WHERE username = 'alopez'").fetchone()
+            finally:
+                con.close()
+            return self._json(200, {"needs_setup": users == 0,
+                                    "demo_accounts": bool(demo)})
         if path == "/api/data":
             sess = self._session()
             if not sess:
@@ -238,6 +262,8 @@ class Handler(BaseHTTPRequestHandler):
         path = self.path.split("?")[0]
         if path == "/api/login":
             return self._login()
+        if path == "/api/setup":
+            return self._first_run_setup()
         if path == "/api/logout":
             cookie = self.headers.get("Cookie", "")
             for part in cookie.split(";"):
@@ -269,6 +295,8 @@ class Handler(BaseHTTPRequestHandler):
             return self._add_fund(sess)
         if path == "/api/fund-transaction":
             return self._add_fund_transaction(sess)
+        if path == "/api/cra-district":
+            return self._add_cra_district(sess)
         if path == "/api/cra-project":
             return self._add_cra_project(sess)
         if path == "/api/cra-transaction":
@@ -312,6 +340,32 @@ class Handler(BaseHTTPRequestHandler):
         return self._json(404, {"error": "not found"})
 
     # ---------- handlers ----------
+    def _first_run_setup(self):
+        """Create the administrator account on a blank install. Only works
+        while the app_user table is empty, so it can never be used to add
+        accounts to a system that is already in use."""
+        b = self._body()
+        username = str(b.get("username", "")).strip().lower()[:60]
+        password = str(b.get("password", ""))
+        display = str(b.get("display_name", "")).strip()[:120] or username
+        if len(username) < 3 or not username.isalnum():
+            return self._json(400, {"error": "username must be at least 3 letters/digits"})
+        if len(password) < 8:
+            return self._json(400, {"error": "password must be at least 8 characters"})
+        con = db()
+        try:
+            if con.execute("SELECT COUNT(*) FROM app_user").fetchone()[0] > 0:
+                return self._json(403, {"error": "setup has already been completed"})
+            salt, digest, algo, iters = hash_password(password)
+            con.execute(
+                "INSERT INTO app_user (username, display_name, role, password_salt, "
+                "password_hash, hash_algo, hash_iterations) VALUES (?,?,?,?,?,?,?)",
+                (username, display, "finance_admin", salt, digest, algo, iters))
+            con.commit()
+            return self._json(200, {"ok": True, "username": username})
+        finally:
+            con.close()
+
     def _login(self):
         body = self._body()
         username = str(body.get("username", "")).strip().lower()
@@ -577,6 +631,39 @@ class Handler(BaseHTTPRequestHandler):
                 "fund_code": status[0], "fund_name": status[1],
                 "budget": status[2], "total_in": status[3],
                 "total_out": status[4], "available": status[5]})
+        finally:
+            con.close()
+
+    def _add_cra_district(self, sess):
+        b = self._body()
+        name = str(b.get("district_name") or "").strip()[:120]
+        if not name:
+            return self._json(400, {"error": "a district name is required"})
+        def num(k):
+            v = b.get(k)
+            try:
+                return round(float(v), 2) if v not in (None, "") else None
+            except (TypeError, ValueError):
+                return None
+        def year(k):
+            v = b.get(k)
+            try:
+                return int(v) if v not in (None, "") else None
+            except (TypeError, ValueError):
+                return None
+        con = db()
+        try:
+            cur = con.execute(
+                "INSERT INTO cra_district (district_name, established_year, "
+                "sunset_year, base_year, base_taxable_value, "
+                "current_taxable_value, notes) VALUES (?,?,?,?,?,?,?)",
+                (name, year("established_year"), year("sunset_year"),
+                 year("base_year"), num("base_taxable_value"),
+                 num("current_taxable_value"),
+                 str(b.get("notes") or "")[:500] or None))
+            con.commit()
+            return self._json(200, {"ok": True, "district_id": cur.lastrowid,
+                                    "district_name": name})
         finally:
             con.close()
 
@@ -1248,9 +1335,19 @@ class Handler(BaseHTTPRequestHandler):
 def main():
     init_sessions()
     server = ThreadingHTTPServer(("127.0.0.1", PORT), Handler)
-    print("City of Pelican Shores grant tracker: http://localhost:%d" % PORT)
-    print("demo logins: alopez / Sunshine!2026 (grant manager), "
-          "jrivera / SandDollar!26 (finance), viewer / Welcome!2026 (read-only)")
+    print("Panama City - City Operations: http://localhost:%d" % PORT)
+    con = db()
+    try:
+        users = con.execute("SELECT COUNT(*) FROM app_user").fetchone()[0]
+        demo = con.execute("SELECT 1 FROM app_user WHERE username = 'alopez'").fetchone()
+    finally:
+        con.close()
+    if users == 0:
+        print("fresh install: open the address above to create the "
+              "administrator account")
+    elif demo:
+        print("demo logins: alopez / Sunshine!2026 (grant manager), "
+              "jrivera / SandDollar!26 (finance), viewer / Welcome!2026 (read-only)")
     server.serve_forever()
 
 

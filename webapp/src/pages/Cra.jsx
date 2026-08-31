@@ -13,6 +13,80 @@ import UsageBar from '../components/UsageBar'
 
 const STATUS_LABEL = { planned: 'Planned', underway: 'Underway', complete: 'Complete' }
 
+function DistrictModal({ open, onClose }) {
+  const { refresh, guard } = useApp()
+  const toast = useToast()
+  const [err, setErr] = useState('')
+  const close = () => { setErr(''); onClose() }
+  const submit = async (e) => {
+    e.preventDefault()
+    const f = new FormData(e.currentTarget)
+    setErr('')
+    try {
+      const r = await api('/api/cra-district', {
+        method: 'POST',
+        body: JSON.stringify({
+          district_name: f.get('district_name'),
+          established_year: f.get('established_year'),
+          sunset_year: f.get('sunset_year'),
+          base_year: f.get('base_year'),
+          base_taxable_value: f.get('base_taxable_value'),
+          current_taxable_value: f.get('current_taxable_value'),
+          notes: f.get('notes'),
+        }),
+      })
+      toast(`Added CRA district "${r.district_name}".`)
+      close()
+      refresh()
+    } catch (ex) {
+      if (guard(ex)) close()
+      else setErr(ex.message)
+    }
+  }
+  return (
+    <Modal open={open} onClose={close}>
+      <form onSubmit={submit}>
+        <h3>New CRA district</h3>
+        <div className="m-sub">
+          The taxable value frozen in the base year sets the increment that
+          funds the district's trust fund.
+        </div>
+        <label htmlFor="cd-name">District name</label>
+        <input id="cd-name" name="district_name" required placeholder="Downtown" />
+        <div className="row2">
+          <div>
+            <label htmlFor="cd-est">Established</label>
+            <input id="cd-est" name="established_year" type="number" min="1960" max="2100" />
+          </div>
+          <div>
+            <label htmlFor="cd-sunset">Sunsets</label>
+            <input id="cd-sunset" name="sunset_year" type="number" min="1960" max="2120" />
+          </div>
+        </div>
+        <div className="row2">
+          <div>
+            <label htmlFor="cd-baseyr">Base tax-roll year</label>
+            <input id="cd-baseyr" name="base_year" type="number" min="1960" max="2100" />
+          </div>
+          <div>
+            <label htmlFor="cd-baseval">Baseline taxable value ($)</label>
+            <input id="cd-baseval" name="base_taxable_value" type="number" step="0.01" min="0" />
+          </div>
+        </div>
+        <label htmlFor="cd-curval">Current taxable value ($)</label>
+        <input id="cd-curval" name="current_taxable_value" type="number" step="0.01" min="0" />
+        <label htmlFor="cd-notes">Notes</label>
+        <input id="cd-notes" name="notes" placeholder="Core commercial district…" />
+        <div className="err">{err}</div>
+        <div className="actions">
+          <button type="button" className="btn ghost" onClick={close}>Cancel</button>
+          <button type="submit" className="btn primary">Add district</button>
+        </div>
+      </form>
+    </Modal>
+  )
+}
+
 function ProjectModal({ open, onClose }) {
   const { data, refresh, guard } = useApp()
   const toast = useToast()
@@ -375,6 +449,7 @@ export default function Cra() {
   const [txnOpen, setTxnOpen] = useState(false)
   const [engOpen, setEngOpen] = useState(false)
   const [fundOpen, setFundOpen] = useState(false)
+  const [distOpen, setDistOpen] = useState(false)
 
   const districts = data.cra_districts || []
   const projects = data.cra_projects || []
@@ -414,6 +489,9 @@ export default function Cra() {
         <div style={{ flex: 1 }} />
         {canWrite && (
           <>
+            <button className="btn small" onClick={() => setDistOpen(true)}>
+              <MapPin /> New district
+            </button>
             <button className="btn small" onClick={() => setProjOpen(true)}>
               <Plus /> New project
             </button>
@@ -694,6 +772,7 @@ export default function Cra() {
         />
       </div>
 
+      <DistrictModal open={distOpen} onClose={() => setDistOpen(false)} />
       <ProjectModal open={projOpen} onClose={() => setProjOpen(false)} />
       <FundingModal open={fundOpen} onClose={() => setFundOpen(false)} />
       <EngagementModal open={engOpen} onClose={() => setEngOpen(false)} />

@@ -1,7 +1,7 @@
 window.GRANT_DATA = {
  "entity": {
   "entity_id": 1,
-  "auditee_name": "City of Pelican Shores, Florida",
+  "auditee_name": "City of Panama City, Florida",
   "auditee_uei": "DEMO1UEI2345",
   "auditee_ein": "59-1234567",
   "fiscal_year_end": "09-30",
@@ -1079,7 +1079,7 @@ window.GRANT_DATA = {
    "amount_change": 0,
    "description": "Amendment 1: HUD approved a one-year extension for the remaining housing rehabilitation scope.",
    "entered_by": "alopez",
-   "entered_at": "2026-08-30 23:30:05"
+   "entered_at": "2026-08-31 02:57:14"
   },
   {
    "amendment_id": 6,
@@ -1097,7 +1097,7 @@ window.GRANT_DATA = {
    "amount_change": 250000,
    "description": "Amendment 1: FDEM added funds for two additional critical-facility retrofits.",
    "entered_by": "alopez",
-   "entered_at": "2026-08-30 23:30:05"
+   "entered_at": "2026-08-31 02:57:14"
   },
   {
    "amendment_id": 2,
@@ -1115,7 +1115,7 @@ window.GRANT_DATA = {
    "amount_change": 1200000,
    "description": "Amendment 2: supplemental FDOT obligation for added drainage scope.",
    "entered_by": "alopez",
-   "entered_at": "2026-08-30 23:30:05"
+   "entered_at": "2026-08-31 02:57:14"
   },
   {
    "amendment_id": 4,
@@ -1133,7 +1133,7 @@ window.GRANT_DATA = {
    "amount_change": 750000,
    "description": "Loan amendment 1: contingency added and completion date extended one year.",
    "entered_by": "alopez",
-   "entered_at": "2026-08-30 23:30:05"
+   "entered_at": "2026-08-31 02:57:14"
   },
   {
    "amendment_id": 3,
@@ -1151,7 +1151,7 @@ window.GRANT_DATA = {
    "amount_change": 1500000,
    "description": "FEMA version 2 obligation \u2014 additional eligible damages approved.",
    "entered_by": "alopez",
-   "entered_at": "2026-08-30 23:30:05"
+   "entered_at": "2026-08-31 02:57:14"
   },
   {
    "amendment_id": 1,
@@ -1169,7 +1169,7 @@ window.GRANT_DATA = {
    "amount_change": 0,
    "description": "Amendment 1: utility relocation delays \u2014 period of performance extended two years.",
    "entered_by": "alopez",
-   "entered_at": "2026-08-30 23:30:05"
+   "entered_at": "2026-08-31 02:57:14"
   }
  ],
  "award_fy_spend": [
@@ -1391,7 +1391,7 @@ window.GRANT_DATA = {
    "payment_count": 2
   },
   {
-   "subrecipient_name": "Friends of Pelican Shores Parks",
+   "subrecipient_name": "Friends of Panama City Parks",
    "subrecipient_uei": "SUB3UEI00003",
    "fy_label": "FY2025",
    "aln": "15.916",
@@ -1401,7 +1401,7 @@ window.GRANT_DATA = {
    "payment_count": 2
   },
   {
-   "subrecipient_name": "Friends of Pelican Shores Parks",
+   "subrecipient_name": "Friends of Panama City Parks",
    "subrecipient_uei": "SUB3UEI00003",
    "fy_label": "FY2026",
    "aln": "15.916",
@@ -1461,7 +1461,7 @@ window.GRANT_DATA = {
    "doc_type": "other",
    "file_size": null,
    "uploaded_by": "system",
-   "uploaded_at": "2026-08-30 23:30:05"
+   "uploaded_at": "2026-08-31 02:57:14"
   },
   {
    "document_id": 5,
@@ -1470,9 +1470,9 @@ window.GRANT_DATA = {
    "storage_path": "uploads/doc_5.pdf",
    "external_url": null,
    "doc_type": "award_letter",
-   "file_size": 950,
+   "file_size": 947,
    "uploaded_by": "system",
-   "uploaded_at": "2026-08-30 23:30:05"
+   "uploaded_at": "2026-08-31 02:57:14"
   },
   {
    "document_id": 4,
@@ -1481,9 +1481,9 @@ window.GRANT_DATA = {
    "storage_path": "uploads/doc_4.pdf",
    "external_url": null,
    "doc_type": "award_letter",
-   "file_size": 1036,
+   "file_size": 1033,
    "uploaded_by": "system",
-   "uploaded_at": "2026-08-30 23:30:05"
+   "uploaded_at": "2026-08-31 02:57:14"
   },
   {
    "document_id": 3,
@@ -1492,9 +1492,9 @@ window.GRANT_DATA = {
    "storage_path": "uploads/doc_3.pdf",
    "external_url": null,
    "doc_type": "award_letter",
-   "file_size": 935,
+   "file_size": 932,
    "uploaded_by": "system",
-   "uploaded_at": "2026-08-30 23:30:05"
+   "uploaded_at": "2026-08-31 02:57:14"
   },
   {
    "document_id": 2,
@@ -1503,9 +1503,9 @@ window.GRANT_DATA = {
    "storage_path": "uploads/doc_2.pdf",
    "external_url": null,
    "doc_type": "award_letter",
-   "file_size": 911,
+   "file_size": 908,
    "uploaded_by": "system",
-   "uploaded_at": "2026-08-30 23:30:05"
+   "uploaded_at": "2026-08-31 02:57:14"
   },
   {
    "document_id": 1,
@@ -1514,9 +1514,9 @@ window.GRANT_DATA = {
    "storage_path": "uploads/doc_1.pdf",
    "external_url": null,
    "doc_type": "award_letter",
-   "file_size": 1107,
+   "file_size": 1104,
    "uploaded_by": "system",
-   "uploaded_at": "2026-08-30 23:30:05"
+   "uploaded_at": "2026-08-31 02:57:14"
   }
  ],
  "loan_balances": [
@@ -1716,7 +1716,7 @@ window.GRANT_DATA = {
    "agency_name": "U.S. Department of the Interior",
    "department_name": "Parks & Recreation",
    "fy_label": "FY2026",
-   "subrecipient_name": "Friends of Pelican Shores Parks"
+   "subrecipient_name": "Friends of Panama City Parks"
   },
   {
    "expenditure_id": 217,
@@ -2705,7 +2705,7 @@ window.GRANT_DATA = {
    "agency_name": "U.S. Department of the Interior",
    "department_name": "Parks & Recreation",
    "fy_label": "FY2026",
-   "subrecipient_name": "Friends of Pelican Shores Parks"
+   "subrecipient_name": "Friends of Panama City Parks"
   },
   {
    "expenditure_id": 54,
@@ -2935,7 +2935,7 @@ window.GRANT_DATA = {
    "agency_name": "U.S. Department of the Interior",
    "department_name": "Parks & Recreation",
    "fy_label": "FY2026",
-   "subrecipient_name": "Friends of Pelican Shores Parks"
+   "subrecipient_name": "Friends of Panama City Parks"
   },
   {
    "expenditure_id": 36,
@@ -4039,7 +4039,7 @@ window.GRANT_DATA = {
    "agency_name": "U.S. Department of the Interior",
    "department_name": "Parks & Recreation",
    "fy_label": "FY2025",
-   "subrecipient_name": "Friends of Pelican Shores Parks"
+   "subrecipient_name": "Friends of Panama City Parks"
   },
   {
    "expenditure_id": 14,
@@ -5442,7 +5442,7 @@ window.GRANT_DATA = {
    "agency_name": "U.S. Department of the Interior",
    "department_name": "Parks & Recreation",
    "fy_label": "FY2025",
-   "subrecipient_name": "Friends of Pelican Shores Parks"
+   "subrecipient_name": "Friends of Panama City Parks"
   },
   {
    "expenditure_id": 25,
@@ -6713,7 +6713,7 @@ window.GRANT_DATA = {
  "audit_trail": [
   {
    "audit_id": 227,
-   "changed_at": "2026-08-30 23:30:05",
+   "changed_at": "2026-08-31 02:57:14",
    "action": "DELETE",
    "expenditure_id": 224,
    "old_amount": 17596.83,
@@ -6728,7 +6728,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 226,
-   "changed_at": "2026-08-30 23:30:05",
+   "changed_at": "2026-08-31 02:57:14",
    "action": "UPDATE",
    "expenditure_id": 1,
    "old_amount": 100079.18,
@@ -6743,7 +6743,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 225,
-   "changed_at": "2026-08-30 23:30:05",
+   "changed_at": "2026-08-31 02:57:14",
    "action": "INSERT",
    "expenditure_id": 225,
    "old_amount": null,
@@ -6758,7 +6758,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 224,
-   "changed_at": "2026-08-30 23:30:05",
+   "changed_at": "2026-08-31 02:57:14",
    "action": "INSERT",
    "expenditure_id": 224,
    "old_amount": null,
@@ -6773,7 +6773,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 223,
-   "changed_at": "2026-08-30 23:30:05",
+   "changed_at": "2026-08-31 02:57:14",
    "action": "INSERT",
    "expenditure_id": 223,
    "old_amount": null,
@@ -6788,7 +6788,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 222,
-   "changed_at": "2026-08-30 23:30:05",
+   "changed_at": "2026-08-31 02:57:14",
    "action": "INSERT",
    "expenditure_id": 222,
    "old_amount": null,
@@ -6803,7 +6803,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 221,
-   "changed_at": "2026-08-30 23:30:05",
+   "changed_at": "2026-08-31 02:57:14",
    "action": "INSERT",
    "expenditure_id": 221,
    "old_amount": null,
@@ -6818,7 +6818,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 220,
-   "changed_at": "2026-08-30 23:30:05",
+   "changed_at": "2026-08-31 02:57:14",
    "action": "INSERT",
    "expenditure_id": 220,
    "old_amount": null,
@@ -6833,7 +6833,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 219,
-   "changed_at": "2026-08-30 23:30:05",
+   "changed_at": "2026-08-31 02:57:14",
    "action": "INSERT",
    "expenditure_id": 219,
    "old_amount": null,
@@ -6848,7 +6848,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 218,
-   "changed_at": "2026-08-30 23:30:05",
+   "changed_at": "2026-08-31 02:57:14",
    "action": "INSERT",
    "expenditure_id": 218,
    "old_amount": null,
@@ -6863,7 +6863,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 217,
-   "changed_at": "2026-08-30 23:30:05",
+   "changed_at": "2026-08-31 02:57:14",
    "action": "INSERT",
    "expenditure_id": 217,
    "old_amount": null,
@@ -6878,7 +6878,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 216,
-   "changed_at": "2026-08-30 23:30:05",
+   "changed_at": "2026-08-31 02:57:14",
    "action": "INSERT",
    "expenditure_id": 216,
    "old_amount": null,
@@ -6893,7 +6893,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 215,
-   "changed_at": "2026-08-30 23:30:05",
+   "changed_at": "2026-08-31 02:57:14",
    "action": "INSERT",
    "expenditure_id": 215,
    "old_amount": null,
@@ -6908,7 +6908,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 214,
-   "changed_at": "2026-08-30 23:30:05",
+   "changed_at": "2026-08-31 02:57:14",
    "action": "INSERT",
    "expenditure_id": 214,
    "old_amount": null,
@@ -6923,7 +6923,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 213,
-   "changed_at": "2026-08-30 23:30:05",
+   "changed_at": "2026-08-31 02:57:14",
    "action": "INSERT",
    "expenditure_id": 213,
    "old_amount": null,
@@ -6938,7 +6938,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 212,
-   "changed_at": "2026-08-30 23:30:05",
+   "changed_at": "2026-08-31 02:57:14",
    "action": "INSERT",
    "expenditure_id": 212,
    "old_amount": null,
@@ -6953,7 +6953,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 211,
-   "changed_at": "2026-08-30 23:30:05",
+   "changed_at": "2026-08-31 02:57:14",
    "action": "INSERT",
    "expenditure_id": 211,
    "old_amount": null,
@@ -6968,7 +6968,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 210,
-   "changed_at": "2026-08-30 23:30:05",
+   "changed_at": "2026-08-31 02:57:14",
    "action": "INSERT",
    "expenditure_id": 210,
    "old_amount": null,
@@ -6983,7 +6983,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 209,
-   "changed_at": "2026-08-30 23:30:05",
+   "changed_at": "2026-08-31 02:57:14",
    "action": "INSERT",
    "expenditure_id": 209,
    "old_amount": null,
@@ -6998,7 +6998,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 208,
-   "changed_at": "2026-08-30 23:30:05",
+   "changed_at": "2026-08-31 02:57:14",
    "action": "INSERT",
    "expenditure_id": 208,
    "old_amount": null,
@@ -7013,7 +7013,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 207,
-   "changed_at": "2026-08-30 23:30:05",
+   "changed_at": "2026-08-31 02:57:14",
    "action": "INSERT",
    "expenditure_id": 207,
    "old_amount": null,
@@ -7028,7 +7028,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 206,
-   "changed_at": "2026-08-30 23:30:05",
+   "changed_at": "2026-08-31 02:57:14",
    "action": "INSERT",
    "expenditure_id": 206,
    "old_amount": null,
@@ -7043,7 +7043,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 205,
-   "changed_at": "2026-08-30 23:30:05",
+   "changed_at": "2026-08-31 02:57:14",
    "action": "INSERT",
    "expenditure_id": 205,
    "old_amount": null,
@@ -7058,7 +7058,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 204,
-   "changed_at": "2026-08-30 23:30:05",
+   "changed_at": "2026-08-31 02:57:14",
    "action": "INSERT",
    "expenditure_id": 204,
    "old_amount": null,
@@ -7073,7 +7073,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 203,
-   "changed_at": "2026-08-30 23:30:05",
+   "changed_at": "2026-08-31 02:57:14",
    "action": "INSERT",
    "expenditure_id": 203,
    "old_amount": null,
@@ -7088,7 +7088,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 202,
-   "changed_at": "2026-08-30 23:30:05",
+   "changed_at": "2026-08-31 02:57:14",
    "action": "INSERT",
    "expenditure_id": 202,
    "old_amount": null,
@@ -7103,7 +7103,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 201,
-   "changed_at": "2026-08-30 23:30:05",
+   "changed_at": "2026-08-31 02:57:14",
    "action": "INSERT",
    "expenditure_id": 201,
    "old_amount": null,
@@ -7118,7 +7118,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 200,
-   "changed_at": "2026-08-30 23:30:05",
+   "changed_at": "2026-08-31 02:57:14",
    "action": "INSERT",
    "expenditure_id": 200,
    "old_amount": null,
@@ -7133,7 +7133,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 199,
-   "changed_at": "2026-08-30 23:30:05",
+   "changed_at": "2026-08-31 02:57:14",
    "action": "INSERT",
    "expenditure_id": 199,
    "old_amount": null,
@@ -7148,7 +7148,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 198,
-   "changed_at": "2026-08-30 23:30:05",
+   "changed_at": "2026-08-31 02:57:14",
    "action": "INSERT",
    "expenditure_id": 198,
    "old_amount": null,
@@ -7163,7 +7163,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 197,
-   "changed_at": "2026-08-30 23:30:05",
+   "changed_at": "2026-08-31 02:57:14",
    "action": "INSERT",
    "expenditure_id": 197,
    "old_amount": null,
@@ -7178,7 +7178,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 196,
-   "changed_at": "2026-08-30 23:30:05",
+   "changed_at": "2026-08-31 02:57:14",
    "action": "INSERT",
    "expenditure_id": 196,
    "old_amount": null,
@@ -7193,7 +7193,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 195,
-   "changed_at": "2026-08-30 23:30:05",
+   "changed_at": "2026-08-31 02:57:14",
    "action": "INSERT",
    "expenditure_id": 195,
    "old_amount": null,
@@ -7208,7 +7208,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 194,
-   "changed_at": "2026-08-30 23:30:05",
+   "changed_at": "2026-08-31 02:57:14",
    "action": "INSERT",
    "expenditure_id": 194,
    "old_amount": null,
@@ -7223,7 +7223,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 193,
-   "changed_at": "2026-08-30 23:30:05",
+   "changed_at": "2026-08-31 02:57:14",
    "action": "INSERT",
    "expenditure_id": 193,
    "old_amount": null,
@@ -7238,7 +7238,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 192,
-   "changed_at": "2026-08-30 23:30:05",
+   "changed_at": "2026-08-31 02:57:14",
    "action": "INSERT",
    "expenditure_id": 192,
    "old_amount": null,
@@ -7253,7 +7253,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 191,
-   "changed_at": "2026-08-30 23:30:05",
+   "changed_at": "2026-08-31 02:57:14",
    "action": "INSERT",
    "expenditure_id": 191,
    "old_amount": null,
@@ -7268,7 +7268,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 190,
-   "changed_at": "2026-08-30 23:30:05",
+   "changed_at": "2026-08-31 02:57:14",
    "action": "INSERT",
    "expenditure_id": 190,
    "old_amount": null,
@@ -7283,7 +7283,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 189,
-   "changed_at": "2026-08-30 23:30:05",
+   "changed_at": "2026-08-31 02:57:14",
    "action": "INSERT",
    "expenditure_id": 189,
    "old_amount": null,
@@ -7298,7 +7298,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 188,
-   "changed_at": "2026-08-30 23:30:05",
+   "changed_at": "2026-08-31 02:57:14",
    "action": "INSERT",
    "expenditure_id": 188,
    "old_amount": null,
@@ -7313,7 +7313,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 187,
-   "changed_at": "2026-08-30 23:30:05",
+   "changed_at": "2026-08-31 02:57:14",
    "action": "INSERT",
    "expenditure_id": 187,
    "old_amount": null,
@@ -7328,7 +7328,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 186,
-   "changed_at": "2026-08-30 23:30:05",
+   "changed_at": "2026-08-31 02:57:14",
    "action": "INSERT",
    "expenditure_id": 186,
    "old_amount": null,
@@ -7343,7 +7343,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 185,
-   "changed_at": "2026-08-30 23:30:05",
+   "changed_at": "2026-08-31 02:57:14",
    "action": "INSERT",
    "expenditure_id": 185,
    "old_amount": null,
@@ -7358,7 +7358,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 184,
-   "changed_at": "2026-08-30 23:30:05",
+   "changed_at": "2026-08-31 02:57:14",
    "action": "INSERT",
    "expenditure_id": 184,
    "old_amount": null,
@@ -7373,7 +7373,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 183,
-   "changed_at": "2026-08-30 23:30:05",
+   "changed_at": "2026-08-31 02:57:14",
    "action": "INSERT",
    "expenditure_id": 183,
    "old_amount": null,
@@ -7388,7 +7388,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 182,
-   "changed_at": "2026-08-30 23:30:05",
+   "changed_at": "2026-08-31 02:57:14",
    "action": "INSERT",
    "expenditure_id": 182,
    "old_amount": null,
@@ -7403,7 +7403,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 181,
-   "changed_at": "2026-08-30 23:30:05",
+   "changed_at": "2026-08-31 02:57:14",
    "action": "INSERT",
    "expenditure_id": 181,
    "old_amount": null,
@@ -7418,7 +7418,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 180,
-   "changed_at": "2026-08-30 23:30:05",
+   "changed_at": "2026-08-31 02:57:14",
    "action": "INSERT",
    "expenditure_id": 180,
    "old_amount": null,
@@ -7433,7 +7433,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 179,
-   "changed_at": "2026-08-30 23:30:05",
+   "changed_at": "2026-08-31 02:57:14",
    "action": "INSERT",
    "expenditure_id": 179,
    "old_amount": null,
@@ -7448,7 +7448,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 178,
-   "changed_at": "2026-08-30 23:30:05",
+   "changed_at": "2026-08-31 02:57:14",
    "action": "INSERT",
    "expenditure_id": 178,
    "old_amount": null,
@@ -7471,7 +7471,7 @@ window.GRANT_DATA = {
   },
   {
    "subrecipient_id": 3,
-   "subrecipient_name": "Friends of Pelican Shores Parks",
+   "subrecipient_name": "Friends of Panama City Parks",
    "subrecipient_uei": "SUB3UEI00003"
   },
   {
@@ -28110,7 +28110,7 @@ window.GRANT_DATA = {
    "back_billed": 0,
    "adjustment_count": 0,
    "is_overdue": 0,
-   "days_open": 3,
+   "days_open": 4,
    "entered_by": "kpatel"
   },
   {
@@ -28138,7 +28138,7 @@ window.GRANT_DATA = {
    "back_billed": 0,
    "adjustment_count": 0,
    "is_overdue": 0,
-   "days_open": 6,
+   "days_open": 7,
    "entered_by": "kpatel"
   },
   {
@@ -28166,7 +28166,7 @@ window.GRANT_DATA = {
    "back_billed": 0,
    "adjustment_count": 0,
    "is_overdue": 0,
-   "days_open": 9,
+   "days_open": 10,
    "entered_by": "mgarcia"
   },
   {
@@ -28194,7 +28194,7 @@ window.GRANT_DATA = {
    "back_billed": 0,
    "adjustment_count": 0,
    "is_overdue": 1,
-   "days_open": 15,
+   "days_open": 16,
    "entered_by": "mgarcia"
   },
   {
@@ -28222,7 +28222,7 @@ window.GRANT_DATA = {
    "back_billed": 0,
    "adjustment_count": 0,
    "is_overdue": 0,
-   "days_open": 24,
+   "days_open": 25,
    "entered_by": "rthompson"
   },
   {
@@ -28249,8 +28249,8 @@ window.GRANT_DATA = {
    "credits_issued": 0,
    "back_billed": 0,
    "adjustment_count": 0,
-   "is_overdue": 0,
-   "days_open": 28,
+   "is_overdue": 1,
+   "days_open": 29,
    "entered_by": "jchen"
   },
   {
@@ -28278,7 +28278,7 @@ window.GRANT_DATA = {
    "back_billed": 0,
    "adjustment_count": 0,
    "is_overdue": 0,
-   "days_open": 31,
+   "days_open": 32,
    "entered_by": "dwilliams"
   },
   {
@@ -28306,7 +28306,7 @@ window.GRANT_DATA = {
    "back_billed": 0,
    "adjustment_count": 0,
    "is_overdue": 1,
-   "days_open": 40,
+   "days_open": 41,
    "entered_by": "dwilliams"
   },
   {
@@ -28334,14 +28334,14 @@ window.GRANT_DATA = {
    "back_billed": 940,
    "adjustment_count": 1,
    "is_overdue": 0,
-   "days_open": 59,
+   "days_open": 60,
    "entered_by": "rthompson"
   },
   {
    "ticket_id": 5,
    "ticket_code": "UB-2026-005",
    "account_number": "04-140212-03",
-   "customer_name": "Pelican Shores Storage LLC",
+   "customer_name": "Panama City Storage LLC",
    "contact_info": "(850) 555-0101",
    "service_address": "1500 Millville Ave",
    "utility_service": "water",
@@ -28362,7 +28362,7 @@ window.GRANT_DATA = {
    "back_billed": 385.4,
    "adjustment_count": 1,
    "is_overdue": 0,
-   "days_open": 82,
+   "days_open": 83,
    "entered_by": "jchen"
   },
   {
@@ -28390,7 +28390,7 @@ window.GRANT_DATA = {
    "back_billed": 0,
    "adjustment_count": 1,
    "is_overdue": 0,
-   "days_open": 89,
+   "days_open": 90,
    "entered_by": "mgarcia"
   },
   {
@@ -28418,7 +28418,7 @@ window.GRANT_DATA = {
    "back_billed": 0,
    "adjustment_count": 1,
    "is_overdue": 0,
-   "days_open": 96,
+   "days_open": 97,
    "entered_by": "dwilliams"
   },
   {
@@ -28446,7 +28446,7 @@ window.GRANT_DATA = {
    "back_billed": 0,
    "adjustment_count": 1,
    "is_overdue": 0,
-   "days_open": 104,
+   "days_open": 105,
    "entered_by": "kpatel"
   },
   {
@@ -28474,7 +28474,7 @@ window.GRANT_DATA = {
    "back_billed": 0,
    "adjustment_count": 1,
    "is_overdue": 0,
-   "days_open": 118,
+   "days_open": 119,
    "entered_by": "mgarcia"
   }
  ],
@@ -28498,7 +28498,7 @@ window.GRANT_DATA = {
    "adjustment_id": 5,
    "ticket_id": 5,
    "ticket_code": "UB-2026-005",
-   "customer_name": "Pelican Shores Storage LLC",
+   "customer_name": "Panama City Storage LLC",
    "adjustment_type": "back_bill",
    "amount": 385.4,
    "adjustment_code": "ADJ-77488",
@@ -29087,7 +29087,7 @@ window.GRANT_DATA = {
    "fy_label": "FY2026",
    "note_number": 1,
    "note_title": "Basis of Presentation",
-   "note_text": "The accompanying Schedule of Expenditures of Federal Awards includes the federal award activity of the City of Pelican Shores, Florida under programs of the federal government for the year ended September 30, 2026, presented on the modified accrual basis of accounting in accordance with 2 CFR Part 200, Uniform Guidance."
+   "note_text": "The accompanying Schedule of Expenditures of Federal Awards includes the federal award activity of the City of Panama City, Florida under programs of the federal government for the year ended September 30, 2026, presented on the modified accrual basis of accounting in accordance with 2 CFR Part 200, Uniform Guidance."
   },
   {
    "fy_label": "FY2026",
@@ -29102,5 +29102,5 @@ window.GRANT_DATA = {
    "note_text": "The Clean Water State Revolving Fund loan (ALN 66.458) balance outstanding at September 30, 2026 was $4,900,000. Loan balances are reported in the loan_balance table by fiscal year as required by 2 CFR 200.510(b)(5)."
   }
  ],
- "generated_at": "2026-08-30 19:30"
+ "generated_at": "2026-08-30 22:57"
 };

@@ -136,7 +136,7 @@ export default function Sefa() {
       </div>
 
       <div className="print-only report-footer">
-        Prepared from the City of Pelican Shores grant accounting system · generated {data.generated_at}
+        Prepared from the City of Panama City grant accounting system · generated {data.generated_at}
       </div>
     </div>
   )

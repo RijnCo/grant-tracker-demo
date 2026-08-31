@@ -70,7 +70,7 @@ export default function AppShell() {
         <div className="brand">
           <div className="logo-sun" aria-hidden="true" />
           <div className="b-text">
-            <div className="b-name">Pelican Shores</div>
+            <div className="b-name">Panama City</div>
             <div className="b-sub">City Operations</div>
           </div>
         </div>
@@ -109,7 +109,7 @@ export default function AppShell() {
       <div className="content">
         {DEMO && (
           <div className="demo-ribbon" role="note">
-            Static demo — fictional data for the City of Pelican Shores grant tracker, read-only.
+            Static demo — fictional data for the City of Panama City grant tracker, read-only.
             {' '}The full app adds sign-in, data entry, amendments, and uploads.
           </div>
         )}

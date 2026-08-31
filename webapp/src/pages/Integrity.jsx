@@ -151,7 +151,7 @@ export default function Integrity() {
   const { data, canWrite } = useApp()
   const [caseOpen, setCaseOpen] = useState(false)
   const [caseDetail, setCaseDetail] = useState(null)
-  const [icapFy, setIcapFy] = useState('FY2027')
+  const [icapFySel, setIcapFySel] = useState(null)
 
   const nrw = useMemo(
     () => (data.billing_tickets || []).filter((t) => t.source === 'field_audit'),
@@ -162,6 +162,8 @@ export default function Integrity() {
   const btrCollected = btr.reduce((s, c) => s + (c.collected_amount || 0), 0)
   const icap = data.icap_allocations || []
   const icapFys = [...new Set(icap.map((r) => r.fy_label))]
+  const icapFy = icapFySel && icapFys.includes(icapFySel)
+    ? icapFySel : icapFys[icapFys.length - 1]
   const icapRows = icap.filter((r) => r.fy_label === icapFy)
   const icapStatus = icapRows[0]?.plan_status
   const icapByFund = useMemo(() => {
@@ -183,8 +185,10 @@ export default function Integrity() {
         <div className="hero-value" style={{ fontSize: 28 }}>Revenue integrity</div>
         <div className="hero-sub">
           {fmtCompact(nrwRecovered)} recovered by the water audit ·{' '}
-          {fmtCompact(btrIdentified)}/yr in unregistered business tax ·{' '}
-          {fmtCompact(icapTotal)} {icapStatus === 'proposed' ? 'proposed' : 'adopted'} indirect cost recovery ({icapFy})
+          {fmtCompact(btrIdentified)}/yr in unregistered business tax
+          {icapFys.length > 0 && <> ·{' '}
+            {fmtCompact(icapTotal)} {icapStatus === 'proposed' ? 'proposed' : 'adopted'} indirect
+            cost recovery ({icapFy})</>}
         </div>
       </div>
 
@@ -291,14 +295,16 @@ export default function Integrity() {
                 Central administrative services (HR, IT, Legal, City Manager,
                 Clerk, Finance) charged to the enterprise funds, grant programs,
                 and CRA so each operation carries its proportionate share —{' '}
-                {icapStatus === 'proposed'
-                  ? `the ${icapFy} plan is proposed and under review`
-                  : `the ${icapFy} plan is adopted`}
+                {icapFys.length === 0
+                  ? 'no allocation plan loaded yet'
+                  : icapStatus === 'proposed'
+                    ? `the ${icapFy} plan is proposed and under review`
+                    : `the ${icapFy} plan is adopted`}
               </div>
             </div>
             <span className="seg" role="group" aria-label="ICAP plan year">
               {icapFys.map((fy) => (
-                <button key={fy} aria-pressed={icapFy === fy} onClick={() => setIcapFy(fy)}>{fy}</button>
+                <button key={fy} aria-pressed={icapFy === fy} onClick={() => setIcapFySel(fy)}>{fy}</button>
               ))}
             </span>
           </div>
@@ -327,9 +333,11 @@ export default function Integrity() {
               </div>
             ))}
           </div>
-          <div className="c-sub" style={{ marginTop: 8, marginBottom: 0 }}>
-            Total {icapFy} recovery to the General Fund: <b>{fmtFull(icapTotal)}</b>
-          </div>
+          {icapFys.length > 0 && (
+            <div className="c-sub" style={{ marginTop: 8, marginBottom: 0 }}>
+              Total {icapFy} recovery to the General Fund: <b>{fmtFull(icapTotal)}</b>
+            </div>
+          )}
         </div>
       </div>
 
