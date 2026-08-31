@@ -8,6 +8,7 @@
 /* Neutral scale follows the shadcn/ui (MIT) zinc design language;
    chart hues are the project's validated teal/coral pair. */
 :root[data-theme='light'] {
+  color-scheme: light;   /* native date pickers, dropdowns, scrollbars match */
   --page: #fafafa;
   --surface: #ffffff;
   --surface-2: #f4f4f5;
@@ -25,6 +26,10 @@
   --accent: #00879e;
   --accent-ink: #ffffff;
   --accent-tint: rgba(0, 135, 158, 0.07);
+  /* filled selection for small UI text: deeper than --accent so 12.5px
+     labels clear WCAG AA 4.5:1 (this pair is 5.5:1) */
+  --accent-solid: #007387;
+  --accent-solid-ink: #ffffff;
   --track: #dcebee;
   --area-wash: rgba(0, 135, 158, 0.10);
   --good: #0ca30c;
@@ -37,6 +42,7 @@
   --shadow-3: 0 24px 56px rgba(9, 9, 11, 0.16);
 }
 :root[data-theme='dark'] {
+  color-scheme: dark;    /* native date pickers, dropdowns, scrollbars match */
   --page: #09090b;
   --surface: #18181b;
   --surface-2: #1f1f23;
@@ -54,6 +60,9 @@
   --accent: #1a94a5;
   --accent-ink: #ffffff;
   --accent-tint: rgba(26, 148, 165, 0.12);
+  /* on dark surfaces the fill goes lighter and the label dark — 7:1 */
+  --accent-solid: #4cc0d1;
+  --accent-solid-ink: #062a30;
   --track: #123c44;
   --area-wash: rgba(26, 148, 165, 0.12);
   --good: #0ca30c;
@@ -167,17 +176,25 @@ a { color: inherit; }
   border-radius: 4px; padding: 0 4px; color: var(--ink-3); background: var(--surface);
 }
 
-.seg { display: inline-flex; background: var(--wash); border-radius: 8px; padding: 2px; }
+/* Segmented choice control (fiscal year, funding source, page tabs).
+   The group carries a real border so it reads as a control rather than a row
+   of labels, and the chosen option is filled — selection has to survive a
+   glance across a dense screen. */
+.seg {
+  display: inline-flex; gap: 2px; background: var(--surface-2);
+  border: 1px solid var(--border-strong); border-radius: 8px; padding: 2px;
+}
 .seg button {
   appearance: none; border: 1px solid transparent; background: transparent;
-  color: var(--ink-2); font: inherit; font-size: 12.5px; font-weight: 500;
+  color: var(--ink-2); font: inherit; font-size: 12.5px; font-weight: 550;
   padding: 4px 11px; cursor: pointer; border-radius: 6px;
   transition: color 120ms ease, background 120ms ease;
 }
-.seg button:hover { color: var(--ink); }
-.seg button[aria-pressed='true'] {
-  background: var(--surface); color: var(--ink); font-weight: 600;
-  border-color: var(--border); box-shadow: var(--shadow-1);
+.seg button:hover { background: var(--surface); color: var(--ink); }
+.seg button[aria-pressed='true'],
+.seg button[aria-pressed='true']:hover {
+  background: var(--accent-solid); color: var(--accent-solid-ink);
+  font-weight: 650; border-color: transparent; box-shadow: var(--shadow-1);
 }
 
 .select, .input {
@@ -188,6 +205,21 @@ a { color: inherit; }
 }
 .select:focus, .input:focus {
   outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-tint);
+}
+
+/* The browser's own calendar/clock button is the smallest target in any date
+   field — give it a hit area, a hover state, and full opacity so it reads as
+   something you can click. (color-scheme on :root keeps the icon and the
+   popup itself legible in dark mode.) */
+input[type='date']::-webkit-calendar-picker-indicator,
+input[type='month']::-webkit-calendar-picker-indicator {
+  opacity: 0.8; cursor: pointer; padding: 3px; margin-left: 2px;
+  border-radius: 4px;
+  transition: opacity 120ms ease, background 120ms ease;
+}
+input[type='date']:hover::-webkit-calendar-picker-indicator,
+input[type='month']:hover::-webkit-calendar-picker-indicator {
+  opacity: 1; background: var(--accent-tint);
 }
 
 .card {
