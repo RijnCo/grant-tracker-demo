@@ -168,6 +168,13 @@ a { color: inherit; }
 .btn.primary:hover { filter: brightness(1.07); background: var(--accent); }
 .btn.ghost { border-color: transparent; color: var(--ink-2); }
 .btn.ghost:hover { color: var(--ink); background: var(--wash); }
+/* destructive confirm — only ever the committing button in a delete dialog,
+   never the thing you click to open one */
+.btn.danger { background: var(--critical); color: #fff; border-color: transparent; }
+.btn.danger:hover { filter: brightness(1.07); background: var(--critical); }
+/* the trash affordance stays quiet until you reach for it */
+.btn.del { color: var(--ink-3); }
+.btn.del:hover { color: var(--critical); background: var(--wash); }
 .btn.small { height: 27px; padding: 0 10px; font-size: 12px; }
 .btn.icon { width: 32px; padding: 0; justify-content: center; }
 .btn svg { width: 14px; height: 14px; }
@@ -326,6 +333,10 @@ svg text { font-family: inherit; }
   position: fixed; inset: 0; background: rgba(10, 16, 17, 0.5);
   backdrop-filter: blur(2px); display: flex; align-items: center; justify-content: center;
   z-index: 40; padding: 20px;
+  /* An overlay is visually top-level but sits in the DOM wherever it was
+     opened from. Reset the inherited text layout so a dialog raised from,
+     say, a right-aligned no-wrap table cell still reads as a dialog. */
+  white-space: normal; text-align: left; font-variant-numeric: normal;
 }
 .modal {
   background: var(--surface); border: 1px solid var(--border); border-radius: 12px;

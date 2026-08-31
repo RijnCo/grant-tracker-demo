@@ -272,6 +272,12 @@ def collect(con):
         JOIN fiscal_year fy   ON fy.fiscal_year_id = a.fiscal_year_id
         ORDER BY a.alert_date DESC, a.alert_id DESC""")
 
+    # --- Removals (deletion log) ---
+    data["deletions"] = rows(con, """
+        SELECT deletion_id, entity, table_name, record_id, record_label,
+               cascaded, reason, is_financial, deleted_by, deleted_at
+        FROM deletion_log ORDER BY deletion_id DESC LIMIT 500""")
+
     # --- Utility billing adjustment tracker ---
     data["billing_tickets"] = rows(con, """
         SELECT ticket_id, ticket_code, account_number, customer_name,

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useApp } from '../state/AppContext'
@@ -11,6 +11,12 @@ import { useApp } from '../state/AppContext'
  * automatically. Finishing or skipping sets localStorage so it only auto-runs
  * once per browser; the ? button in the top bar replays it, and closing the
  * tour returns to wherever the user was.
+ *
+ * A step may declare `needs(data)` when it only makes sense once there is
+ * something to look at — on a fresh install those steps are dropped before the
+ * tour starts, so the "n of N" count stays honest and the tour never navigates
+ * to a record that does not exist yet. `route` may be a function of the data
+ * for the same reason.
  */
 export const TOUR_DONE_KEY = 'pcg-tour-done'
 
@@ -18,10 +24,13 @@ const STEPS = [
   {
     target: null,
     title: 'Welcome to City Operations',
-    body: 'One tracker for the city’s day-to-day: grant awards and their '
+    body: (d) => 'One tracker for the city’s day-to-day: grant awards and their '
       + 'audit-ready SEFA/SESFA schedules, every revenue stream, operating '
       + 'funds, CRA districts, utility billing adjustments, and revenue '
-      + 'integrity work. A quick walk through the whole suite:',
+      + 'integrity work. '
+      + (d.awards.length === 0
+        ? 'Nothing has been entered yet — here is where each kind of record goes:'
+        : 'A quick walk through the whole suite:'),
   },
   {
     target: 'nav-overview',
@@ -46,14 +55,16 @@ const STEPS = [
       + 'source — and every row carries a Federal or State chip.',
   },
   {
-    route: '/grants/1', target: 'pop-stat',
+    needs: (d) => d.awards.length > 0,
+    route: (d) => `/grants/${d.awards[0].award_id}`, target: 'pop-stat',
     title: 'Period of performance',
     body: 'Each grant shows its awarded date and current period of performance. '
       + 'When a "3-year" award turns into a 6-year one, these dates move via '
       + 'amendments — never silent edits.',
   },
   {
-    route: '/grants/1', target: 'amendments-card',
+    needs: (d) => d.awards.length > 0,
+    route: (d) => `/grants/${d.awards[0].award_id}`, target: 'amendments-card',
     title: 'Amendments',
     body: 'The modification history: extended dates, added funding, '
       + 'de-obligations. Recording an amendment updates the award’s '
@@ -179,7 +190,12 @@ const findRect = (target) => {
 }
 
 export default function Tour({ open, onClose }) {
-  const { user } = useApp()
+  const { user, data } = useApp()
+  // drop the steps that have nothing to point at on this install
+  const steps = useMemo(
+    () => STEPS.filter((s) => !s.needs || (data && s.needs(data))),
+    [data],
+  )
   const navigate = useNavigate()
   const location = useLocation()
   const [step, setStep] = useState(0)
@@ -196,9 +212,9 @@ export default function Tour({ open, onClose }) {
 
   const goTo = useCallback((i, dir) => {
     dirRef.current = dir
-    if (i < 0 || i >= STEPS.length) return close()
+    if (i < 0 || i >= steps.length) return close()
     setStep(i)
-  }, [close])
+  }, [close, steps.length])
 
   useEffect(() => {
     if (open) {
@@ -218,9 +234,11 @@ export default function Tour({ open, onClose }) {
   // navigate (if the step lives on another page), then find + track the target
   useEffect(() => {
     if (!open) return
-    const s = STEPS[step]
-    if (s.route && location.pathname !== s.route) {
-      navigate(s.route)
+    const s = steps[step]
+    if (!s) return close()
+    const route = typeof s.route === 'function' ? s.route(data) : s.route
+    if (route && location.pathname !== route) {
+      navigate(route)
       return // effect re-runs once location catches up
     }
     let cancelled = false
@@ -252,7 +270,7 @@ export default function Tour({ open, onClose }) {
       removeEventListener('resize', remeasure)
       removeEventListener('scroll', remeasure, true)
     }
-  }, [open, step, location.pathname, navigate, goTo])
+  }, [open, step, steps, data, location.pathname, navigate, goTo])
 
   useEffect(() => {
     if (!open) return
@@ -266,8 +284,10 @@ export default function Tour({ open, onClose }) {
   }, [open, step, goTo, close])
 
   if (!open) return null
-  const s = STEPS[step]
-  const last = step === STEPS.length - 1
+  const s = steps[step]
+  if (!s) return null
+  const last = step === steps.length - 1
+  const body = typeof s.body === 'function' ? s.body(data) : s.body
 
   // card position: centered for untargeted steps, otherwise near the target
   let cardStyle = { top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }
@@ -309,11 +329,11 @@ export default function Tour({ open, onClose }) {
             transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
           >
             <div className="tour-count">
-              {step + 1} of {STEPS.length}
+              {step + 1} of {steps.length}
               {user?.role === 'viewer' && step === 0 ? ' · read-only account' : ''}
             </div>
             <h3>{s.title}</h3>
-            <p>{s.body}</p>
+            <p>{body}</p>
             <div className="tour-actions">
               <button className="btn small ghost" onClick={close}>
                 {last ? 'Close' : 'Skip tour'}

@@ -92,6 +92,11 @@ make_exe.bat            # installs PyInstaller and produces dist\PanamaCityOpera
   in `app.py`, or start the app with the environment variable
   `PC_OPS_REQUIRE_LOGIN=1`. On a blank database the first visitor is then
   asked to create the administrator account.
+- **Fixing mistakes:** records can be deleted — look for the trash icon on
+  any row. Reference data (a department typed "Watr") comes straight out;
+  removing anything financial asks for a reason and is recorded on the
+  **Audit trail → Removals** panel. If something is still in use, the dialog
+  tells you what is referencing it instead of letting you orphan the history.
 - **Backups:** copy `grants.db` (and the `uploads/` folder if you attach
   PDFs). That's the entire system state.
 - **Security scope:** the server binds to `127.0.0.1` only — it is a

@@ -463,6 +463,31 @@ CREATE TABLE icap_allocation (
 );
 
 -- ---------------------------------------------------------------------------
+-- Deletion log — what a real database server's audit facility would capture.
+--
+-- Records are removable (somebody types "Watr Department" and needs it gone),
+-- but a removal is never silent: the whole row is snapshotted here as JSON
+-- before it goes, so an auditor can see what used to exist. Reference-data
+-- cleanup (a mistyped department, an unused agency) is logged quietly;
+-- removing anything financial — an award, an expenditure, a receipt, a
+-- billing adjustment — is flagged is_financial and requires a stated reason,
+-- and surfaces on the audit trail. This table is append-only.
+-- ---------------------------------------------------------------------------
+CREATE TABLE deletion_log (
+    deletion_id  INTEGER PRIMARY KEY,
+    entity       TEXT NOT NULL,     -- registry key, e.g. 'department'
+    table_name   TEXT NOT NULL,
+    record_id    INTEGER NOT NULL,
+    record_label TEXT,              -- human name at the moment of deletion
+    record_json  TEXT,              -- full snapshot of the deleted row
+    cascaded     TEXT,              -- dependent rows removed alongside it
+    reason       TEXT,              -- required when is_financial = 1
+    is_financial INTEGER NOT NULL DEFAULT 0,
+    deleted_by   TEXT,
+    deleted_at   TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+-- ---------------------------------------------------------------------------
 -- Paper-trail tables (2 CFR 200.303 internal controls / 200.334 records)
 -- ---------------------------------------------------------------------------
 
@@ -525,6 +550,8 @@ CREATE INDEX idx_rev_receipt_stream     ON revenue_receipt(stream_id);
 CREATE INDEX idx_rev_receipt_fy         ON revenue_receipt(fiscal_year_id);
 CREATE INDEX idx_rev_budget_fy          ON revenue_budget(fiscal_year_id);
 CREATE INDEX idx_rev_alert_stream       ON revenue_alert(stream_id);
+CREATE INDEX idx_deletion_log_entity    ON deletion_log(entity, record_id);
+CREATE INDEX idx_deletion_log_financial ON deletion_log(is_financial, deleted_at);
 CREATE INDEX idx_billing_adj_ticket     ON billing_adjustment(ticket_id);
 CREATE INDEX idx_billing_event_ticket   ON billing_ticket_event(ticket_id);
 CREATE INDEX idx_billing_ticket_status  ON billing_ticket(status);

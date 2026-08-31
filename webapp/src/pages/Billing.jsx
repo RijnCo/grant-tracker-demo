@@ -10,6 +10,7 @@ import {
   billingServiceLabel, billingSourceLabel, billingStatusLabel,
 } from '../lib/labels'
 import DataTable from '../components/DataTable'
+import DeleteButton from '../components/DeleteButton'
 import Modal from '../components/Modal'
 
 const STATUS_TONE = {
@@ -630,6 +631,10 @@ export default function Billing() {
                         {t.back_billed > 0 && <span style={{ color: 'var(--good)' }}>+{fmtFull(t.back_billed).slice(1)}</span>}</>),
                 },
                 { key: 'status', label: 'Status', render: (t) => <StatusChip status={t.status} /> },
+                              {
+                  key: 'del', label: '', sortable: false, numeric: true,
+                  render: (t) => <DeleteButton entity="billing_ticket" id={t.ticket_id} name={t.ticket_code} />,
+                },
               ]}
               rows={rows}
               rowKey={(t) => t.ticket_id}

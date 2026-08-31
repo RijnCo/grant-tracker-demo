@@ -122,6 +122,33 @@ through notice to collection), and the **indirect cost allocation plan**
 (central HR/IT/Legal/City Manager/Clerk/Finance costs charged to the
 enterprise funds, grant programs, and CRA — FY2026 adopted, FY2027 proposed).
 
+### Deleting records (and the log that remembers it)
+
+Records can be removed — somebody types "Watr Department" and it needs to go —
+but a removal is never silent. Every delete snapshots the whole row into the
+append-only `deletion_log` before it goes, which is what a real database
+server's audit facility would capture. There are two tiers:
+
+- **Reference data** (departments, subrecipients, pass-through entities,
+  revenue streams, CRA districts and projects, operating funds, compliance
+  cases): deletes cleanly, needs no justification, and is logged quietly
+  without cluttering the audit trail.
+- **Financial records** (awards, expenditures, revenue receipts, fund and CRA
+  transactions, billing tickets and adjustments): requires a **stated reason**
+  (enforced by both the API and a database trigger) and appears on the
+  **Audit trail → Removals** panel, so an auditor can see what used to exist,
+  who removed it, and why.
+
+Anything with dependents is refused before it can orphan history, and the
+dialog says what is in the way in plain language ("still referenced by 82
+expenditures, 9 operating-fund transactions") rather than surfacing a foreign
+key error. Records whose history is already permanent — an amended award, a
+stream that raised a pacing alert, a ticket that moved through the billing
+workflow — cannot be removed at all, because those logs are append-only by
+design. Dependents that are meaningless on their own (a stream's seasonality
+curve, a project's engagement records) are removed with the parent and noted
+in the log entry.
+
 ### Amendments (dates and money change all the time)
 
 Award dates and amounts are living values: a "3-year" award routinely runs 6,

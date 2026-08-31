@@ -371,6 +371,31 @@ BEGIN
 END;
 
 -- ---------------------------------------------------------------------------
+-- The deletion log is append-only: you may remove records from the system,
+-- but you may never remove the evidence that you did.
+-- ---------------------------------------------------------------------------
+CREATE TRIGGER trg_deletion_log_no_update
+BEFORE UPDATE ON deletion_log
+BEGIN
+    SELECT RAISE(ABORT, 'deletion log is append-only');
+END;
+
+CREATE TRIGGER trg_deletion_log_no_delete
+BEFORE DELETE ON deletion_log
+BEGIN
+    SELECT RAISE(ABORT, 'deletion log is append-only');
+END;
+
+-- A financial removal must carry a stated reason.
+CREATE TRIGGER trg_deletion_log_reason
+BEFORE INSERT ON deletion_log
+WHEN NEW.is_financial = 1
+ AND (NEW.reason IS NULL OR TRIM(NEW.reason) = '')
+BEGIN
+    SELECT RAISE(ABORT, 'removing a financial record requires a stated reason');
+END;
+
+-- ---------------------------------------------------------------------------
 -- Utility billing adjustment triggers (the SOP's internal controls)
 -- ---------------------------------------------------------------------------
 

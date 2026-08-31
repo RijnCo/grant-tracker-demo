@@ -655,6 +655,46 @@ def seed_billing(con):
     return tickets, adjustments
 
 
+def seed_removals(con):
+    """Two removals that really happened, so the audit trail has something
+    honest to show: a mistyped department cleaned up (reference data, no
+    reason needed) and a double-keyed receipt backed out (financial, reason
+    required). Each row is snapshotted into the log exactly as the app does."""
+    import json as _json
+
+    def log_and_delete(entity, table, pk, rid, label, financial, reason):
+        cur = con.execute("SELECT * FROM %s WHERE %s = ?" % (table, pk), (rid,))
+        row = dict(zip([c[0] for c in cur.description], cur.fetchone()))
+        con.execute(
+            """INSERT INTO deletion_log
+               (entity, table_name, record_id, record_label, record_json,
+                reason, is_financial, deleted_by, deleted_at)
+               VALUES (?,?,?,?,?,?,?,?,?)""",
+            (entity, table, rid, label, _json.dumps(row, default=str),
+             reason, 1 if financial else 0, "kpatel",
+             "2026-08-27 14:20:11"))
+        con.execute("DELETE FROM %s WHERE %s = ?" % (table, pk), (rid,))
+
+    # a typo caught the same afternoon it was made
+    cur = con.execute("INSERT INTO department (department_name) VALUES ('Watr Department')")
+    log_and_delete("department", "department", "department_id", cur.lastrowid,
+                   "Watr Department", False, None)
+
+    # a utility deposit keyed twice against the same lockbox batch
+    stream = con.execute("SELECT stream_id FROM revenue_stream "
+                         "WHERE account_code = '343.300'").fetchone()[0]
+    cur = con.execute(
+        """INSERT INTO revenue_receipt
+           (stream_id, fiscal_year_id, amount, receipt_date, description,
+            doc_reference, entered_by)
+           VALUES (?, 3, 842911.51, '2026-08-20', 'Utility billing cycle batch',
+                   'RCV-67655', 'jchen')""", (stream,))
+    log_and_delete("revenue_receipt", "revenue_receipt", "receipt_id", cur.lastrowid,
+                   "Utility billing cycle batch", True,
+                   "duplicate of RCV-67655 — same lockbox batch keyed twice")
+    return 2
+
+
 def demo_paper_trail(con):
     """One UPDATE and one DELETE so the audit log shows all three actions."""
     row = con.execute(
@@ -1018,6 +1058,42 @@ def verify(con):
           "%d BTR cases, ICAP $%.0f adopted / $%.0f proposed"
           % (btr[0], icap[0] or 0, icap[1] or 0))
 
+    # 14. Deletion log: financial removals must carry a reason, and the log
+    # itself can never be edited or cleared.
+    # The log is append-only, so probe rows cannot be tidied up afterwards --
+    # run the whole check inside a savepoint and roll it back.
+    ok_del = True
+    baseline = con.execute("SELECT COUNT(*) FROM deletion_log").fetchone()[0]
+    con.execute("SAVEPOINT delcheck")
+    try:
+        con.execute("INSERT INTO deletion_log (entity, table_name, record_id, "
+                    "record_label, is_financial) VALUES "
+                    "('award', 'award', 999, 'No reason given', 1)")
+        ok_del = False
+    except sqlite3.IntegrityError as e:
+        ok_del = ok_del and "requires a stated reason" in str(e)
+    # reference cleanup needs no reason
+    con.execute("INSERT INTO deletion_log (entity, table_name, record_id, "
+                "record_label, is_financial, deleted_by) VALUES "
+                "('department', 'department', 998, 'Watr Department', 0, 'verify')")
+    try:
+        con.execute("UPDATE deletion_log SET reason = 'rewritten' WHERE record_id = 998")
+        ok_del = False
+    except sqlite3.IntegrityError as e:
+        ok_del = ok_del and "append-only" in str(e)
+    try:
+        con.execute("DELETE FROM deletion_log WHERE record_id = 998")
+        ok_del = False
+    except sqlite3.IntegrityError as e:
+        ok_del = ok_del and "append-only" in str(e)
+    con.execute("ROLLBACK TO delcheck")
+    con.execute("RELEASE delcheck")
+    after = con.execute("SELECT COUNT(*) FROM deletion_log").fetchone()[0]
+    ok_del = ok_del and after == baseline and baseline > 0
+    check("deletion log: financial removals need a reason, reference cleanup "
+          "does not, and the log is append-only", ok_del,
+          "%d demo removals on file" % after)
+
     return results
 
 
@@ -1060,6 +1136,8 @@ def main():
     nt, nadj = seed_billing(con)
     print("seeded %d billing tickets with %d adjustments (matrix + event "
           "triggers exercised)" % (nt, nadj))
+    nrem = seed_removals(con)
+    print("recorded %d demo removals in the append-only deletion log" % nrem)
     upd, dele = demo_paper_trail(con)
     print("paper-trail demo: updated expenditure %d, deleted expenditure %d" % (upd, dele))
     con.commit()

@@ -7,6 +7,72 @@ import DataTable from '../components/DataTable'
 
 const ACTIONS = ['ALL', 'INSERT', 'UPDATE', 'DELETE']
 
+/**
+ * Records removed from the system. Deleting is allowed — somebody types
+ * "Watr Department" and needs it gone — but never silently: every removal is
+ * snapshotted in the append-only deletion log. Financial removals (an award,
+ * an expenditure, a receipt, an adjustment) carry a required reason and are
+ * shown first; reference-data cleanup is folded away behind a toggle so it
+ * does not crowd what an auditor came here to see.
+ */
+function RemovalsCard({ deletions }) {
+  const [showRef, setShowRef] = useState(false)
+  const financial = deletions.filter((d) => d.is_financial)
+  const reference = deletions.filter((d) => !d.is_financial)
+  const shown = showRef ? deletions : financial
+  if (deletions.length === 0) return null
+
+  return (
+    <div className="card">
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+        <div style={{ flex: 1 }}>
+          <div className="eyebrow">Removals</div>
+          <h2>What has been deleted</h2>
+          <div className="c-sub" style={{ marginBottom: 0 }}>
+            {financial.length} financial record{financial.length === 1 ? '' : 's'} removed
+            {reference.length > 0 && ` · ${reference.length} reference-data cleanup${reference.length === 1 ? '' : 's'}`}
+            {' '}· the deletion log itself cannot be edited or cleared
+          </div>
+        </div>
+        {reference.length > 0 && (
+          <span className="seg" role="group" aria-label="Removal scope">
+            <button aria-pressed={!showRef} onClick={() => setShowRef(false)}>Financial</button>
+            <button aria-pressed={showRef} onClick={() => setShowRef(true)}>Everything</button>
+          </span>
+        )}
+      </div>
+      <DataTable
+        columns={[
+          { key: 'deleted_at', label: 'When (UTC)' },
+          {
+            key: 'record_label', label: 'Record',
+            render: (d) => (
+              <>
+                {d.record_label || `#${d.record_id}`}
+                <div className="cell-sub">
+                  {d.entity.replace(/_/g, ' ')} #{d.record_id}
+                  {d.cascaded ? ` · also removed ${d.cascaded}` : ''}
+                </div>
+              </>
+            ),
+          },
+          {
+            key: 'is_financial', label: 'Kind',
+            render: (d) => (d.is_financial
+              ? <span style={{ color: 'var(--critical)', fontWeight: 650, fontSize: 12.5 }}>Financial</span>
+              : <span style={{ color: 'var(--ink-3)', fontSize: 12.5 }}>Reference</span>),
+          },
+          { key: 'reason', label: 'Reason', render: (d) => d.reason || '—' },
+          { key: 'deleted_by', label: 'Removed by', render: (d) => d.deleted_by || '—' },
+        ]}
+        rows={shown}
+        rowKey={(d) => d.deletion_id}
+        initialSort={{ key: 'deleted_at', dir: -1 }}
+      />
+    </div>
+  )
+}
+
 export default function Audit() {
   const { data } = useApp()
   const [action, setAction] = useState('ALL')
@@ -88,6 +154,8 @@ export default function Audit() {
           ))}
         </span>
       </div>
+
+      <RemovalsCard deletions={data.deletions || []} />
 
       <div className="card">
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>

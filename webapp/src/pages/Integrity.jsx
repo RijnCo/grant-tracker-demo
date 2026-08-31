@@ -8,6 +8,7 @@ import {
   BTR_STATUSES, billingCategoryLabel, btrStatusLabel,
 } from '../lib/labels'
 import DataTable from '../components/DataTable'
+import DeleteButton from '../components/DeleteButton'
 import Modal from '../components/Modal'
 
 const BTR_TONE = {
@@ -277,6 +278,10 @@ export default function Integrity() {
                     {btrStatusLabel(c.case_status)}
                   </span>
                 ),
+              },
+                          {
+                key: 'del', label: '', sortable: false, numeric: true,
+                render: (c) => <DeleteButton entity="btr_case" id={c.case_id} name={c.business_name} />,
               },
             ]}
             rows={btr}

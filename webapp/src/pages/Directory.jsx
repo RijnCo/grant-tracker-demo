@@ -4,6 +4,7 @@ import { useApp, useToast } from '../state/AppContext'
 import { api } from '../lib/api'
 import { fmtFull } from '../lib/format'
 import DataTable from '../components/DataTable'
+import DeleteButton from '../components/DeleteButton'
 
 /** Inline add form: a name plus an optional second field. */
 function AddForm({ label, extraLabel, extraKey, endpoint, onDone }) {
@@ -125,6 +126,12 @@ export default function Directory() {
               sortValue: (r) => (subTotals.get(r.subrecipient_name) || {}).total || 0,
               render: (r) => fmtFull((subTotals.get(r.subrecipient_name) || {}).total || 0),
             },
+            {
+              key: 'del', label: '', sortable: false, numeric: true,
+              render: (r) => (
+                <DeleteButton entity="subrecipient" id={r.subrecipient_id} name={r.subrecipient_name} />
+              ),
+            },
           ]}
           rows={data.subrecipient_list || []}
           rowKey={(r) => r.subrecipient_id}
@@ -156,6 +163,12 @@ export default function Directory() {
               sortValue: (r) => (deptTotals.get(r.department_name) || {}).total || 0,
               render: (r) => fmtFull((deptTotals.get(r.department_name) || {}).total || 0),
             },
+            {
+              key: 'del', label: '', sortable: false, numeric: true,
+              render: (r) => (
+                <DeleteButton entity="department" id={r.department_id} name={r.department_name} />
+              ),
+            },
           ]}
           rows={data.department_list || []}
           rowKey={(r) => r.department_id}
@@ -186,6 +199,12 @@ export default function Directory() {
               key: 'awards', label: 'Awards flowing through', numeric: true,
               sortValue: (r) => ptCounts.get(r.pass_through_name) || 0,
               render: (r) => String(ptCounts.get(r.pass_through_name) || 0),
+            },
+            {
+              key: 'del', label: '', sortable: false, numeric: true,
+              render: (r) => (
+                <DeleteButton entity="pass_through" id={r.pass_through_id} name={r.pass_through_name} />
+              ),
             },
           ]}
           rows={data.pass_through_list || []}

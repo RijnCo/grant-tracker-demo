@@ -5,6 +5,7 @@ import { useApp } from '../state/AppContext'
 import { expInScope } from '../lib/selectors'
 import { downloadCsv, fmtFull } from '../lib/format'
 import DataTable from '../components/DataTable'
+import DeleteButton from '../components/DeleteButton'
 import SourceChip from '../components/SourceChip'
 
 export default function Expenditures() {
@@ -83,6 +84,11 @@ export default function Expenditures() {
       render: (r) => <span className={r.amount < 0 ? 'neg' : ''}>{fmtFull(r.amount)}</span>,
     },
     { key: 'entered_by', label: 'Entered by', render: (r) => r.entered_by || '—' },
+    {
+      key: 'del', label: '', sortable: false, numeric: true,
+      render: (r) => <DeleteButton entity="expenditure" id={r.expenditure_id}
+                                   name={r.description || `#${r.expenditure_id}`} />,
+    },
   ]
 
   return (
@@ -120,6 +126,7 @@ export default function Expenditures() {
           { content: `Total — ${rows.length} transaction${rows.length === 1 ? '' : 's'}`, colSpan: 5 },
           { content: fmtFull(sumSub), numeric: true },
           { content: fmtFull(sumAmt), numeric: true },
+          { content: '' },
           { content: '' },
         ]}
       />

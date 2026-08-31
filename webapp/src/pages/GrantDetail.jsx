@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { ArrowLeft, Download, FilePenLine } from 'lucide-react'
 import { useApp } from '../state/AppContext'
@@ -12,12 +12,14 @@ import TrendChart from '../components/charts/TrendChart'
 import DocsPanel from '../components/DocsPanel'
 import SourceChip from '../components/SourceChip'
 import AmendmentModal from '../components/forms/AmendmentModal'
+import DeleteButton from '../components/DeleteButton'
 import { usageColor } from '../components/UsageBar'
 
 export default function GrantDetail() {
   const { id } = useParams()
   const awardId = Number(id)
-  const { data, fy, canWrite } = useApp()
+  const { data, fy, canWrite, refresh } = useApp()
+  const navigate = useNavigate()
   const [amendOpen, setAmendOpen] = useState(false)
   const award = data.awards.find((a) => a.award_id === awardId)
   const exps = useMemo(() => expInScope(data, { fy, awardId }), [data, fy, awardId])
@@ -66,12 +68,23 @@ export default function GrantDetail() {
       render: (r) => <span className={r.amount < 0 ? 'neg' : ''}>{fmtFull(r.amount)}</span>,
     },
     { key: 'entered_by', label: 'Entered by', render: (r) => r.entered_by || '—' },
+    {
+      key: 'del', label: '', sortable: false, numeric: true,
+      render: (r) => <DeleteButton entity="expenditure" id={r.expenditure_id}
+                                   name={r.description || `#${r.expenditure_id}`} />,
+    },
   ]
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       <div>
-        <Link className="backlink" to="/grants"><ArrowLeft /> All grants</Link>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <Link className="backlink" to="/grants"><ArrowLeft /> All grants</Link>
+          <div style={{ flex: 1 }} />
+          <DeleteButton entity="award" id={award.award_id} name={award.award_name}
+                        label="Delete this award"
+                        onDone={() => { refresh(); navigate('/grants') }} />
+        </div>
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.25 }}>
           <div className="eyebrow" style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>

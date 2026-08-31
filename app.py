@@ -70,6 +70,134 @@ REQUIRE_LOGIN = os.environ.get("PC_OPS_REQUIRE_LOGIN", "") in ("1", "true", "yes
 LOCAL_USER = {"username": "local", "display_name": "Local User",
               "role": "finance_admin"}
 
+# ---------------------------------------------------------------------------
+# What may be deleted, and on what terms.
+#
+# Two tiers. Reference data (a department typed "Watr", an agency nobody used)
+# comes out cleanly — it is still written to deletion_log, because a real
+# server logs every removal, but it needs no justification and stays out of
+# the auditors' view. Anything financial — an award, an expenditure, a
+# receipt, a billing adjustment — requires a stated reason, snapshots the full
+# row, and shows up on the audit trail as a removal.
+#
+#   blockers : dependent rows that make deletion unsafe; the request is
+#              refused and the UI explains what is in the way, rather than
+#              orphaning financial history behind a raw foreign-key error.
+#   cascade  : dependents that are meaningless without the parent (a stream's
+#              seasonality curve, a project's engagement records) and go with
+#              it inside the same transaction.
+#
+# Append-only tables (expenditure_audit_log, award_amendment, revenue_alert,
+# billing_ticket_event, login_audit, deletion_log) appear here only as
+# blockers. They are never deletable, so a record whose history was already
+# written — an amended award, a ticket that moved through the workflow —
+# cannot be removed. That is deliberate.
+# ---------------------------------------------------------------------------
+def _an(noun):
+    return ("an " if noun[:1].lower() in "aeiou" else "a ") + noun
+
+
+DELETABLE = {
+    # --- reference / lookup data -------------------------------------------
+    "department": {
+        "table": "department", "pk": "department_id", "label": "department_name",
+        "noun": "department", "financial": False,
+        "blockers": [("expenditure", "department_id", "expenditure"),
+                     ("fund_transaction", "department_id", "operating-fund transaction")],
+        "cascade": [("department_spending", "department_id")],
+    },
+    "subrecipient": {
+        "table": "subrecipient", "pk": "subrecipient_id", "label": "subrecipient_name",
+        "noun": "subrecipient", "financial": False,
+        "blockers": [("expenditure", "subrecipient_id", "expenditure")],
+    },
+    "pass_through": {
+        "table": "pass_through_entity", "pk": "pass_through_id",
+        "label": "pass_through_name", "noun": "pass-through entity",
+        "financial": False,
+        "blockers": [("award", "pass_through_id", "award")],
+    },
+    "agency": {
+        "table": "federal_agency", "pk": "agency_id", "label": "agency_name",
+        "noun": "agency", "financial": False,
+        "blockers": [("program", "agency_id", "program")],
+    },
+    "program": {
+        "table": "program", "pk": "program_id", "label": "program_title",
+        "noun": "program", "financial": False,
+        "blockers": [("award", "program_id", "award")],
+    },
+    "operating_fund": {
+        "table": "operating_fund", "pk": "fund_id", "label": "fund_name",
+        "noun": "operating fund", "financial": False,
+        "blockers": [("fund_transaction", "fund_id", "fund transaction")],
+    },
+    "revenue_stream": {
+        "table": "revenue_stream", "pk": "stream_id", "label": "stream_name",
+        "noun": "revenue stream", "financial": False,
+        "blockers": [("revenue_receipt", "stream_id", "receipt"),
+                     ("revenue_alert", "stream_id", "pacing alert (permanent record)")],
+        "cascade": [("revenue_budget", "stream_id"), ("revenue_seasonality", "stream_id")],
+    },
+    "cra_district": {
+        "table": "cra_district", "pk": "district_id", "label": "district_name",
+        "noun": "CRA district", "financial": False,
+        "blockers": [("cra_transaction", "district_id", "trust-fund transaction"),
+                     ("cra_project", "district_id", "project")],
+        "cascade": [("cra_funding_source", "district_id")],
+    },
+    "cra_project": {
+        "table": "cra_project", "pk": "project_id", "label": "project_name",
+        "noun": "CRA project", "financial": False,
+        "blockers": [("cra_transaction", "project_id", "trust-fund transaction")],
+        "cascade": [("cra_engagement", "project_id"), ("cra_project_funding", "project_id")],
+    },
+    "btr_case": {
+        "table": "btr_case", "pk": "case_id", "label": "business_name",
+        "noun": "compliance case", "financial": False,
+    },
+    "icap_allocation": {
+        "table": "icap_allocation", "pk": "allocation_id", "label": "central_service",
+        "noun": "cost allocation line", "financial": False,
+    },
+    # --- financial records: reason required, shown on the audit trail ------
+    "award": {
+        "table": "award", "pk": "award_id", "label": "award_name",
+        "noun": "grant award", "financial": True,
+        "blockers": [("expenditure", "award_id", "expenditure"),
+                     ("award_amendment", "award_id", "amendment (permanent record)"),
+                     ("award_document", "award_id", "attached document"),
+                     ("loan_balance", "award_id", "loan balance")],
+        "cascade": [("department_spending", "award_id")],
+    },
+    "expenditure": {
+        "table": "expenditure", "pk": "expenditure_id", "label": "description",
+        "noun": "expenditure", "financial": True,
+    },
+    "revenue_receipt": {
+        "table": "revenue_receipt", "pk": "receipt_id", "label": "description",
+        "noun": "revenue receipt", "financial": True,
+    },
+    "fund_transaction": {
+        "table": "fund_transaction", "pk": "fund_txn_id", "label": "description",
+        "noun": "operating-fund transaction", "financial": True,
+    },
+    "cra_transaction": {
+        "table": "cra_transaction", "pk": "cra_txn_id", "label": "description",
+        "noun": "CRA trust-fund transaction", "financial": True,
+    },
+    "billing_ticket": {
+        "table": "billing_ticket", "pk": "ticket_id", "label": "ticket_code",
+        "noun": "billing ticket", "financial": True,
+        "blockers": [("billing_adjustment", "ticket_id", "adjustment"),
+                     ("billing_ticket_event", "ticket_id", "status-history entry (permanent record)")],
+    },
+    "billing_adjustment": {
+        "table": "billing_adjustment", "pk": "adjustment_id", "label": "adjustment_code",
+        "noun": "billing adjustment", "financial": True,
+    },
+}
+
 SESSIONS = {}  # token -> {username, display_name, role} (cache over app_session)
 
 
@@ -339,6 +467,10 @@ class Handler(BaseHTTPRequestHandler):
             return self._set_revenue_budget(sess)
         if path == "/api/revenue-import":
             return self._import_revenue(sess)
+        if path == "/api/delete-check":
+            return self._delete_check(sess)
+        if path == "/api/delete":
+            return self._delete_record(sess)
         if path == "/api/billing-ticket":
             return self._add_billing_ticket(sess)
         if path == "/api/billing-ticket-update":
@@ -999,6 +1131,122 @@ class Handler(BaseHTTPRequestHandler):
             con.commit()
             return self._json(200, {"ok": True, "inserted": len(items),
                                     "streams": len(touched), "alerts": alerts})
+        finally:
+            con.close()
+
+    # ---------- deletion ----------
+
+    def _delete_target(self, b):
+        """Resolve {entity, id} against the registry. Returns
+        (spec, record_id, row_dict, error_response_or_None)."""
+        spec = DELETABLE.get(str(b.get("entity") or ""))
+        if not spec:
+            return None, None, None, {"error": "that kind of record cannot be deleted"}
+        try:
+            rid = int(b["id"])
+        except (KeyError, TypeError, ValueError):
+            return None, None, None, {"error": "a record id is required"}
+        con = db()
+        try:
+            cur = con.execute("SELECT * FROM %s WHERE %s = ?"
+                              % (spec["table"], spec["pk"]), (rid,))
+            row = cur.fetchone()
+            if not row:
+                return None, None, None, {"error": "that record no longer exists"}
+            cols = [c[0] for c in cur.description]
+            return spec, rid, dict(zip(cols, row)), None
+        finally:
+            con.close()
+
+    def _delete_blockers(self, con, spec, rid):
+        """Dependent rows standing in the way, as human-readable phrases."""
+        out = []
+        for table, col, noun in spec.get("blockers", []):
+            n = con.execute("SELECT COUNT(*) FROM %s WHERE %s = ?"
+                            % (table, col), (rid,)).fetchone()[0]
+            if n:
+                out.append("%d %s%s" % (n, noun, "" if n == 1 else "s"))
+        return out
+
+    def _delete_check(self, sess):
+        """Preflight: can this be deleted, and on what terms? Lets the UI
+        explain the consequence before the user commits to it."""
+        spec, rid, row, err = self._delete_target(self._body())
+        if err:
+            return self._json(400, err)
+        con = db()
+        try:
+            blockers = self._delete_blockers(con, spec, rid)
+            cascades = []
+            for table, col in spec.get("cascade", []):
+                n = con.execute("SELECT COUNT(*) FROM %s WHERE %s = ?"
+                                % (table, col), (rid,)).fetchone()[0]
+                if n:
+                    cascades.append({"table": table, "count": n})
+        finally:
+            con.close()
+        return self._json(200, {
+            "ok": not blockers,
+            "noun": spec["noun"],
+            "label": row.get(spec["label"]) or "#%d" % rid,
+            "financial": spec["financial"],
+            "requires_reason": spec["financial"],
+            "blockers": blockers,
+            "cascade": cascades,
+        })
+
+    def _delete_record(self, sess):
+        b = self._body()
+        spec, rid, row, err = self._delete_target(b)
+        if err:
+            return self._json(400, err)
+        reason = str(b.get("reason") or "").strip()[:500]
+        if spec["financial"] and not reason:
+            return self._json(400, {"error": "removing %s requires a stated reason"
+                                             % _an(spec["noun"])})
+        con = db()
+        try:
+            blockers = self._delete_blockers(con, spec, rid)
+            if blockers:
+                one = len(blockers) == 1 and blockers[0].startswith("1 ")
+                return self._json(400, {
+                    "error": "cannot delete this %s: %s still %s it"
+                             % (spec["noun"], ", ".join(blockers),
+                                "references" if one else "reference"),
+                    "blockers": blockers})
+            label = row.get(spec["label"]) or "#%d" % rid
+            # count the dependents first — the log row is written once and is
+            # append-only, so it cannot be topped up afterwards
+            cascaded = []
+            for table, col in spec.get("cascade", []):
+                n = con.execute("SELECT COUNT(*) FROM %s WHERE %s = ?"
+                                % (table, col), (rid,)).fetchone()[0]
+                if n:
+                    cascaded.append("%d from %s" % (n, table))
+            try:
+                # the evidence goes in first: if the log write fails, nothing
+                # is removed
+                con.execute(
+                    """INSERT INTO deletion_log
+                       (entity, table_name, record_id, record_label, record_json,
+                        cascaded, reason, is_financial, deleted_by)
+                       VALUES (?,?,?,?,?,?,?,?,?)""",
+                    (b["entity"], spec["table"], rid, str(label)[:200],
+                     json.dumps(row, default=str),
+                     ", ".join(cascaded) or None,
+                     reason or None, 1 if spec["financial"] else 0,
+                     sess["username"]))
+                for table, col in spec.get("cascade", []):
+                    con.execute("DELETE FROM %s WHERE %s = ?" % (table, col), (rid,))
+                con.execute("DELETE FROM %s WHERE %s = ?"
+                            % (spec["table"], spec["pk"]), (rid,))
+                con.commit()
+            except sqlite3.IntegrityError as e:
+                con.rollback()
+                return self._json(400, {"error": str(e)})
+            return self._json(200, {"ok": True, "noun": spec["noun"],
+                                    "label": str(label), "cascaded": cascaded,
+                                    "financial": spec["financial"]})
         finally:
             con.close()
 

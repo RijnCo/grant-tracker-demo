@@ -4,6 +4,7 @@ import { useApp, useToast } from '../state/AppContext'
 import { api } from '../lib/api'
 import { downloadCsv, fmtCompact, fmtFull, pctOf } from '../lib/format'
 import DataTable from '../components/DataTable'
+import DeleteButton from '../components/DeleteButton'
 import Modal from '../components/Modal'
 import UsageBar from '../components/UsageBar'
 
@@ -254,6 +255,10 @@ export default function Funds() {
               sortValue: (f) => pctOf(f.total_out, f.budget_amount + f.total_in),
               render: (f) => <UsageBar pct={pctOf(f.total_out, f.budget_amount + f.total_in)} />,
             },
+                      {
+              key: 'del', label: '', sortable: false, numeric: true,
+              render: (f) => <DeleteButton entity="operating_fund" id={f.fund_id} name={f.fund_name} />,
+            },
           ]}
           rows={funds}
           rowKey={(f) => f.fund_id}
@@ -265,6 +270,7 @@ export default function Funds() {
             { content: fmtFull(totOut), numeric: true },
             { content: fmtFull(totAvail), numeric: true },
             { content: '' },
+                      { content: '' },
           ]}
         />
       </div>
@@ -325,6 +331,10 @@ export default function Funds() {
               render: (t) => <span className={signed(t) < 0 ? 'neg' : ''}>{fmtFull(signed(t))}</span>,
             },
             { key: 'entered_by', label: 'Entered by', render: (t) => t.entered_by || '—' },
+                      {
+              key: 'del', label: '', sortable: false, numeric: true,
+              render: (t) => <DeleteButton entity="fund_transaction" id={t.fund_txn_id} name={t.description} />,
+            },
           ]}
           rows={txns}
           rowKey={(t) => t.fund_txn_id}
@@ -333,6 +343,7 @@ export default function Funds() {
             { content: `Net — ${txns.length} transaction${txns.length === 1 ? '' : 's'}`, colSpan: 6 },
             { content: fmtFull(txns.reduce((s, t) => s + signed(t), 0)), numeric: true },
             { content: '' },
+                      { content: '' },
           ]}
         />
       </div>

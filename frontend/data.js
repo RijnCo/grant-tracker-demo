@@ -1079,7 +1079,7 @@ window.GRANT_DATA = {
    "amount_change": 0,
    "description": "Amendment 1: HUD approved a one-year extension for the remaining housing rehabilitation scope.",
    "entered_by": "alopez",
-   "entered_at": "2026-08-31 02:57:14"
+   "entered_at": "2026-08-31 05:34:51"
   },
   {
    "amendment_id": 6,
@@ -1097,7 +1097,7 @@ window.GRANT_DATA = {
    "amount_change": 250000,
    "description": "Amendment 1: FDEM added funds for two additional critical-facility retrofits.",
    "entered_by": "alopez",
-   "entered_at": "2026-08-31 02:57:14"
+   "entered_at": "2026-08-31 05:34:51"
   },
   {
    "amendment_id": 2,
@@ -1115,7 +1115,7 @@ window.GRANT_DATA = {
    "amount_change": 1200000,
    "description": "Amendment 2: supplemental FDOT obligation for added drainage scope.",
    "entered_by": "alopez",
-   "entered_at": "2026-08-31 02:57:14"
+   "entered_at": "2026-08-31 05:34:51"
   },
   {
    "amendment_id": 4,
@@ -1133,7 +1133,7 @@ window.GRANT_DATA = {
    "amount_change": 750000,
    "description": "Loan amendment 1: contingency added and completion date extended one year.",
    "entered_by": "alopez",
-   "entered_at": "2026-08-31 02:57:14"
+   "entered_at": "2026-08-31 05:34:51"
   },
   {
    "amendment_id": 3,
@@ -1151,7 +1151,7 @@ window.GRANT_DATA = {
    "amount_change": 1500000,
    "description": "FEMA version 2 obligation \u2014 additional eligible damages approved.",
    "entered_by": "alopez",
-   "entered_at": "2026-08-31 02:57:14"
+   "entered_at": "2026-08-31 05:34:51"
   },
   {
    "amendment_id": 1,
@@ -1169,7 +1169,7 @@ window.GRANT_DATA = {
    "amount_change": 0,
    "description": "Amendment 1: utility relocation delays \u2014 period of performance extended two years.",
    "entered_by": "alopez",
-   "entered_at": "2026-08-31 02:57:14"
+   "entered_at": "2026-08-31 05:34:51"
   }
  ],
  "award_fy_spend": [
@@ -1461,7 +1461,7 @@ window.GRANT_DATA = {
    "doc_type": "other",
    "file_size": null,
    "uploaded_by": "system",
-   "uploaded_at": "2026-08-31 02:57:14"
+   "uploaded_at": "2026-08-31 05:34:51"
   },
   {
    "document_id": 5,
@@ -1472,7 +1472,7 @@ window.GRANT_DATA = {
    "doc_type": "award_letter",
    "file_size": 947,
    "uploaded_by": "system",
-   "uploaded_at": "2026-08-31 02:57:14"
+   "uploaded_at": "2026-08-31 05:34:51"
   },
   {
    "document_id": 4,
@@ -1483,7 +1483,7 @@ window.GRANT_DATA = {
    "doc_type": "award_letter",
    "file_size": 1033,
    "uploaded_by": "system",
-   "uploaded_at": "2026-08-31 02:57:14"
+   "uploaded_at": "2026-08-31 05:34:51"
   },
   {
    "document_id": 3,
@@ -1494,7 +1494,7 @@ window.GRANT_DATA = {
    "doc_type": "award_letter",
    "file_size": 932,
    "uploaded_by": "system",
-   "uploaded_at": "2026-08-31 02:57:14"
+   "uploaded_at": "2026-08-31 05:34:51"
   },
   {
    "document_id": 2,
@@ -1505,7 +1505,7 @@ window.GRANT_DATA = {
    "doc_type": "award_letter",
    "file_size": 908,
    "uploaded_by": "system",
-   "uploaded_at": "2026-08-31 02:57:14"
+   "uploaded_at": "2026-08-31 05:34:51"
   },
   {
    "document_id": 1,
@@ -1516,7 +1516,7 @@ window.GRANT_DATA = {
    "doc_type": "award_letter",
    "file_size": 1104,
    "uploaded_by": "system",
-   "uploaded_at": "2026-08-31 02:57:14"
+   "uploaded_at": "2026-08-31 05:34:51"
   }
  ],
  "loan_balances": [
@@ -6713,7 +6713,7 @@ window.GRANT_DATA = {
  "audit_trail": [
   {
    "audit_id": 227,
-   "changed_at": "2026-08-31 02:57:14",
+   "changed_at": "2026-08-31 05:34:51",
    "action": "DELETE",
    "expenditure_id": 224,
    "old_amount": 17596.83,
@@ -6728,7 +6728,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 226,
-   "changed_at": "2026-08-31 02:57:14",
+   "changed_at": "2026-08-31 05:34:51",
    "action": "UPDATE",
    "expenditure_id": 1,
    "old_amount": 100079.18,
@@ -6743,7 +6743,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 225,
-   "changed_at": "2026-08-31 02:57:14",
+   "changed_at": "2026-08-31 05:34:51",
    "action": "INSERT",
    "expenditure_id": 225,
    "old_amount": null,
@@ -6758,7 +6758,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 224,
-   "changed_at": "2026-08-31 02:57:14",
+   "changed_at": "2026-08-31 05:34:51",
    "action": "INSERT",
    "expenditure_id": 224,
    "old_amount": null,
@@ -6773,7 +6773,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 223,
-   "changed_at": "2026-08-31 02:57:14",
+   "changed_at": "2026-08-31 05:34:51",
    "action": "INSERT",
    "expenditure_id": 223,
    "old_amount": null,
@@ -6788,7 +6788,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 222,
-   "changed_at": "2026-08-31 02:57:14",
+   "changed_at": "2026-08-31 05:34:51",
    "action": "INSERT",
    "expenditure_id": 222,
    "old_amount": null,
@@ -6803,7 +6803,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 221,
-   "changed_at": "2026-08-31 02:57:14",
+   "changed_at": "2026-08-31 05:34:51",
    "action": "INSERT",
    "expenditure_id": 221,
    "old_amount": null,
@@ -6818,7 +6818,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 220,
-   "changed_at": "2026-08-31 02:57:14",
+   "changed_at": "2026-08-31 05:34:51",
    "action": "INSERT",
    "expenditure_id": 220,
    "old_amount": null,
@@ -6833,7 +6833,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 219,
-   "changed_at": "2026-08-31 02:57:14",
+   "changed_at": "2026-08-31 05:34:51",
    "action": "INSERT",
    "expenditure_id": 219,
    "old_amount": null,
@@ -6848,7 +6848,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 218,
-   "changed_at": "2026-08-31 02:57:14",
+   "changed_at": "2026-08-31 05:34:51",
    "action": "INSERT",
    "expenditure_id": 218,
    "old_amount": null,
@@ -6863,7 +6863,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 217,
-   "changed_at": "2026-08-31 02:57:14",
+   "changed_at": "2026-08-31 05:34:51",
    "action": "INSERT",
    "expenditure_id": 217,
    "old_amount": null,
@@ -6878,7 +6878,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 216,
-   "changed_at": "2026-08-31 02:57:14",
+   "changed_at": "2026-08-31 05:34:51",
    "action": "INSERT",
    "expenditure_id": 216,
    "old_amount": null,
@@ -6893,7 +6893,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 215,
-   "changed_at": "2026-08-31 02:57:14",
+   "changed_at": "2026-08-31 05:34:51",
    "action": "INSERT",
    "expenditure_id": 215,
    "old_amount": null,
@@ -6908,7 +6908,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 214,
-   "changed_at": "2026-08-31 02:57:14",
+   "changed_at": "2026-08-31 05:34:51",
    "action": "INSERT",
    "expenditure_id": 214,
    "old_amount": null,
@@ -6923,7 +6923,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 213,
-   "changed_at": "2026-08-31 02:57:14",
+   "changed_at": "2026-08-31 05:34:51",
    "action": "INSERT",
    "expenditure_id": 213,
    "old_amount": null,
@@ -6938,7 +6938,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 212,
-   "changed_at": "2026-08-31 02:57:14",
+   "changed_at": "2026-08-31 05:34:51",
    "action": "INSERT",
    "expenditure_id": 212,
    "old_amount": null,
@@ -6953,7 +6953,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 211,
-   "changed_at": "2026-08-31 02:57:14",
+   "changed_at": "2026-08-31 05:34:51",
    "action": "INSERT",
    "expenditure_id": 211,
    "old_amount": null,
@@ -6968,7 +6968,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 210,
-   "changed_at": "2026-08-31 02:57:14",
+   "changed_at": "2026-08-31 05:34:51",
    "action": "INSERT",
    "expenditure_id": 210,
    "old_amount": null,
@@ -6983,7 +6983,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 209,
-   "changed_at": "2026-08-31 02:57:14",
+   "changed_at": "2026-08-31 05:34:51",
    "action": "INSERT",
    "expenditure_id": 209,
    "old_amount": null,
@@ -6998,7 +6998,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 208,
-   "changed_at": "2026-08-31 02:57:14",
+   "changed_at": "2026-08-31 05:34:51",
    "action": "INSERT",
    "expenditure_id": 208,
    "old_amount": null,
@@ -7013,7 +7013,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 207,
-   "changed_at": "2026-08-31 02:57:14",
+   "changed_at": "2026-08-31 05:34:51",
    "action": "INSERT",
    "expenditure_id": 207,
    "old_amount": null,
@@ -7028,7 +7028,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 206,
-   "changed_at": "2026-08-31 02:57:14",
+   "changed_at": "2026-08-31 05:34:51",
    "action": "INSERT",
    "expenditure_id": 206,
    "old_amount": null,
@@ -7043,7 +7043,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 205,
-   "changed_at": "2026-08-31 02:57:14",
+   "changed_at": "2026-08-31 05:34:51",
    "action": "INSERT",
    "expenditure_id": 205,
    "old_amount": null,
@@ -7058,7 +7058,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 204,
-   "changed_at": "2026-08-31 02:57:14",
+   "changed_at": "2026-08-31 05:34:51",
    "action": "INSERT",
    "expenditure_id": 204,
    "old_amount": null,
@@ -7073,7 +7073,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 203,
-   "changed_at": "2026-08-31 02:57:14",
+   "changed_at": "2026-08-31 05:34:51",
    "action": "INSERT",
    "expenditure_id": 203,
    "old_amount": null,
@@ -7088,7 +7088,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 202,
-   "changed_at": "2026-08-31 02:57:14",
+   "changed_at": "2026-08-31 05:34:51",
    "action": "INSERT",
    "expenditure_id": 202,
    "old_amount": null,
@@ -7103,7 +7103,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 201,
-   "changed_at": "2026-08-31 02:57:14",
+   "changed_at": "2026-08-31 05:34:51",
    "action": "INSERT",
    "expenditure_id": 201,
    "old_amount": null,
@@ -7118,7 +7118,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 200,
-   "changed_at": "2026-08-31 02:57:14",
+   "changed_at": "2026-08-31 05:34:51",
    "action": "INSERT",
    "expenditure_id": 200,
    "old_amount": null,
@@ -7133,7 +7133,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 199,
-   "changed_at": "2026-08-31 02:57:14",
+   "changed_at": "2026-08-31 05:34:51",
    "action": "INSERT",
    "expenditure_id": 199,
    "old_amount": null,
@@ -7148,7 +7148,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 198,
-   "changed_at": "2026-08-31 02:57:14",
+   "changed_at": "2026-08-31 05:34:51",
    "action": "INSERT",
    "expenditure_id": 198,
    "old_amount": null,
@@ -7163,7 +7163,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 197,
-   "changed_at": "2026-08-31 02:57:14",
+   "changed_at": "2026-08-31 05:34:51",
    "action": "INSERT",
    "expenditure_id": 197,
    "old_amount": null,
@@ -7178,7 +7178,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 196,
-   "changed_at": "2026-08-31 02:57:14",
+   "changed_at": "2026-08-31 05:34:51",
    "action": "INSERT",
    "expenditure_id": 196,
    "old_amount": null,
@@ -7193,7 +7193,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 195,
-   "changed_at": "2026-08-31 02:57:14",
+   "changed_at": "2026-08-31 05:34:51",
    "action": "INSERT",
    "expenditure_id": 195,
    "old_amount": null,
@@ -7208,7 +7208,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 194,
-   "changed_at": "2026-08-31 02:57:14",
+   "changed_at": "2026-08-31 05:34:51",
    "action": "INSERT",
    "expenditure_id": 194,
    "old_amount": null,
@@ -7223,7 +7223,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 193,
-   "changed_at": "2026-08-31 02:57:14",
+   "changed_at": "2026-08-31 05:34:51",
    "action": "INSERT",
    "expenditure_id": 193,
    "old_amount": null,
@@ -7238,7 +7238,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 192,
-   "changed_at": "2026-08-31 02:57:14",
+   "changed_at": "2026-08-31 05:34:51",
    "action": "INSERT",
    "expenditure_id": 192,
    "old_amount": null,
@@ -7253,7 +7253,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 191,
-   "changed_at": "2026-08-31 02:57:14",
+   "changed_at": "2026-08-31 05:34:51",
    "action": "INSERT",
    "expenditure_id": 191,
    "old_amount": null,
@@ -7268,7 +7268,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 190,
-   "changed_at": "2026-08-31 02:57:14",
+   "changed_at": "2026-08-31 05:34:51",
    "action": "INSERT",
    "expenditure_id": 190,
    "old_amount": null,
@@ -7283,7 +7283,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 189,
-   "changed_at": "2026-08-31 02:57:14",
+   "changed_at": "2026-08-31 05:34:51",
    "action": "INSERT",
    "expenditure_id": 189,
    "old_amount": null,
@@ -7298,7 +7298,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 188,
-   "changed_at": "2026-08-31 02:57:14",
+   "changed_at": "2026-08-31 05:34:51",
    "action": "INSERT",
    "expenditure_id": 188,
    "old_amount": null,
@@ -7313,7 +7313,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 187,
-   "changed_at": "2026-08-31 02:57:14",
+   "changed_at": "2026-08-31 05:34:51",
    "action": "INSERT",
    "expenditure_id": 187,
    "old_amount": null,
@@ -7328,7 +7328,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 186,
-   "changed_at": "2026-08-31 02:57:14",
+   "changed_at": "2026-08-31 05:34:51",
    "action": "INSERT",
    "expenditure_id": 186,
    "old_amount": null,
@@ -7343,7 +7343,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 185,
-   "changed_at": "2026-08-31 02:57:14",
+   "changed_at": "2026-08-31 05:34:51",
    "action": "INSERT",
    "expenditure_id": 185,
    "old_amount": null,
@@ -7358,7 +7358,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 184,
-   "changed_at": "2026-08-31 02:57:14",
+   "changed_at": "2026-08-31 05:34:51",
    "action": "INSERT",
    "expenditure_id": 184,
    "old_amount": null,
@@ -7373,7 +7373,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 183,
-   "changed_at": "2026-08-31 02:57:14",
+   "changed_at": "2026-08-31 05:34:51",
    "action": "INSERT",
    "expenditure_id": 183,
    "old_amount": null,
@@ -7388,7 +7388,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 182,
-   "changed_at": "2026-08-31 02:57:14",
+   "changed_at": "2026-08-31 05:34:51",
    "action": "INSERT",
    "expenditure_id": 182,
    "old_amount": null,
@@ -7403,7 +7403,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 181,
-   "changed_at": "2026-08-31 02:57:14",
+   "changed_at": "2026-08-31 05:34:51",
    "action": "INSERT",
    "expenditure_id": 181,
    "old_amount": null,
@@ -7418,7 +7418,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 180,
-   "changed_at": "2026-08-31 02:57:14",
+   "changed_at": "2026-08-31 05:34:51",
    "action": "INSERT",
    "expenditure_id": 180,
    "old_amount": null,
@@ -7433,7 +7433,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 179,
-   "changed_at": "2026-08-31 02:57:14",
+   "changed_at": "2026-08-31 05:34:51",
    "action": "INSERT",
    "expenditure_id": 179,
    "old_amount": null,
@@ -7448,7 +7448,7 @@ window.GRANT_DATA = {
   },
   {
    "audit_id": 178,
-   "changed_at": "2026-08-31 02:57:14",
+   "changed_at": "2026-08-31 05:34:51",
    "action": "INSERT",
    "expenditure_id": 178,
    "old_amount": null,
@@ -7462,14 +7462,7 @@ window.GRANT_DATA = {
    "award_name": "Northshore Water Main Replacement (DWSRF Loan)"
   }
  ],
- "login_audit": [
-  {
-   "login_audit_id": 1,
-   "username": "alopez",
-   "success": 1,
-   "attempted_at": "2026-08-31 04:59:19"
-  }
- ],
+ "login_audit": [],
  "subrecipient_list": [
   {
    "subrecipient_id": 4,
@@ -28091,6 +28084,32 @@ window.GRANT_DATA = {
    "variance_pct": -13.1
   }
  ],
+ "deletions": [
+  {
+   "deletion_id": 2,
+   "entity": "revenue_receipt",
+   "table_name": "revenue_receipt",
+   "record_id": 1053,
+   "record_label": "Utility billing cycle batch",
+   "cascaded": null,
+   "reason": "duplicate of RCV-67655 \u2014 same lockbox batch keyed twice",
+   "is_financial": 1,
+   "deleted_by": "kpatel",
+   "deleted_at": "2026-08-27 14:20:11"
+  },
+  {
+   "deletion_id": 1,
+   "entity": "department",
+   "table_name": "department",
+   "record_id": 7,
+   "record_label": "Watr Department",
+   "cascaded": null,
+   "reason": null,
+   "is_financial": 0,
+   "deleted_by": "kpatel",
+   "deleted_at": "2026-08-27 14:20:11"
+  }
+ ],
  "billing_tickets": [
   {
    "ticket_id": 10,
@@ -29109,5 +29128,5 @@ window.GRANT_DATA = {
    "note_text": "The Clean Water State Revolving Fund loan (ALN 66.458) balance outstanding at September 30, 2026 was $4,900,000. Loan balances are reported in the loan_balance table by fiscal year as required by 2 CFR 200.510(b)(5)."
   }
  ],
- "generated_at": "2026-08-31 01:07"
+ "generated_at": "2026-08-31 01:34"
 };

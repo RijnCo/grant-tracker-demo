@@ -8,6 +8,7 @@ import {
   craCategoryLabel, craEngagementTypeLabel, craTxnTypeLabel,
 } from '../lib/labels'
 import DataTable from '../components/DataTable'
+import DeleteButton from '../components/DeleteButton'
 import Modal from '../components/Modal'
 import UsageBar from '../components/UsageBar'
 
@@ -644,6 +645,10 @@ export default function Cra() {
                 ? <span style={{ fontWeight: 600 }}>Yes ({p.engagement_count})</span>
                 : <span style={{ color: 'var(--ink-3)' }}>No</span>,
             },
+                      {
+              key: 'del', label: '', sortable: false, numeric: true,
+              render: (p) => <DeleteButton entity="cra_project" id={p.project_id} name={p.project_name} />,
+            },
           ]}
           rows={projects}
           rowKey={(p) => p.project_id}
@@ -760,6 +765,10 @@ export default function Cra() {
               render: (t) => <span className={signed(t) < 0 ? 'neg' : ''}>{fmtFull(signed(t))}</span>,
             },
             { key: 'entered_by', label: 'Entered by', render: (t) => t.entered_by || '—' },
+                      {
+              key: 'del', label: '', sortable: false, numeric: true,
+              render: (t) => <DeleteButton entity="cra_transaction" id={t.cra_txn_id} name={t.description} />,
+            },
           ]}
           rows={txns}
           rowKey={(t) => t.cra_txn_id}
@@ -768,6 +777,7 @@ export default function Cra() {
             { content: `Net — ${txns.length} transaction${txns.length === 1 ? '' : 's'}`, colSpan: 6 },
             { content: fmtFull(txns.reduce((s, t) => s + signed(t), 0)), numeric: true },
             { content: '' },
+                      { content: '' },
           ]}
         />
       </div>

@@ -8,6 +8,7 @@ import { REVENUE_FUND_TYPES, revenueFundTypeLabel } from '../lib/labels'
 import { FUND_COLORS, pacingRows, sharesByStream } from '../lib/revenue'
 import CountUp from '../components/CountUp'
 import DataTable from '../components/DataTable'
+import DeleteButton from '../components/DeleteButton'
 import Modal from '../components/Modal'
 import PacingChart from '../components/charts/PacingChart'
 import TreemapChart from '../components/charts/TreemapChart'
@@ -526,6 +527,10 @@ export default function Revenue() {
                 return <span style={{ color: st.tone, fontWeight: 600, fontSize: 12.5 }}>{st.label}</span>
               },
             },
+                      {
+              key: 'del', label: '', sortable: false, numeric: true,
+              render: (s) => <DeleteButton entity="revenue_stream" id={s.stream_id} name={s.stream_name} />,
+            },
           ]}
           rows={streamsSorted}
           rowKey={(s) => s.stream_id}
@@ -538,6 +543,7 @@ export default function Revenue() {
             { content: fmtFull(collected - expected), numeric: true },
             { content: '' },
             { content: '' },
+                      { content: '' },
           ]}
         />
       </div>
@@ -588,6 +594,10 @@ export default function Revenue() {
               render: (t) => <span className={t.amount < 0 ? 'neg' : ''}>{fmtFull(t.amount)}</span>,
             },
             { key: 'entered_by', label: 'Entered by', render: (t) => t.entered_by || '—' },
+                      {
+              key: 'del', label: '', sortable: false, numeric: true,
+              render: (t) => <DeleteButton entity="revenue_receipt" id={t.receipt_id} name={t.description} />,
+            },
           ]}
           rows={ledger}
           rowKey={(t) => t.receipt_id}
@@ -596,6 +606,7 @@ export default function Revenue() {
             { content: `Total — ${ledger.length} receipt${ledger.length === 1 ? '' : 's'}`, colSpan: 6 },
             { content: fmtFull(ledger.reduce((s, t) => s + t.amount, 0)), numeric: true },
             { content: '' },
+                      { content: '' },
           ]}
         />
       </div>
